@@ -8,7 +8,7 @@ import { authApi } from '../api/auth.api';
 
 export function useLogout() {
   const queryClient = useQueryClient();
-  const clearAuth = useAuthStore((s) => s.clearAuth);
+  const clearUser = useAuthStore((s) => s.clearUser);
   const clearScope = useScopeStore((s) => s.clearScope);
   const navigate = useNavigate();
 
@@ -18,7 +18,7 @@ export function useLogout() {
     } catch {
       // Continue logout even if the API call fails.
     }
-    clearAuth();
+    clearUser();
     clearScope();
     queryClient.clear();
     navigate('/login', { replace: true });

@@ -14,14 +14,10 @@ import {
     TablePagination,
     Chip,
     TextField,
-    IconButton,
-    Tooltip,
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
 import { accountsApi, type Account } from '../api/accounts.api';
 import { useUIStore } from '../stores/uiStore';
 import { useScopeStore } from '../stores/scopeStore';
-import { usePermissions } from '../hooks/usePermissions';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';

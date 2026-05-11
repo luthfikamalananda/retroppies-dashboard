@@ -7,25 +7,18 @@ import {
     Stack,
     Grid,
     Card,
-    Chip,
-    IconButton,
-    Tooltip,
     LinearProgress,
     Breadcrumbs,
     Link,
 } from '@mui/material';
 import HomeIcon from '@mui/icons-material/Home';
 import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ToggleOnIcon from '@mui/icons-material/ToggleOn';
-import ToggleOffIcon from '@mui/icons-material/ToggleOff';
 import { NavLink } from 'react-router-dom';
 import { templatesApi, type ResultTemplate } from '../api/templates.api';
 import { useUIStore } from '../stores/uiStore';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
-import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { colors } from '../theme/colors';
 import { useAuthStore } from '../stores/authStore';
 
@@ -54,11 +47,10 @@ export default function TemplatesPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState('');
-    const [deleteTarget, setDeleteTarget] = useState<ResultTemplate | null>(null);
 
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['templates'],
-        queryFn: () => templatesApi.list({ page: 1, tenantId: user?.tenantId, limit: 10 }),
+        queryFn: () => templatesApi.list({ page: 1, tenantId: user?.tenantId ?? 0, limit: 10 }),
     });
 
     const uploadMutation = useMutation({
@@ -73,23 +65,6 @@ export default function TemplatesPage() {
             showSnackbar(extractErrorMessage(err), 'error');
             setUploadProgress(null);
         },
-    });
-
-    const deleteMutation = useMutation({
-        mutationFn: (id: string) => templatesApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
-            showSnackbar('Template berhasil dihapus');
-            setDeleteTarget(null);
-        },
-        onError: (err) => showSnackbar(extractErrorMessage(err), 'error'),
-    });
-
-    const statusMutation = useMutation({
-        mutationFn: ({ id, status }: { id: string; status: 'active' | 'inactive' }) =>
-            templatesApi.setStatus(id, status),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['templates'] }),
-        onError: (err) => showSnackbar(extractErrorMessage(err), 'error'),
     });
 
     function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {

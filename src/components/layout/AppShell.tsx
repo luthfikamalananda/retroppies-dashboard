@@ -1,9 +1,8 @@
 import React from 'react';
 import { Box, Toolbar } from '@mui/material';
-import { Sidebar, SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from './Sidebar';
+import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { GlobalSnackbar } from '../common/GlobalSnackbar';
-import { useUIStore } from '../../stores/uiStore';
 
 interface AppShellProps {
     children: React.ReactNode;
@@ -11,8 +10,6 @@ interface AppShellProps {
 
 // AppShell wraps all protected pages with sidebar + topbar.
 export function AppShell({ children }: AppShellProps) {
-    const collapsed = useUIStore((s) => s.sidebarCollapsed);
-    // const sidebarWidth = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
     return (
         <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>

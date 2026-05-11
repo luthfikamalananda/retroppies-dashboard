@@ -8,7 +8,7 @@
  */
 export const DUMMY_MODE = import.meta.env.VITE_DUMMY_MODE === 'true';
 
-import type { LoginResponse } from '../api/auth.api';
+import type { ResultLogin as LoginResponse } from '../api/auth.api';
 import type { BaseResponse } from '../api/client';
 
 interface DummyUser {
