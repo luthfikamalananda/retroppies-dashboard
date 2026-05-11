@@ -39,7 +39,6 @@ export function usePermissions() {
             return true; // wildcard: punya semua permission
         }
         const permissions = useAuthStore.getState().user?.permissions ?? [];
-        console.log("Checking permission:", permission, "User permissions:", permissions);
         if (permission.includes(':')) {
             return permissions.includes(permission);
         }

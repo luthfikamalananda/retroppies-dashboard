@@ -1,45 +1,66 @@
-import { apiClient } from './client';
+import { apiClient, type BaseResponse } from './client';
+
+export interface ResultListVoucher {
+  total: number
+  vouchers: Voucher[]
+}
 
 export interface Voucher {
-  voucher_code: string;
-  voucher_title: string;
-  discount: number;
-  product_type: string;
-  period_start: string;
-  period_end: string;
-  usage_limit: number;
-  usage_count: number;
-  status: 'active' | 'inactive';
+  id: number
+  name: string
+  value: number
+  limit_qty: number
+  limit_rp: number
+  temp_limit_qty: number
+  temp_limit_rp: number
+  code: string
+  date_from: string
+  date_to: string
+  status: string
+  tenant_id: number
+  CreatedAt: string
+  CreatedBy: string
+  UpdatedAt: string
+  UpdatedBy: string
 }
 
-export type VoucherPayload = Omit<Voucher, 'usage_count'>;
+// export type VoucherPayload = Omit<Voucher, 'usage_count'>;
+
+export interface VoucherPayload {
+  name: string
+  value: number
+  limit_rp: number
+  code: string
+  date_from: string
+  date_to: string
+  status: string
+  tenant_id: number
+}
 
 export interface VoucherListParams {
-  status?: 'active' | 'inactive';
-  period_start?: string;
-  period_end?: string;
-  page?: number;
-  page_size?: number;
+  tenant_id: number;
+  keyword: string;
+  page: number;
+  limit: number;
 }
 
-export interface PaginatedResponse<T> {
-  data: T[];
-  total: number;
-  page: number;
-  page_size: number;
-}
+
 
 export const vouchersApi = {
   list: (params?: VoucherListParams) =>
     apiClient
-      .get<PaginatedResponse<Voucher>>('/vouchers', { params })
+      .post<BaseResponse<ResultListVoucher>>('/voucher/get', { ...params })
       .then((r) => r.data),
 
   create: (payload: VoucherPayload) =>
-    apiClient.post<Voucher>('/vouchers', payload).then((r) => r.data),
+    apiClient.post<Voucher>('/voucher/create', payload).then((r) => r.data),
 
-  update: (code: string, payload: Partial<VoucherPayload>) =>
-    apiClient.put<Voucher>(`/vouchers/${code}`, payload).then((r) => r.data),
 
-  delete: (code: string) => apiClient.delete(`/vouchers/${code}`),
+  update: (id: number, payload: VoucherPayload) =>
+    apiClient.post<Voucher>(`/voucher/update`, { id: id, ...payload }).then((r) => r.data),
+
+  delete: (id: number) =>
+    apiClient
+      .post(`/voucher/delete`, { id: id })
+      .then((r) => r.data),
 };

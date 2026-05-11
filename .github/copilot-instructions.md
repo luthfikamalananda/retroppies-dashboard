@@ -135,6 +135,53 @@ Referensi key yang tersedia:
 
 ---
 
+### Penanganan Tanggal & Waktu (WAJIB)
+
+Selalu gunakan **dayjs dengan plugin UTC** untuk semua operasi tanggal — baik untuk parsing, perbandingan, maupun formatting. Tujuannya agar tampilan dan logika berbasis waktu server, tidak bergeser mengikuti timezone browser pengguna.
+
+**Setup (satu kali per file yang menggunakan dayjs):**
+
+```ts
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
+```
+
+**Aturan penggunaan:**
+
+```ts
+// ✅ BENAR — parse ISO string dari server dalam UTC
+dayjs.utc('2026-01-01T00:00:00Z').format('DD MMM HH:mm')  // → "01 Jan 00:00"
+dayjs.utc('2026-01-01T00:00:00Z').isBefore(dayjs.utc())   // perbandingan dalam UTC
+
+// ❌ SALAH — parse tanpa UTC (bergeser ke timezone browser)
+dayjs('2026-01-01T00:00:00Z').format('DD MMM HH:mm')  // hasilnya berbeda tiap timezone
+new Date('2026-01-01T00:00:00Z').toLocaleDateString()  // bergantung locale browser
+```
+
+**Format tampilan standar:**
+
+| Kebutuhan | Format | Contoh |
+|---|---|---|
+| Tanggal + jam | `DD MMM HH:mm` | `01 Jan 00:00` |
+| Tanggal saja | `DD MMM YYYY` | `01 Jan 2026` |
+| Tanggal pendek | `DD MMM` | `01 Jan` |
+| ISO untuk API | `.toISOString()` atau `.format()` | `2026-01-01T00:00:00Z` |
+
+**Helper function yang konsisten dipakai (contoh dari VouchersPage):**
+
+```ts
+/** Parse ISO string dalam UTC — selalu mencerminkan waktu server */
+function parseDate(isoString: string) {
+    return dayjs.utc(isoString);
+}
+```
+
+> Jangan gunakan `dayjs()` tanpa `.utc()` untuk data yang berasal dari API/server.
+> `dayjs()` tanpa plugin UTC hanya boleh untuk keperluan UI lokal yang tidak bergantung pada data server.
+
+---
+
 ## 8. Playwright Testing — WAJIB di Setiap Fitur
 
 **Aturan:** Setiap fitur baru yang dikerjakan — baik karena diminta user maupun karena timbul sebagai dependensi implementasi — WAJIB disertai Playwright test.

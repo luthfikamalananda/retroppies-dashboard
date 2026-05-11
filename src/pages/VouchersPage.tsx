@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -31,21 +31,28 @@ import SearchIcon from '@mui/icons-material/Search';
 import HomeIcon from '@mui/icons-material/Home';
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import { vouchersApi, type Voucher } from '../api/vouchers.api';
 import { useUIStore } from '../stores/uiStore';
-import { useScopeStore } from '../stores/scopeStore';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { VoucherFormDialog } from '../features/vouchers/VoucherFormDialog';
 import { colors } from '../theme/colors';
+import { useAuthStore } from '../stores/authStore';
 
 type StatusChip = { label: string; bgcolor: string; color: string };
 
+/** Parse ISO string in UTC — always reflects server time, unaffected by browser timezone */
+function parseDate(isoString: string) {
+    return dayjs.utc(isoString);
+}
+
 function getStatusChip(voucher: Voucher): StatusChip {
-    const now = dayjs();
-    if (dayjs(voucher.period_end).isBefore(now)) {
+    const now = dayjs.utc();
+    if (parseDate(voucher.date_to).isBefore(now)) {
         return { label: 'Expired', bgcolor: '#FDE8E8', color: '#B23E3E' };
     }
     if (voucher.status === 'active') {
@@ -59,31 +66,43 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 export default function VouchersPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { activeTenantId } = useScopeStore();
+    const { user } = useAuthStore();
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
     const [search, setSearch] = useState('');
+    const [debouncedSearch, setDebouncedSearch] = useState('');
     const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
 
     const [formOpen, setFormOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<Voucher | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Voucher | null>(null);
 
-    const queryKey = ['vouchers', activeTenantId, page, pageSize];
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setDebouncedSearch(search);
+            setPage(1);
+        }, 400);
+        return () => clearTimeout(timer);
+    }, [search]);
+
+    // const queryKey = ['vouchers', activeTenantId, page, pageSize];
+    const queryKey = ['vouchers', page, pageSize, debouncedSearch];
 
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey,
         queryFn: () =>
             vouchersApi.list({
+                tenant_id: user?.tenantId ?? 0,
+                keyword: debouncedSearch,
                 page,
-                page_size: pageSize,
+                limit: pageSize,
             }),
-        enabled: !!activeTenantId,
+        // enabled: !!activeTenantId,
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (code: string) => vouchersApi.delete(code),
+        mutationFn: (id: number) => vouchersApi.delete(id),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['vouchers'] });
             showSnackbar('Voucher berhasil dihapus');
@@ -102,22 +121,15 @@ export default function VouchersPage() {
         setFormOpen(true);
     }
 
-    const rows = data?.data ?? [];
-    const filtered = search
-        ? rows.filter(
-            (v) =>
-                v.voucher_code.toLowerCase().includes(search.toLowerCase()) ||
-                v.voucher_title.toLowerCase().includes(search.toLowerCase()),
-        )
-        : rows;
+    const rows = data?.result?.vouchers ?? [];
 
-    const sorted = [...filtered].sort((a, b) =>
+    const sorted = [...rows].sort((a, b) =>
         sortDir === 'asc'
-            ? a.voucher_title.localeCompare(b.voucher_title)
-            : b.voucher_title.localeCompare(a.voucher_title),
+            ? a.name.localeCompare(b.name)
+            : b.name.localeCompare(a.name),
     );
 
-    const total = data?.total ?? 0;
+    const total = data?.result?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const fromEntry = total === 0 ? 0 : (page - 1) * pageSize + 1;
     const toEntry = Math.min(page * pageSize, total);
@@ -199,7 +211,6 @@ export default function VouchersPage() {
                                     </Stack>
                                 </TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Discount</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Product Type</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Period</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Usage Limit</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Used</TableCell>
@@ -221,13 +232,13 @@ export default function VouchersPage() {
                                 : sorted.map((v, idx) => {
                                     const chipStyle = getStatusChip(v);
                                     return (
-                                        <TableRow key={v.voucher_code} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
+                                        <TableRow key={v.code} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                                                 {(page - 1) * pageSize + idx + 1}
                                             </TableCell>
                                             <TableCell>
                                                 <Chip
-                                                    label={v.voucher_code}
+                                                    label={v.code}
                                                     size="small"
                                                     sx={{
                                                         bgcolor: colors.base['section'],
@@ -238,16 +249,15 @@ export default function VouchersPage() {
                                                     }}
                                                 />
                                             </TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.voucher_title}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.name}</TableCell>
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                                Rp{v.discount.toLocaleString('id-ID')}
+                                                Rp{v.value.toLocaleString('id-ID')}
                                             </TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.product_type}</TableCell>
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'], whiteSpace: 'nowrap' }}>
-                                                {dayjs(v.period_start).format('DD MMM')} - {dayjs(v.period_end).format('DD MMM')}
+                                                {parseDate(v.date_from).format('DD MMM')} - {parseDate(v.date_to).format('DD MMM')}
                                             </TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.usage_limit}x</TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.usage_count}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.limit_qty == 0 ? '∞' : `${v.limit_qty}x`}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.temp_limit_qty}</TableCell>
                                             <TableCell>
                                                 <Chip
                                                     label={chipStyle.label}
@@ -354,8 +364,8 @@ export default function VouchersPage() {
             <ConfirmDialog
                 open={!!deleteTarget}
                 title="Hapus Voucher"
-                description={`Yakin ingin menghapus voucher "${deleteTarget?.voucher_title}"?`}
-                onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.voucher_code)}
+                description={`Yakin ingin menghapus voucher "${deleteTarget?.name}"?`}
+                onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
                 onCancel={() => setDeleteTarget(null)}
                 loading={deleteMutation.isPending}
             />

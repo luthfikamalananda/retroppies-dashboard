@@ -2,6 +2,9 @@ import { useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+dayjs.extend(utc);
 import {
   Dialog,
   DialogTitle,
@@ -16,28 +19,65 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { vouchersApi, type Voucher, type VoucherPayload } from '../../api/vouchers.api';
 import { useUIStore } from '../../stores/uiStore';
+import { useAuthStore } from '../../stores/authStore';
 import { extractErrorMessage } from '../../api/client';
+
+/** Convert YYYY-MM-DD (from date input) to UTC ISO string for API */
+function toIso(dateStr: string) {
+  return dayjs.utc(dateStr).toISOString();
+}
+
+/** Convert UTC ISO string from server to YYYY-MM-DD for date input */
+function toInputDate(isoString: string) {
+  return dayjs.utc(isoString).format('YYYY-MM-DD');
+}
 
 const schema = z
   .object({
-    voucher_code: z.string().min(1, 'Kode voucher wajib diisi'),
-    voucher_title: z.string().min(1, 'Judul voucher wajib diisi'),
-    discount: z
-      .number()
-      .min(0, 'Min 0')
-      .max(100, 'Maks 100'),
-    product_type: z.string().min(1, 'Tipe produk wajib diisi'),
-    period_start: z.string().min(1, 'Tanggal mulai wajib diisi'),
-    period_end: z.string().min(1, 'Tanggal selesai wajib diisi'),
-    usage_limit: z.number().min(0, 'Min 0'),
+    code: z.string().min(1, 'Kode voucher wajib diisi'),
+    name: z.string().min(1, 'Judul voucher wajib diisi'),
+    value: z.number().min(0, 'Min 0'),
+    limit_rp: z.number().min(0, 'Min 0'),
+    date_from: z.string().min(1, 'Tanggal mulai wajib diisi'),
+    date_to: z.string().min(1, 'Tanggal selesai wajib diisi'),
     status: z.enum(['active', 'inactive']),
   })
-  .refine((d) => d.period_end >= d.period_start, {
-    message: 'Tanggal selesai harus >= tanggal mulai',
-    path: ['period_end'],
+  .superRefine((d, ctx) => {
+    if ((d.value > 0) && (d.limit_rp % d.value !== 0)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Total Budget harus bisa dibagi habis oleh Discount Value',
+        path: ['limit_rp'],
+      });
+    }
+    const today = dayjs.utc().format('YYYY-MM-DD');
+    if (d.date_from && d.date_from < today) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Tanggal mulai tidak boleh sebelum hari ini',
+        path: ['date_from'],
+      });
+    }
+    if (d.date_from && d.date_to && d.date_to < d.date_from) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Tanggal selesai harus >= tanggal mulai',
+        path: ['date_to'],
+      });
+    }
   });
 
 type FormValues = z.infer<typeof schema>;
+
+const EMPTY_VALUES: FormValues = {
+  code: '',
+  name: '',
+  value: 0,
+  limit_rp: 0,
+  date_from: '',
+  date_to: '',
+  status: 'active',
+};
 
 interface VoucherFormDialogProps {
   open: boolean;
@@ -48,6 +88,7 @@ interface VoucherFormDialogProps {
 export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDialogProps) {
   const queryClient = useQueryClient();
   const showSnackbar = useUIStore((s) => s.showSnackbar);
+  const { user } = useAuthStore();
   const isEditing = !!editTarget;
 
   const {
@@ -58,49 +99,49 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      voucher_code: '',
-      voucher_title: '',
-      discount: 0,
-      product_type: '',
-      period_start: '',
-      period_end: '',
-      usage_limit: 0,
-      status: 'active',
-    },
+    defaultValues: EMPTY_VALUES,
   });
 
   useEffect(() => {
     if (open && editTarget) {
       reset({
-        voucher_code: editTarget.voucher_code,
-        voucher_title: editTarget.voucher_title,
-        discount: editTarget.discount,
-        product_type: editTarget.product_type,
-        period_start: editTarget.period_start,
-        period_end: editTarget.period_end,
-        usage_limit: editTarget.usage_limit,
-        status: editTarget.status,
+        code: editTarget.code,
+        name: editTarget.name,
+        value: editTarget.value,
+        limit_rp: editTarget.limit_rp,
+        date_from: toInputDate(editTarget.date_from),
+        date_to: toInputDate(editTarget.date_to),
+        status: editTarget.status as 'active' | 'inactive',
       });
     } else if (open && !editTarget) {
-      reset({
-        voucher_code: '',
-        voucher_title: '',
-        discount: 0,
-        product_type: '',
-        period_start: '',
-        period_end: '',
-        usage_limit: 0,
-        status: 'active',
-      });
+      reset(EMPTY_VALUES);
     }
   }, [open, editTarget, reset]);
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
-      const payload: VoucherPayload = values;
+      const payload: VoucherPayload = {
+        ...values,
+        date_from: toIso(values.date_from),
+        date_to: toIso(values.date_to),
+        tenant_id: user?.tenantId ?? 0,
+      };
+      console.log('Payload to submit:', payload); // Debug log
+      // dummy return
+      // return new Promise((resolve) => {
+      //   setTimeout(() => {
+      //     resolve({
+      //       id: editTarget?.id ?? Math.floor(Math.random() * 1000),
+      //       ...payload,
+      //       CreatedAt: new Date().toISOString(),
+      //       CreatedBy: 'unknown',
+      //       UpdatedAt: new Date().toISOString(),
+      //       UpdatedBy: 'unknown',
+      //     } as Voucher);
+      //   }, 1000);
+      // });
       return isEditing
-        ? vouchersApi.update(editTarget!.voucher_code, payload)
+        ? vouchersApi.update(editTarget!.id, payload)
         : vouchersApi.create(payload);
     },
     onSuccess: () => {
@@ -123,67 +164,60 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
           noValidate
         >
           <TextField
-            label="Kode Voucher"
+            label="Voucher Code"
             fullWidth
-            disabled={isEditing}
-            error={!!errors.voucher_code}
-            helperText={errors.voucher_code?.message}
-            {...register('voucher_code')}
+            // disabled={isEditing}
+            error={!!errors.code}
+            helperText={errors.code?.message}
+            {...register('code')}
           />
           <TextField
-            label="Judul Voucher"
+            label="Promo Title"
             fullWidth
-            error={!!errors.voucher_title}
-            helperText={errors.voucher_title?.message}
-            {...register('voucher_title')}
+            error={!!errors.name}
+            helperText={errors.name?.message}
+            {...register('name')}
           />
           <Stack direction="row" sx={{ gap: 2 }}>
             <TextField
-              label="Diskon (%)"
+              label="Discount Value (Rp)"
               type="number"
               fullWidth
-              error={!!errors.discount}
-              helperText={errors.discount?.message}
-              slotProps={{ htmlInput: { min: 0, max: 100 } }}
-              {...register('discount', { valueAsNumber: true })}
+              error={!!errors.value}
+              helperText={errors.value?.message}
+              slotProps={{ htmlInput: { min: 0 } }}
+              {...register('value', { valueAsNumber: true })}
             />
             <TextField
-              label="Tipe Produk"
+              label="Total Budget (Rp)"
+              type="number"
               fullWidth
-              error={!!errors.product_type}
-              helperText={errors.product_type?.message}
-              {...register('product_type')}
+              error={!!errors.limit_rp}
+              helperText={errors.limit_rp?.message}
+              slotProps={{ htmlInput: { min: 0 } }}
+              {...register('limit_rp', { valueAsNumber: true })}
             />
           </Stack>
           <Stack direction="row" sx={{ gap: 2 }}>
             <TextField
-              label="Mulai"
+              label="Start"
               type="date"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
-              error={!!errors.period_start}
-              helperText={errors.period_start?.message}
-              {...register('period_start')}
+              error={!!errors.date_from}
+              helperText={errors.date_from?.message}
+              {...register('date_from')}
             />
             <TextField
-              label="Berakhir"
+              label="End"
               type="date"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
-              error={!!errors.period_end}
-              helperText={errors.period_end?.message}
-              {...register('period_end')}
+              error={!!errors.date_to}
+              helperText={errors.date_to?.message}
+              {...register('date_to')}
             />
           </Stack>
-          <TextField
-            label="Batas Pemakaian"
-            type="number"
-            fullWidth
-            error={!!errors.usage_limit}
-            helperText={errors.usage_limit?.message}
-            slotProps={{ htmlInput: { min: 0 } }}
-            {...register('usage_limit', { valueAsNumber: true })}
-          />
           <Controller
             name="status"
             control={control}
