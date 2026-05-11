@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "20"
+  # VITE_* vars are intentionally bundled into client JS — not secrets
+  SECRETS_SCAN_OMIT_KEYS = "VITE_API_BASE_URL"
 
 # SPA fallback — semua route diarahkan ke index.html (React Router)
 [[redirects]]
