@@ -1,0 +1,1 @@
+import{n as e}from"./authStore-C1O5o-jR.js";var t=e(e=>({activeTenantId:null,activeOutletId:null,setScope:(t,n)=>e({activeTenantId:t,activeOutletId:n??null}),clearScope:()=>e({activeTenantId:null,activeOutletId:null})}));export{t};

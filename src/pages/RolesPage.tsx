@@ -31,27 +31,20 @@ import HomeIcon from '@mui/icons-material/Home';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
-import { timersApi, type Rule } from '../api/timers.api';
+import { rolesApi, type Role } from '../api/roles.api';
 import { useUIStore } from '../stores/uiStore';
-import { useAuthStore } from '../stores/authStore';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { TimerFormDialog } from '../features/timers/TimerFormDialog';
+import { RoleFormDialog } from '../features/roles/RoleFormDialog';
 import { colors } from '../theme/colors';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
-const RULE_TYPE_LABELS: Record<string, string> = {
-    payment_timer: 'Timer Pembayaran',
-    photo_session_timer: 'Timer Sesi Foto',
-};
-
-export default function TimersPage() {
+export default function RolesPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { user } = useAuthStore();
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -59,49 +52,30 @@ export default function TimersPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
     const [formOpen, setFormOpen] = useState(false);
-    const [editTarget, setEditTarget] = useState<Rule | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<Rule | null>(null);
+    const [editTarget, setEditTarget] = useState<Role | null>(null);
+    const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
 
     useEffect(() => {
-        const timer = setTimeout(() => {
-            setDebouncedSearch(search);
-            setPage(1);
-        }, 400);
+        const timer = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
         return () => clearTimeout(timer);
     }, [search]);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['timers', page, pageSize, debouncedSearch],
-        queryFn: () =>
-            timersApi.get({
-                tenant_id: user?.tenantId ?? 0,
-                keyword: debouncedSearch,
-                page,
-                limit: pageSize,
-            }),
+        queryKey: ['roles', page, pageSize, debouncedSearch],
+        queryFn: () => rolesApi.list({ keyword: debouncedSearch, page, limit: pageSize }),
     });
 
     const deleteMutation = useMutation({
-        mutationFn: (id: number) => timersApi.delete(id),
+        mutationFn: (id: number) => rolesApi.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['timers'] });
-            showSnackbar('Rule berhasil dihapus');
+            queryClient.invalidateQueries({ queryKey: ['roles'] });
+            showSnackbar('Role berhasil dihapus');
             setDeleteTarget(null);
         },
         onError: (err) => showSnackbar(extractErrorMessage(err), 'error'),
     });
 
-    function openCreate() {
-        setEditTarget(null);
-        setFormOpen(true);
-    }
-
-    function openEdit(rule: Rule) {
-        setEditTarget(rule);
-        setFormOpen(true);
-    }
-
-    const rows = data?.result?.rules ?? [];
+    const rows = data?.result?.roles ?? [];
     const total = data?.result?.total ?? 0;
     const totalPages = Math.max(1, Math.ceil(total / pageSize));
     const fromEntry = total === 0 ? 0 : (page - 1) * pageSize + 1;
@@ -109,7 +83,6 @@ export default function TimersPage() {
 
     return (
         <Box>
-            {/* Breadcrumb */}
             <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
                 <Link
                     component={NavLink}
@@ -118,18 +91,16 @@ export default function TimersPage() {
                 >
                     <HomeIcon sx={{ fontSize: 18 }} />
                 </Link>
-                <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>
-                    Pengaturan Timer
-                </Typography>
+                <Typography sx={{ color: colors.base['grey'], fontSize: 14 }}>Settings User</Typography>
+                <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Role</Typography>
             </Breadcrumbs>
 
-            {/* Header */}
             <Stack
                 direction="row"
                 sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
             >
                 <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Pengaturan Timer
+                    Data Role
                 </Typography>
                 <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
                     <TextField
@@ -151,7 +122,7 @@ export default function TimersPage() {
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={openCreate}
+                        onClick={() => { setEditTarget(null); setFormOpen(true); }}
                         sx={{
                             bgcolor: colors.brand[500],
                             '&:hover': { bgcolor: colors.brand[600] },
@@ -160,7 +131,7 @@ export default function TimersPage() {
                             px: 2.5,
                         }}
                     >
-                        Tambah Rule
+                        Add Role
                     </Button>
                 </Stack>
             </Stack>
@@ -173,9 +144,8 @@ export default function TimersPage() {
                         <TableHead>
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tipe Rule</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Nilai (detik)</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Dibuat Oleh</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Role Name</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Description</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Diperbarui</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
                             </TableRow>
@@ -184,34 +154,27 @@ export default function TimersPage() {
                             {isLoading
                                 ? Array.from({ length: 5 }).map((_, i) => (
                                     <TableRow key={i}>
-                                        {Array.from({ length: 6 }).map((_, j) => (
+                                        {Array.from({ length: 5 }).map((_, j) => (
                                             <TableCell key={j}><Skeleton variant="text" width="80%" /></TableCell>
                                         ))}
                                     </TableRow>
                                 ))
-                                : rows.map((rule, idx) => (
-                                    <TableRow key={rule.id} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
+                                : rows.map((role, idx) => (
+                                    <TableRow key={role.id} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                                             {(page - 1) * pageSize + idx + 1}
                                         </TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{role.name}</TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{role.description}</TableCell>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                            {RULE_TYPE_LABELS[rule.rulesType] ?? rule.rulesType}
-                                        </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                            {rule.value}
-                                        </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                            {rule.CreatedBy}
-                                        </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                            {dayjs.utc(rule.UpdatedAt).format('DD MMM YYYY')}
+                                            {dayjs.utc(role.UpdatedAt).format('DD MMM YYYY')}
                                         </TableCell>
                                         <TableCell>
                                             <Stack direction="row" sx={{ gap: 0.5 }}>
-                                                <IconButton size="small" onClick={() => openEdit(rule)} sx={{ color: colors.brand[500] }}>
+                                                <IconButton size="small" onClick={() => { setEditTarget(role); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
                                                     <EditIcon sx={{ fontSize: 18 }} />
                                                 </IconButton>
-                                                <IconButton size="small" onClick={() => setDeleteTarget(rule)} sx={{ color: colors.brand[500] }}>
+                                                <IconButton size="small" onClick={() => setDeleteTarget(role)} sx={{ color: colors.brand[500] }}>
                                                     <DeleteIcon sx={{ fontSize: 18 }} />
                                                 </IconButton>
                                             </Stack>
@@ -222,18 +185,9 @@ export default function TimersPage() {
                     </Table>
                 </TableContainer>
 
-                {!isLoading && rows.length === 0 && <EmptyState message="Belum ada rule timer." />}
+                {!isLoading && rows.length === 0 && <EmptyState message="Belum ada data role." />}
 
-                {/* Pagination Footer */}
-                <Stack
-                    direction="row"
-                    sx={{
-                        alignItems: 'center',
-                        px: 2,
-                        py: 1.5,
-                        borderTop: `1px solid ${colors.border['light']}`,
-                    }}
-                >
+                <Stack direction="row" sx={{ alignItems: 'center', px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}>
                     <Select
                         size="small"
                         value={pageSize}
@@ -244,11 +198,9 @@ export default function TimersPage() {
                             <MenuItem key={s} value={s} sx={{ fontSize: 13 }}>{s}</MenuItem>
                         ))}
                     </Select>
-
                     <Typography sx={{ flex: 1, textAlign: 'center', fontSize: 13, color: colors.base['grey'] }}>
                         {total === 0 ? 'No entries' : `Showing ${fromEntry} to ${toEntry} of ${total} entries`}
                     </Typography>
-
                     <Pagination
                         count={totalPages}
                         page={page}
@@ -267,16 +219,12 @@ export default function TimersPage() {
                 </Stack>
             </Paper>
 
-            <TimerFormDialog
-                open={formOpen}
-                editTarget={editTarget}
-                onClose={() => setFormOpen(false)}
-            />
+            <RoleFormDialog open={formOpen} editTarget={editTarget} onClose={() => setFormOpen(false)} />
 
             <ConfirmDialog
                 open={!!deleteTarget}
-                title="Hapus Rule"
-                description={`Yakin ingin menghapus rule "${RULE_TYPE_LABELS[deleteTarget?.rulesType ?? ''] ?? deleteTarget?.rulesType}"?`}
+                title="Hapus Role"
+                description={`Yakin ingin menghapus role "${deleteTarget?.name}"?`}
                 onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
                 onCancel={() => setDeleteTarget(null)}
                 loading={deleteMutation.isPending}

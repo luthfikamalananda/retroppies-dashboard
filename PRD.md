@@ -477,7 +477,7 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] Topbar — header-button.svg toggle, user avatar + name + dropdown arrow
 - [ ] Products Page
 - [x] Templates Page — layout card grid selesai, **flow layout→template belum (lihat 14.5)**
-- [ ] Timers Page
+- [x] Timers Page — rewrite menjadi tabel CRUD rules (struktur identik VouchersPage)
 - [x] Vouchers Page
 - [ ] Transactions Page
 - [ ] Accounts Page
@@ -497,10 +497,43 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] `tests/vouchers.spec.ts` — form validation (required, period, discount bounds)
 - [x] `tests/templates.spec.ts` — render, breadcrumb, upload validation (PNG only, preview, cancel), sidebar nav
 
+- [x] Sidebar — Settings User group baru (Tenant, User, Role, Permission) dengan ikon masing-masing
 > **Cara menambah test baru:**
 > - Buat file `tests/<feature>.spec.ts` atau tambahkan `test.describe` ke `tests/features.spec.ts`
 > - Import `test, expect` dari `./helpers/auth`
 > - Gunakan fixture `authedPage` untuk halaman yang butuh login
+
+## 14.13 Settings User (Tenant / User / Role / Permission)
+> Halaman baru di bawah grup "Settings User" pada sidebar.
+> Semua halaman mengikuti struktur identik VouchersPage: tabel + pagination + debounced search + form dialog + confirm delete.
+
+### Tenant
+- [x] API: `tenantsApi` (list/create/update/delete) via `/tenant/*`
+- [x] TenantsPage — kolom: #, Tenant Code, Tenant Name, Address, Action
+- [x] TenantFormDialog — fields: code, name, address (Zod validation)
+- [x] ConfirmDialog hapus tenant
+- [x] Breadcrumb: Home → Settings User → Data Tenant
+
+### User
+- [x] API: `usersApi` (list/create/update/delete) via `/user/*`
+- [x] UsersPage — kolom: #, Username, Email, Role (chip), Tenant, Action
+- [x] UserFormDialog — fields: username, email, password (create only), role dropdown, tenant_id
+- [x] ConfirmDialog hapus user
+- [x] Breadcrumb: Home → Settings User → User
+
+### Role
+- [x] API: `rolesApi` (list/create/update/delete) via `/role/*`
+- [x] RolesPage — kolom: #, Role Name, Description, Diperbarui, Action
+- [x] RoleFormDialog — fields: name, description (Zod validation)
+- [x] ConfirmDialog hapus role
+- [x] Breadcrumb: Home → Settings User → Role
+
+### Permission
+- [x] API: `permissionsApi` (list/create/update/delete) via `/permission/*`
+- [x] PermissionsPage — kolom: #, Permission (monospace), Description, Diperbarui, Action
+- [x] PermissionFormDialog — fields: name, description (Zod validation)
+- [x] ConfirmDialog hapus permission
+- [x] Breadcrumb: Home → Settings User → Permission
 
 ---
 

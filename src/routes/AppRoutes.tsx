@@ -13,6 +13,10 @@ const TimersPage = lazy(() => import('../pages/TimersPage'));
 const VouchersPage = lazy(() => import('../pages/VouchersPage'));
 const TransactionsPage = lazy(() => import('../pages/TransactionsPage'));
 const AccountsPage = lazy(() => import('../pages/AccountsPage'));
+const TenantsPage = lazy(() => import('../pages/TenantsPage'));
+const UsersPage = lazy(() => import('../pages/UsersPage'));
+const RolesPage = lazy(() => import('../pages/RolesPage'));
+const PermissionsPage = lazy(() => import('../pages/PermissionsPage'));
 
 function PageLoader() {
     return (
@@ -44,6 +48,10 @@ export function AppRoutes() {
                                         <Route path="vouchers" element={<VouchersPage />} />
                                         <Route path="transactions" element={<TransactionsPage />} />
                                         <Route path="accounts" element={<AccountsPage />} />
+                                        <Route path="tenants" element={<TenantsPage />} />
+                                        <Route path="users" element={<UsersPage />} />
+                                        <Route path="roles" element={<RolesPage />} />
+                                        <Route path="permissions" element={<PermissionsPage />} />
                                         <Route path="*" element={<Navigate to="dashboard" replace />} />
                                     </Routes>
                                 </Suspense>

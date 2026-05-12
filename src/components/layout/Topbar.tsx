@@ -1,29 +1,27 @@
-import { useState } from 'react';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import {
   AppBar,
-  Toolbar,
-  IconButton,
-  Typography,
-  Box,
   Avatar,
+  Box,
+  Button,
+  Divider,
+  IconButton,
   Menu,
   MenuItem,
-  Divider,
-  Button,
+  Toolbar,
+  Typography,
 } from '@mui/material';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import { useUIStore } from '../../stores/uiStore';
-import { useAuthStore } from '../../stores/authStore';
-import { useLogout } from '../../hooks/useLogout';
-import { SIDEBAR_WIDTH, SIDEBAR_COLLAPSED_WIDTH } from './Sidebar';
-import { colors } from '../../theme/colors';
+import { useState } from 'react';
 import headerButton from '../../assets/header-button.svg';
+import { useAuthStore } from '../../stores/authStore';
+import { useUIStore } from '../../stores/uiStore';
+import { colors } from '../../theme/colors';
+import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
 
 export function Topbar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
-  const user = useAuthStore((s) => s.user);
-  const { logout } = useLogout();
+  const { user, clearUser } = useAuthStore();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
@@ -113,7 +111,7 @@ export function Topbar() {
           <MenuItem
             onClick={() => {
               setAnchorEl(null);
-              logout();
+              clearUser();
             }}
             sx={{ color: colors.brand[500], fontSize: 14 }}
           >

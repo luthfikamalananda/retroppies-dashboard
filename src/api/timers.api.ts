@@ -1,15 +1,44 @@
-import { apiClient } from './client';
+import { apiClient, type BaseResponse } from './client';
 
-export interface TimerSettings {
-  payment_timer: number;     // seconds
-  photo_session_timer: number; // seconds
-  reference_datetime?: string; // read-only from backend
+export interface ResultRules {
+  rules: Rule[];
+  total: number;
+}
+
+export interface Rule {
+  id: number;
+  rulesType: string;
+  value: number;
+  tenant_id: number;
+  CreatedAt: string;
+  CreatedBy: string;
+  UpdatedAt: string;
+  UpdatedBy: string;
+}
+
+export interface RuleListParams {
+  tenant_id: number;
+  keyword: string;
+  page: number;
+  limit: number;
+}
+
+export interface RulePayload {
+  rulesType: string;
+  value: number;
+  tenant_id: number;
 }
 
 export const timersApi = {
-  get: () =>
-    apiClient.get<TimerSettings>('/timers').then((r) => r.data),
+  get: (params: RuleListParams) =>
+    apiClient.post<BaseResponse<ResultRules>>('/rules/get', { ...params }).then((r) => r.data),
 
-  update: (payload: Pick<TimerSettings, 'payment_timer' | 'photo_session_timer'>) =>
-    apiClient.put<TimerSettings>('/timers', payload).then((r) => r.data),
+  create: (payload: RulePayload) =>
+    apiClient.post<BaseResponse<Rule>>('/rules', payload).then((r) => r.data),
+
+  update: (id: number, payload: Omit<RulePayload, 'tenant_id'>) =>
+    apiClient.put<BaseResponse<Rule>>(`/rules/${id}`, payload).then((r) => r.data),
+
+  delete: (id: number) =>
+    apiClient.delete<BaseResponse<null>>(`/rules/${id}`).then((r) => r.data),
 };

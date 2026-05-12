@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
     Box,
+    Collapse,
     Drawer,
     List,
     ListItemButton,
@@ -16,6 +18,13 @@ import TimerIcon from '@mui/icons-material/Timer';
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import BusinessIcon from '@mui/icons-material/Business';
+import PersonIcon from '@mui/icons-material/Person';
+import BadgeIcon from '@mui/icons-material/Badge';
+import SecurityIcon from '@mui/icons-material/Security';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useUIStore } from '../../stores/uiStore';
 import { usePermissions } from '../../hooks/usePermissions';
 import { colors } from '../../theme/colors';
@@ -28,9 +37,16 @@ const DASHBOARD_ITEMS = [
     { label: 'Summary', path: '/app/dashboard', icon: <DashboardIcon fontSize="small" />, permission: '*' },
     { label: 'Product', path: '/app/products', icon: <InventoryIcon fontSize="small" />, permission: 'products:read' },
     { label: 'Design Template', path: '/app/templates', icon: <PhotoIcon fontSize="small" />, permission: 'templates:read' },
-    { label: 'Time', path: '/app/timers', icon: <TimerIcon fontSize="small" />, permission: 'timers:read' },
+    { label: 'Time', path: '/app/timers', icon: <TimerIcon fontSize="small" />, permission: 'rules:read' },
     { label: 'Voucher', path: '/app/vouchers', icon: <ConfirmationNumberIcon fontSize="small" />, permission: 'vouchers:read' },
     { label: 'Report Transaction', path: '/app/transactions', icon: <ReceiptLongIcon fontSize="small" />, permission: 'transactions:read' },
+];
+
+const SYSTEM_USER_ITEMS = [
+    { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: 'tenants:read' },
+    { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" />, permission: 'users:read' },
+    { label: 'Role', path: '/app/roles', icon: <BadgeIcon fontSize="small" />, permission: 'roles:read' },
+    { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
 ];
 
 const SETTINGS_ITEMS = [
@@ -116,15 +132,81 @@ function NavItem({
     );
 }
 
+function NavGroupCollapsible({
+    label,
+    collapsed,
+    expanded,
+    onToggle,
+    children,
+}: {
+    label: string;
+    collapsed: boolean;
+    expanded: boolean;
+    onToggle: () => void;
+    children: React.ReactNode;
+}) {
+    return (
+        <>
+            <Tooltip title={collapsed ? label : ''} placement="right">
+                <ListItemButton
+                    onClick={onToggle}
+                    sx={{
+                        borderRadius: 1.5,
+                        mb: 0.25,
+                        minHeight: 40,
+                        justifyContent: collapsed ? 'center' : 'flex-start',
+                        px: 1.5,
+                        gap: 1.25,
+                        color: colors.base['grey'],
+                        '&:hover': { bgcolor: colors.base['background-light'] },
+                    }}
+                >
+                    <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
+                        <PeopleAltIcon fontSize="small" />
+                    </ListItemIcon>
+                    {!collapsed && (
+                        <>
+                            <ListItemText
+                                primary={label}
+                                slotProps={{
+                                    primary: {
+                                        style: {
+                                            fontSize: 12,
+                                            fontWeight: 600,
+                                            letterSpacing: '0.04em',
+                                            textTransform: 'uppercase',
+                                            color: colors.base['grey'],
+                                        },
+                                    },
+                                }}
+                            />
+                            {expanded ? (
+                                <ExpandLessIcon fontSize="small" sx={{ color: colors.base['grey'] }} />
+                            ) : (
+                                <ExpandMoreIcon fontSize="small" sx={{ color: colors.base['grey'] }} />
+                            )}
+                        </>
+                    )}
+                </ListItemButton>
+            </Tooltip>
+            <Collapse in={collapsed || expanded} timeout="auto" unmountOnExit>
+                {children}
+            </Collapse>
+        </>
+    );
+}
+
 export function Sidebar() {
     const collapsed = useUIStore((s) => s.sidebarCollapsed);
     const { can } = usePermissions();
     const location = useLocation();
+    const [systemUserExpanded, setSystemUserExpanded] = useState(true);
 
     const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
     const dashboardItems = DASHBOARD_ITEMS.filter((item) => can(item.permission));
     // const dashboardItems = DASHBOARD_ITEMS
+    const systemUserItems = SYSTEM_USER_ITEMS.filter((item) => can(item.permission));
     const settingsItems = SETTINGS_ITEMS.filter((item) => can(item.permission));
     // const settingsItems = SETTINGS_ITEMS
 
@@ -187,6 +269,28 @@ export function Sidebar() {
                         />
                     ))}
                 </List>
+
+                {/* Settings User group */}
+                {systemUserItems.length > 0 && (
+                    <NavGroupCollapsible
+                        label="Settings User"
+                        collapsed={collapsed}
+                        expanded={systemUserExpanded}
+                        onToggle={() => setSystemUserExpanded((prev) => !prev)}
+                    >
+                        <List disablePadding>
+                            {systemUserItems.map((item) => (
+                                <Box key={item.path} sx={{ pl: collapsed ? 0 : 1.5 }}>
+                                    <NavItem
+                                        item={item}
+                                        collapsed={collapsed}
+                                        isActive={location.pathname.startsWith(item.path)}
+                                    />
+                                </Box>
+                            ))}
+                        </List>
+                    </NavGroupCollapsible>
+                )}
 
                 {/* Settings group */}
                 {settingsItems.length > 0 && (
