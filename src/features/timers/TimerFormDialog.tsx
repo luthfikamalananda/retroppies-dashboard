@@ -19,8 +19,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { extractErrorMessage } from '../../api/client';
 
 const RULE_TYPES = [
-    { value: 'payment_timer', label: 'Timer Pembayaran' },
-    { value: 'photo_session_timer', label: 'Timer Sesi Foto' },
+    { value: 'Qris', label: 'Timer QRIS' },
+    { value: 'Timer', label: 'Timer Sesi Foto' },
 ];
 
 const schema = z.object({
@@ -65,8 +65,8 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
     const mutation = useMutation({
         mutationFn: (values: FormValues) =>
             editTarget
-                ? timersApi.update(editTarget.id, values)
-                : timersApi.create({ ...values, tenant_id: user?.tenantId ?? 0 }),
+                ? timersApi.update(editTarget.id, { ...values })
+                : timersApi.create({ ...values, tenantId: user?.tenantId ?? 0 }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['timers'] });
             showSnackbar(editTarget ? 'Rule berhasil diperbarui' : 'Rule berhasil ditambahkan');
@@ -90,6 +90,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
                                     select
                                     label="Tipe Rule"
                                     fullWidth
+                                    disabled={!!editTarget}
                                     error={!!errors.rulesType}
                                     helperText={errors.rulesType?.message}
                                 >

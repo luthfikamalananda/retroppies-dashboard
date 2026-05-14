@@ -17,17 +17,21 @@ export interface ResultTemplate {
 export interface RequestTemplateList {
     page: number,
     tenantId: number,
-    limit: number
+    limit: number,
+    layoutId?: number,
 }
 
 export const templatesApi = {
     list: (request: RequestTemplateList) =>
         apiClient.post<BaseResponse<ResultTemplate>>('/template/get', request).then((r) => r.data),
-    upload: (file: File, onProgress?: (pct: number) => void) => {
+    upload: (tenantId: number, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
         const form = new FormData();
-        form.append('image', file);
+        form.append('display', file);
+        form.append('production', file);
+        form.append('layout_id', layoutId.toString());
+        form.append('tenant_id', tenantId.toString());
         return apiClient
-            .post<BaseResponse<ResultTemplate>>('/templates', form, {
+            .post<BaseResponse<ResultTemplate>>('/template/create', form, {
                 headers: { 'Content-Type': 'multipart/form-data' },
                 onUploadProgress: (e) => {
                     if (onProgress && e.total) {
@@ -38,8 +42,23 @@ export const templatesApi = {
             .then((r) => r.data);
     },
 
-    delete: (id: string) => apiClient.delete(`/templates/${id}`),
+    update: (id: number, tenantId: number, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
+        const form = new FormData();
+        form.append('display', file);
+        form.append('production', file);
+        form.append('layout_id', layoutId.toString());
+        form.append('tenant_id', tenantId.toString());
+        return apiClient
+            .put<BaseResponse<ResultTemplate>>(`/template/update/${id}`, form, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+                onUploadProgress: (e) => {
+                    if (onProgress && e.total) {
+                        onProgress(Math.round((e.loaded * 100) / e.total));
+                    }
+                },
+            })
+            .then((r) => r.data);
+    },
 
-    setStatus: (id: string, status: 'active' | 'inactive') =>
-        apiClient.patch(`/templates/${id}/status`, { status }),
+    delete: (id: number) => apiClient.post<BaseResponse<any>>(`/template/delete`, { id: id }).then((r) => r.data),
 };

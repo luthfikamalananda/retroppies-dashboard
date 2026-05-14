@@ -1,19 +1,19 @@
 import { apiClient, type BaseResponse } from './client';
 
-export interface User {
-    id: number;
-    username: string;
-    email: string;
-    role: string;
-    tenant_id: number;
-    tenant_name: string;
-    CreatedAt: string;
-    UpdatedAt: string;
-}
-
 export interface ResultUsers {
     users: User[];
     total: number;
+}
+
+export interface User {
+    id: number
+    username: string
+    tenant_id: number
+    role_id: number
+    is_superadmin: boolean
+    created_at: string
+    role_name: string
+    tenant_name: string
 }
 
 export interface UserListParams {
@@ -32,14 +32,14 @@ export interface UserPayload {
 
 export const usersApi = {
     list: (params: UserListParams) =>
-        apiClient.post<BaseResponse<ResultUsers>>('/user/get', params).then((r) => r.data),
+        apiClient.post<BaseResponse<ResultUsers>>('/users/list', params).then((r) => r.data),
 
     create: (payload: UserPayload) =>
-        apiClient.post<BaseResponse<User>>('/user', payload).then((r) => r.data),
+        apiClient.post<BaseResponse<User>>('/users', payload).then((r) => r.data),
 
     update: (id: number, payload: Omit<UserPayload, 'password'>) =>
-        apiClient.put<BaseResponse<User>>(`/user/${id}`, payload).then((r) => r.data),
+        apiClient.put<BaseResponse<User>>(`/users/${id}`, payload).then((r) => r.data),
 
     delete: (id: number) =>
-        apiClient.delete<BaseResponse<null>>(`/user/${id}`).then((r) => r.data),
+        apiClient.delete<BaseResponse<null>>(`/users/${id}`).then((r) => r.data),
 };

@@ -48,7 +48,7 @@ export function UserFormDialog({ open, editTarget, onClose }: Props) {
         if (open) {
             reset(
                 editTarget
-                    ? { username: editTarget.username, email: editTarget.email, role: editTarget.role, tenant_id: editTarget.tenant_id, password: '' }
+                    ? { username: editTarget.username, email: '', role: editTarget.role_name, tenant_id: editTarget.tenant_id, password: '' }
                     : { username: '', email: '', password: '', role: '', tenant_id: 0 },
             );
         }

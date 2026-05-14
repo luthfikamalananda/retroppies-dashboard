@@ -1,68 +1,56 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import HomeIcon from '@mui/icons-material/Home';
+import SearchIcon from '@mui/icons-material/Search';
+import SettingIcon from '@mui/icons-material/Settings';
 import {
     Box,
-    Typography,
+    Breadcrumbs,
     Button,
-    Stack,
+    IconButton,
+    InputAdornment,
+    Link,
     Paper,
+    Skeleton,
+    Stack,
     Table,
+    TableBody,
+    TableCell,
+    TableContainer,
     TableHead,
     TableRow,
-    TableCell,
-    TableBody,
-    TableContainer,
-    IconButton,
     TextField,
-    InputAdornment,
-    Select,
-    MenuItem,
-    Breadcrumbs,
-    Link,
-    Skeleton,
-    Pagination,
+    Typography
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import HomeIcon from '@mui/icons-material/Home';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { rolesApi, type Role } from '../api/roles.api';
-import { useUIStore } from '../stores/uiStore';
-import { extractErrorMessage } from '../api/client';
-import { ErrorAlert } from '../components/common/ErrorAlert';
-import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
+import { EmptyState } from '../components/common/EmptyState';
+import { ErrorAlert } from '../components/common/ErrorAlert';
 import { RoleFormDialog } from '../features/roles/RoleFormDialog';
+import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
-
-const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
+dayjs.extend(utc);
 
 export default function RolesPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
+    const navigate = useNavigate();
 
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [page] = useState(1);
+    const [pageSize] = useState(10);
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
 
     const [formOpen, setFormOpen] = useState(false);
-    const [editTarget, setEditTarget] = useState<Role | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<Role | null>(null);
 
-    useEffect(() => {
-        const timer = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
-        return () => clearTimeout(timer);
-    }, [search]);
-
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['roles', page, pageSize, debouncedSearch],
-        queryFn: () => rolesApi.list({ keyword: debouncedSearch, page, limit: pageSize }),
+        queryKey: ['roles'],
+        queryFn: () => rolesApi.list(),
     });
 
     const deleteMutation = useMutation({
@@ -72,15 +60,10 @@ export default function RolesPage() {
             showSnackbar('Role berhasil dihapus');
             setDeleteTarget(null);
         },
-        onError: (err) => showSnackbar(extractErrorMessage(err), 'error'),
     });
 
-    const rows = data?.result?.roles ?? [];
-    const total = data?.result?.total ?? 0;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
-    const fromEntry = total === 0 ? 0 : (page - 1) * pageSize + 1;
-    const toEntry = Math.min(page * pageSize, total);
 
+    const rows = data?.result ?? [];
     return (
         <Box>
             <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
@@ -122,7 +105,7 @@ export default function RolesPage() {
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={() => { setEditTarget(null); setFormOpen(true); }}
+                        onClick={() => { setFormOpen(true); }}
                         sx={{
                             bgcolor: colors.brand[500],
                             '&:hover': { bgcolor: colors.brand[600] },
@@ -145,8 +128,7 @@ export default function RolesPage() {
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Role Name</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Description</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Diperbarui</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tanggal Dibuat</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
@@ -160,19 +142,18 @@ export default function RolesPage() {
                                     </TableRow>
                                 ))
                                 : rows.map((role, idx) => (
-                                    <TableRow key={role.id} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
+                                    <TableRow key={role.ID} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                                             {(page - 1) * pageSize + idx + 1}
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{role.name}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{role.description}</TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{role.Name}</TableCell>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                            {dayjs.utc(role.UpdatedAt).format('DD MMM YYYY')}
+                                            {dayjs.utc(role.CreatedAt).format('DD MMM YYYY')}
                                         </TableCell>
                                         <TableCell>
                                             <Stack direction="row" sx={{ gap: 0.5 }}>
-                                                <IconButton size="small" onClick={() => { setEditTarget(role); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
-                                                    <EditIcon sx={{ fontSize: 18 }} />
+                                                <IconButton size="small" onClick={() => navigate(`/app/roles/${role.ID}/permissions`)} sx={{ color: colors.brand[500] }}>
+                                                    <SettingIcon sx={{ fontSize: 18 }} />
                                                 </IconButton>
                                                 <IconButton size="small" onClick={() => setDeleteTarget(role)} sx={{ color: colors.brand[500] }}>
                                                     <DeleteIcon sx={{ fontSize: 18 }} />
@@ -186,48 +167,18 @@ export default function RolesPage() {
                 </TableContainer>
 
                 {!isLoading && rows.length === 0 && <EmptyState message="Belum ada data role." />}
-
-                <Stack direction="row" sx={{ alignItems: 'center', px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}>
-                    <Select
-                        size="small"
-                        value={pageSize}
-                        onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                        sx={{ fontSize: 13, minWidth: 64, height: 32 }}
-                    >
-                        {PAGE_SIZE_OPTIONS.map((s) => (
-                            <MenuItem key={s} value={s} sx={{ fontSize: 13 }}>{s}</MenuItem>
-                        ))}
-                    </Select>
-                    <Typography sx={{ flex: 1, textAlign: 'center', fontSize: 13, color: colors.base['grey'] }}>
-                        {total === 0 ? 'No entries' : `Showing ${fromEntry} to ${toEntry} of ${total} entries`}
-                    </Typography>
-                    <Pagination
-                        count={totalPages}
-                        page={page}
-                        onChange={(_, p) => setPage(p)}
-                        size="small"
-                        shape="rounded"
-                        sx={{
-                            '& .MuiPaginationItem-root': { fontSize: 13 },
-                            '& .MuiPaginationItem-root.Mui-selected': {
-                                bgcolor: colors.brand[500],
-                                color: colors.base['white'],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                            },
-                        }}
-                    />
-                </Stack>
             </Paper>
 
-            <RoleFormDialog open={formOpen} editTarget={editTarget} onClose={() => setFormOpen(false)} />
+            <RoleFormDialog open={formOpen} onClose={() => setFormOpen(false)} />
 
             <ConfirmDialog
-                open={!!deleteTarget}
+                open={Boolean(deleteTarget)}
                 title="Hapus Role"
-                description={`Yakin ingin menghapus role "${deleteTarget?.name}"?`}
-                onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
+                description="Anda yakin ingin menghapus role ini?"
+                confirmLabel="Hapus"
+                cancelLabel="Batal"
                 onCancel={() => setDeleteTarget(null)}
-                loading={deleteMutation.isPending}
+                onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.ID)}
             />
         </Box>
     );

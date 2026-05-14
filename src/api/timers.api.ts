@@ -26,7 +26,12 @@ export interface RuleListParams {
 export interface RulePayload {
   rulesType: string;
   value: number;
-  tenant_id: number;
+  tenantId: number;
+}
+
+export interface RulePayloadUpdate {
+  rulesType: string;
+  value: number;
 }
 
 export const timersApi = {
@@ -34,11 +39,11 @@ export const timersApi = {
     apiClient.post<BaseResponse<ResultRules>>('/rules/get', { ...params }).then((r) => r.data),
 
   create: (payload: RulePayload) =>
-    apiClient.post<BaseResponse<Rule>>('/rules', payload).then((r) => r.data),
+    apiClient.post<BaseResponse<Rule>>('/rules/create', { ...payload }).then((r) => r.data),
 
-  update: (id: number, payload: Omit<RulePayload, 'tenant_id'>) =>
-    apiClient.put<BaseResponse<Rule>>(`/rules/${id}`, payload).then((r) => r.data),
+  update: (id: number, payload: RulePayloadUpdate) =>
+    apiClient.post<BaseResponse<Rule>>(`/rules/update`, { id, ...payload }).then((r) => r.data),
 
   delete: (id: number) =>
-    apiClient.delete<BaseResponse<null>>(`/rules/${id}`).then((r) => r.data),
+    apiClient.post<BaseResponse<any>>(`/rules/delete`, { id: id }).then((r) => r.data),
 };

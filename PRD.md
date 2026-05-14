@@ -1,6 +1,6 @@
 # PRD — Photobooth Franchise Dashboard (Multi-tenant)
 
-**Last updated:** 2026-05-09  
+**Last updated:** 2026-05-15  
 **Owner:** Frontend (Anda)  
 **Backend:** Golang REST API (existing)  
 **Target users:** Franchise owner/admin, Cafe/outlet (monitoring + limited management)  
@@ -423,11 +423,16 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] PNG validation (type/size, max 10MB)
 - [x] Delete/disable template
 - [x] Progress + error handling
-- [ ] **[IN DISCUSSION]** Flow pemilihan layout sebelum edit template:
-  - User memilih layout terlebih dahulu (Layout A / B / C)
-  - Setelah layout dipilih, user masuk ke halaman edit template untuk layout tersebut
-  - 1 layout dapat memiliki maksimal 3 template
-  - Belum dikerjakan — akan dilanjutkan setelah halaman lain selesai
+- [x] Edit template (ganti foto) — tombol Edit per kartu, upload file baru via `templatesApi.update`
+- [x] Delete template — tombol Hapus per kartu, konfirmasi via `ConfirmDialog`
+- [x] Upload preview as Dialog — preview gambar besar, filename/size, LinearProgress, aksi "Pilih File Lain" / "Batal" / "Upload"
+- [x] Flow pemilihan layout sebelum masuk ke template:
+  - [x] `src/api/layouts.api.ts` — `layoutsApi.list()` POST `/layout/get`
+  - [x] `LayoutsPage` (`/app/layouts`) — grid kartu layout; "Choose Layout" navigates ke `/app/layouts/:layoutId/templates`
+  - [x] `TemplatesPage` membaca `layoutId` dari `useParams`; breadcrumb Home → Template & Layout → Layout → Your Layout
+  - [x] Route: `/app/layouts` + `/app/layouts/:layoutId/templates` (route `/app/templates` dihapus)
+  - [x] Sidebar path diupdate ke `/app/layouts`
+  - [x] `templates.api.ts` signatures: `upload(tenantId, layoutId, file, onProgress?)`, `update(id, tenantId, layoutId, file, onProgress?)`, `delete(id: number)`
 
 ## 14.6 Timers (Edit timer)
 - [x] Timer settings page layout
@@ -476,7 +481,8 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] Sidebar — header-logo.png, Dashboard/Settings group labels, active item brand[100] + brand[500] text, nav item icons
 - [x] Topbar — header-button.svg toggle, user avatar + name + dropdown arrow
 - [ ] Products Page
-- [x] Templates Page — layout card grid selesai, **flow layout→template belum (lihat 14.5)**
+- [x] Templates Page — layout card grid + edit/delete/upload dialog + flow layout→template selesai (lihat 14.5)
+- [x] Layouts Page — grid kartu pemilihan layout sebelum masuk ke halaman template
 - [x] Timers Page — rewrite menjadi tabel CRUD rules (struktur identik VouchersPage)
 - [x] Vouchers Page
 - [ ] Transactions Page
@@ -498,6 +504,7 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] `tests/templates.spec.ts` — render, breadcrumb, upload validation (PNG only, preview, cancel), sidebar nav
 
 - [x] Sidebar — Settings User group baru (Tenant, User, Role, Permission) dengan ikon masing-masing
+- [x] Sidebar — Settings User group collapsible (`NavGroupCollapsible` dengan chevron expand/collapse, default expanded)
 > **Cara menambah test baru:**
 > - Buat file `tests/<feature>.spec.ts` atau tambahkan `test.describe` ke `tests/features.spec.ts`
 > - Import `test, expect` dari `./helpers/auth`
@@ -534,6 +541,19 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] PermissionFormDialog — fields: name, description (Zod validation)
 - [x] ConfirmDialog hapus permission
 - [x] Breadcrumb: Home → Settings User → Permission
+
+### Role Permission Assignment (Pengaturan Task Role)
+- [x] API: `permissionsApi.getByRole(roleId)` — POST `/role-permissions/get` → IDs permission yg sudah di-assign ke role
+- [x] API: `permissionsApi.assign(payload)` — POST `/role-permissions/replace` → simpan assignment
+- [x] `ResultRolePermission.permissions` ditype sebagai `ResultPermissions[]` (bukan `any[]`); inisialisasi checkbox via `p.id`
+- [x] RolePermissionsPage (`/app/roles/:id/permissions`) — halaman fullpage assign permission ke role
+  - [x] Breadcrumb: Home → Settings User → Role → Pengaturan Task Role
+  - [x] Header: tombol back + judul "Pengaturan Task Role" + tombol "Save & Close"
+  - [x] Info role name di bawah header
+  - [x] Tabel: # | Modul | Task (checkbox grid per modul, grouped by prefix ":" pada nama permission)
+  - [x] Inisialisasi checkbox dari data `getByRole`; simpan via `assign` → navigate back
+- [x] RolesPage — Settings icon navigate ke `/app/roles/:id/permissions`
+- [x] Route baru: `roles/:id/permissions`
 
 ---
 

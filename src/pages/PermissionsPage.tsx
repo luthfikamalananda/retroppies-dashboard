@@ -1,85 +1,46 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import HomeIcon from '@mui/icons-material/Home';
 import {
     Box,
-    Typography,
-    Button,
-    Stack,
+    Breadcrumbs,
+    InputAdornment,
+    Link,
     Paper,
+    Skeleton,
+    Stack,
     Table,
+    TableBody,
+    TableCell,
+    TableContainer,
     TableHead,
     TableRow,
-    TableCell,
-    TableBody,
-    TableContainer,
-    IconButton,
     TextField,
-    InputAdornment,
-    Select,
-    MenuItem,
-    Breadcrumbs,
-    Link,
-    Skeleton,
-    Pagination,
+    Typography
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
-import HomeIcon from '@mui/icons-material/Home';
+import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
-import { permissionsApi, type Permission } from '../api/permissions.api';
-import { useUIStore } from '../stores/uiStore';
-import { extractErrorMessage } from '../api/client';
-import { ErrorAlert } from '../components/common/ErrorAlert';
+import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
+import { permissionsApi } from '../api/permissions.api';
 import { EmptyState } from '../components/common/EmptyState';
-import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { PermissionFormDialog } from '../features/permissions/PermissionFormDialog';
+import { ErrorAlert } from '../components/common/ErrorAlert';
 import { colors } from '../theme/colors';
-
-const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
+dayjs.extend(utc);
 
 export default function PermissionsPage() {
-    const queryClient = useQueryClient();
-    const showSnackbar = useUIStore((s) => s.showSnackbar);
 
-    const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [page] = useState(1);
+    const [pageSize] = useState(10);
     const [search, setSearch] = useState('');
-    const [debouncedSearch, setDebouncedSearch] = useState('');
-
-    const [formOpen, setFormOpen] = useState(false);
-    const [editTarget, setEditTarget] = useState<Permission | null>(null);
-    const [deleteTarget, setDeleteTarget] = useState<Permission | null>(null);
-
-    useEffect(() => {
-        const timer = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
-        return () => clearTimeout(timer);
-    }, [search]);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['permissions', page, pageSize, debouncedSearch],
-        queryFn: () => permissionsApi.list({ keyword: debouncedSearch, page, limit: pageSize }),
+        queryKey: ['permissions'],
+        queryFn: () => permissionsApi.list(),
     });
 
-    const deleteMutation = useMutation({
-        mutationFn: (id: number) => permissionsApi.delete(id),
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['permissions'] });
-            showSnackbar('Permission berhasil dihapus');
-            setDeleteTarget(null);
-        },
-        onError: (err) => showSnackbar(extractErrorMessage(err), 'error'),
-    });
 
-    const rows = data?.result?.permissions ?? [];
-    const total = data?.result?.total ?? 0;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
-    const fromEntry = total === 0 ? 0 : (page - 1) * pageSize + 1;
-    const toEntry = Math.min(page * pageSize, total);
+    const rows = data?.result ?? [];
 
     return (
         <Box>
@@ -119,7 +80,7 @@ export default function PermissionsPage() {
                         }}
                         sx={{ width: 200, bgcolor: colors.base['white'] }}
                     />
-                    <Button
+                    {/* <Button
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={() => { setEditTarget(null); setFormOpen(true); }}
@@ -132,7 +93,7 @@ export default function PermissionsPage() {
                         }}
                     >
                         Add Permission
-                    </Button>
+                    </Button> */}
                 </Stack>
             </Stack>
 
@@ -143,11 +104,9 @@ export default function PermissionsPage() {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Permission</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Description</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Diperbarui</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
+
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -161,24 +120,10 @@ export default function PermissionsPage() {
                                 ))
                                 : rows.map((perm, idx) => (
                                     <TableRow key={perm.id} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], width: 80 }}>
                                             {(page - 1) * pageSize + idx + 1}
                                         </TableCell>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'], fontFamily: 'monospace' }}>{perm.name}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{perm.description}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
-                                            {dayjs.utc(perm.UpdatedAt).format('DD MMM YYYY')}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Stack direction="row" sx={{ gap: 0.5 }}>
-                                                <IconButton size="small" onClick={() => { setEditTarget(perm); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
-                                                    <EditIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={() => setDeleteTarget(perm)} sx={{ color: colors.brand[500] }}>
-                                                    <DeleteIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
-                                            </Stack>
-                                        </TableCell>
                                     </TableRow>
                                 ))}
                         </TableBody>
@@ -187,7 +132,7 @@ export default function PermissionsPage() {
 
                 {!isLoading && rows.length === 0 && <EmptyState message="Belum ada data permission." />}
 
-                <Stack direction="row" sx={{ alignItems: 'center', px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}>
+                {/* <Stack direction="row" sx={{ alignItems: 'center', px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}>
                     <Select
                         size="small"
                         value={pageSize}
@@ -216,19 +161,8 @@ export default function PermissionsPage() {
                             },
                         }}
                     />
-                </Stack>
+                </Stack> */}
             </Paper>
-
-            <PermissionFormDialog open={formOpen} editTarget={editTarget} onClose={() => setFormOpen(false)} />
-
-            <ConfirmDialog
-                open={!!deleteTarget}
-                title="Hapus Permission"
-                description={`Yakin ingin menghapus permission "${deleteTarget?.name}"?`}
-                onConfirm={() => deleteTarget && deleteMutation.mutate(deleteTarget.id)}
-                onCancel={() => setDeleteTarget(null)}
-                loading={deleteMutation.isPending}
-            />
         </Box>
     );
 }

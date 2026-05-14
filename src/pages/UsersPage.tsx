@@ -4,7 +4,6 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Box,
     Typography,
-    Button,
     Stack,
     Paper,
     Table,
@@ -13,7 +12,6 @@ import {
     TableCell,
     TableBody,
     TableContainer,
-    IconButton,
     TextField,
     InputAdornment,
     Select,
@@ -24,9 +22,6 @@ import {
     Pagination,
     Chip,
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import SearchIcon from '@mui/icons-material/Search';
 import HomeIcon from '@mui/icons-material/Home';
 import { usersApi, type User } from '../api/users.api';
@@ -50,7 +45,7 @@ export default function UsersPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
     const [formOpen, setFormOpen] = useState(false);
-    const [editTarget, setEditTarget] = useState<User | null>(null);
+    const [editTarget] = useState<User | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
 
     useEffect(() => {
@@ -117,7 +112,7 @@ export default function UsersPage() {
                         }}
                         sx={{ width: 200, bgcolor: colors.base['white'] }}
                     />
-                    <Button
+                    {/* <Button
                         variant="contained"
                         startIcon={<AddIcon />}
                         onClick={() => { setEditTarget(null); setFormOpen(true); }}
@@ -130,7 +125,7 @@ export default function UsersPage() {
                         }}
                     >
                         Add User
-                    </Button>
+                    </Button> */}
                 </Stack>
             </Stack>
 
@@ -141,12 +136,11 @@ export default function UsersPage() {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Username</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Email</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Role</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Role</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Tenant</TableCell>
+                                {/* <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell> */}
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -160,26 +154,30 @@ export default function UsersPage() {
                                 ))
                                 : rows.map((user, idx) => (
                                     <TableRow key={user.id} hover sx={{ '&:hover': { bgcolor: colors.base['background-light'] } }}>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], width: 80 }}>
                                             {(page - 1) * pageSize + idx + 1}
                                         </TableCell>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{user.username}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{user.email}</TableCell>
                                         <TableCell>
-                                            <Chip
-                                                label={user.role}
-                                                size="small"
-                                                sx={{
-                                                    bgcolor: user.role === 'admin' ? colors.brand[100] : colors.base['section'],
-                                                    color: user.role === 'admin' ? colors.brand[500] : colors.base['black'],
-                                                    fontWeight: 600,
-                                                    fontSize: 12,
-                                                    borderRadius: 1,
-                                                }}
-                                            />
+                                            <Stack
+                                                sx={{ width: "100%", justifyContent: "center", alignItems: "center" }}
+                                            >
+                                                <Chip
+                                                    label={user.role_name}
+                                                    size="small"
+                                                    sx={{
+                                                        width: "fit-content",
+                                                        bgcolor: user.tenant_id === -99 ? colors.brand[100] : colors.base['section'],
+                                                        color: user.tenant_id === -99 ? colors.brand[500] : colors.base['black'],
+                                                        fontWeight: 600,
+                                                        fontSize: 12,
+                                                        borderRadius: 1
+                                                    }}
+                                                />
+                                            </Stack>
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{user.tenant_name || user.tenant_id}</TableCell>
-                                        <TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>{user.tenant_name ?? "-"}</TableCell>
+                                        {/* <TableCell>
                                             <Stack direction="row" sx={{ gap: 0.5 }}>
                                                 <IconButton size="small" onClick={() => { setEditTarget(user); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
                                                     <EditIcon sx={{ fontSize: 18 }} />
@@ -188,7 +186,7 @@ export default function UsersPage() {
                                                     <DeleteIcon sx={{ fontSize: 18 }} />
                                                 </IconButton>
                                             </Stack>
-                                        </TableCell>
+                                        </TableCell> */}
                                     </TableRow>
                                 ))}
                         </TableBody>

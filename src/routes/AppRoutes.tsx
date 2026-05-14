@@ -9,6 +9,7 @@ const LoginPage = lazy(() => import('../pages/LoginPage'));
 const DashboardPage = lazy(() => import('../pages/DashboardPage'));
 const ProductsPage = lazy(() => import('../pages/ProductsPage'));
 const TemplatesPage = lazy(() => import('../pages/TemplatesPage'));
+const LayoutsPage = lazy(() => import('../pages/LayoutsPage'));
 const TimersPage = lazy(() => import('../pages/TimersPage'));
 const VouchersPage = lazy(() => import('../pages/VouchersPage'));
 const TransactionsPage = lazy(() => import('../pages/TransactionsPage'));
@@ -16,6 +17,7 @@ const AccountsPage = lazy(() => import('../pages/AccountsPage'));
 const TenantsPage = lazy(() => import('../pages/TenantsPage'));
 const UsersPage = lazy(() => import('../pages/UsersPage'));
 const RolesPage = lazy(() => import('../pages/RolesPage'));
+const RolePermissionsPage = lazy(() => import('../pages/RolePermissionsPage'));
 const PermissionsPage = lazy(() => import('../pages/PermissionsPage'));
 
 function PageLoader() {
@@ -43,7 +45,8 @@ export function AppRoutes() {
                                     <Routes>
                                         <Route path="dashboard" element={<DashboardPage />} />
                                         <Route path="products" element={<ProductsPage />} />
-                                        <Route path="templates" element={<TemplatesPage />} />
+                                        <Route path="layouts" element={<LayoutsPage />} />
+                                        <Route path="layouts/:layoutId/templates" element={<TemplatesPage />} />
                                         <Route path="timers" element={<TimersPage />} />
                                         <Route path="vouchers" element={<VouchersPage />} />
                                         <Route path="transactions" element={<TransactionsPage />} />
@@ -51,6 +54,7 @@ export function AppRoutes() {
                                         <Route path="tenants" element={<TenantsPage />} />
                                         <Route path="users" element={<UsersPage />} />
                                         <Route path="roles" element={<RolesPage />} />
+                                        <Route path="roles/:id/permissions" element={<RolePermissionsPage />} />
                                         <Route path="permissions" element={<PermissionsPage />} />
                                         <Route path="*" element={<Navigate to="dashboard" replace />} />
                                     </Routes>
