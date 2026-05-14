@@ -55,7 +55,10 @@ export default function AccountsPage() {
 
     return (
         <Box>
-            <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+            <Stack
+                direction={{ xs: 'column', sm: 'row' }}
+                sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: 2 }}
+            >
                 <Typography variant="h5" sx={{ fontWeight: 700 }}>
                     Manajemen Akun
                 </Typography>
@@ -67,7 +70,7 @@ export default function AccountsPage() {
                     size="small"
                     value={search}
                     onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-                    sx={{ width: 300 }}
+                    sx={{ width: { xs: '100%', sm: 300 } }}
                 />
             </Stack>
 

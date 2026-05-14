@@ -1,6 +1,6 @@
 # PRD — Photobooth Franchise Dashboard (Multi-tenant)
 
-**Last updated:** 2026-05-15  
+**Last updated:** 2026-05-16  
 **Owner:** Frontend (Anda)  
 **Backend:** Golang REST API (existing)  
 **Target users:** Franchise owner/admin, Cafe/outlet (monitoring + limited management)  
@@ -554,6 +554,20 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
   - [x] Inisialisasi checkbox dari data `getByRole`; simpan via `assign` → navigate back
 - [x] RolesPage — Settings icon navigate ke `/app/roles/:id/permissions`
 - [x] Route baru: `roles/:id/permissions`
+
+## 14.14 Responsive Design (Mobile / Tablet)
+> Semua halaman accessible di smartphone dan tablet. Breakpoints: xs (0px), sm (600px), md (900px).
+
+- [x] `uiStore` — tambah `sidebarMobileOpen`, `openMobileSidebar`, `closeMobileSidebar`
+- [x] `Sidebar` — `variant="temporary"` (overlay) pada mobile, `permanent` pada desktop; menutup otomatis saat nav diklik
+- [x] `Topbar` — full width pada mobile; hamburger membuka overlay sidebar; username hidden pada xs
+- [x] `AppShell` — responsive content padding (`xs: 2, md: 3`)
+- [x] `DashboardPage` — summary metrics stack vertikal pada mobile, divider horizontal hidden
+- [x] `ProductsPage` / `AccountsPage` — header row responsive, search bar full-width pada mobile
+- [x] `TransactionsPage` — header responsive, filter wrap, detail drawer full-width pada mobile
+- [x] `VouchersPage` / `TimersPage` / `TenantsPage` / `RolesPage` / `UsersPage` / `PermissionsPage` — search bar full-width pada mobile
+- [x] `RolePermissionsPage` — header responsive, tombol "Save & Close" full-width pada mobile
+- [x] `LayoutsPage` / `TemplatesPage` / `LoginPage` — sudah responsive (Grid, hidden panel)
 
 ---
 

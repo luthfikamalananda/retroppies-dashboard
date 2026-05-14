@@ -65,14 +65,17 @@ export default function TransactionsPage() {
 
   return (
     <Box>
-      <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: 2 }}
+      >
         <Typography variant="h5" sx={{ fontWeight: 700 }}>
           Laporan Transaksi
         </Typography>
         <DateRangeFilter value={dateRange} onChange={(r) => { setDateRange(r); setPage(0); }} />
       </Stack>
 
-      <Stack direction="row" sx={{ gap: 2, mb: 2 }}>
+      <Stack direction="row" sx={{ gap: 2, mb: 2, flexWrap: 'wrap' }}>
         <TextField
           select
           label="Status"
@@ -173,7 +176,7 @@ export default function TransactionsPage() {
         anchor="right"
         open={!!selectedTx}
         onClose={() => setSelectedTx(null)}
-        slotProps={{ paper: { sx: { width: 360, p: 3 } } }}
+        slotProps={{ paper: { sx: { width: { xs: '100vw', sm: 360 }, p: 3 } } }}
       >
         <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography variant="h6" sx={{ fontWeight: 700 }}>

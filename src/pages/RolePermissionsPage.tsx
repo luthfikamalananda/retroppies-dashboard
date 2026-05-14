@@ -159,8 +159,8 @@ export default function RolePermissionsPage() {
             >
                 {/* Header */}
                 <Stack
-                    direction="row"
-                    sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2.5 }}
+                    direction={{ xs: 'column', sm: 'row' }}
+                    sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 2.5, gap: 2 }}
                 >
                     <Button
                         startIcon={<ArrowBackIcon sx={{ fontSize: 20 }} />}
@@ -187,6 +187,7 @@ export default function RolePermissionsPage() {
                             fontWeight: 600,
                             px: 3,
                             minWidth: 120,
+                            width: { xs: '100%', sm: 'auto' },
                         }}
                     >
                         {assignMutation.isPending ? (

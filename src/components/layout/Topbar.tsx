@@ -10,6 +10,8 @@ import {
   MenuItem,
   Toolbar,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from '@mui/material';
 import { useState } from 'react';
 import headerButton from '../../assets/header-button.svg';
@@ -19,8 +21,11 @@ import { colors } from '../../theme/colors';
 import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
 
 export function Topbar() {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
+  const openMobileSidebar = useUIStore((s) => s.openMobileSidebar);
   const { user, clearUser } = useAuthStore();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -33,8 +38,8 @@ export function Topbar() {
       position="fixed"
       elevation={0}
       sx={{
-        left: sidebarWidth,
-        width: `calc(100% - ${sidebarWidth}px)`,
+        left: isMobile ? 0 : sidebarWidth,
+        width: isMobile ? '100%' : `calc(100% - ${sidebarWidth}px)`,
         transition: 'left 0.2s ease, width 0.2s ease',
         bgcolor: colors.base['white'],
         borderBottom: '1px solid',
@@ -45,7 +50,7 @@ export function Topbar() {
       <Toolbar sx={{ gap: 1, minHeight: 64 }}>
         {/* Sidebar toggle — using header-button.svg asset */}
         <IconButton
-          onClick={toggleSidebar}
+          onClick={isMobile ? openMobileSidebar : toggleSidebar}
           size="small"
           sx={{ color: colors.base['black'], p: 0.75 }}
         >
@@ -85,7 +90,7 @@ export function Topbar() {
           >
             {user?.username?.[0]?.toUpperCase() ?? 'U'}
           </Avatar>
-          <Typography variant="body2" sx={{ fontWeight: 500, color: colors.base['black'] }}>
+          <Typography variant="body2" sx={{ fontWeight: 500, color: colors.base['black'], display: { xs: 'none', sm: 'block' } }}>
             {user?.username ?? 'Admin'}
           </Typography>
           <KeyboardArrowDownIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />

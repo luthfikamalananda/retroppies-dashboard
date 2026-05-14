@@ -10,6 +10,8 @@ import {
     ListItemText,
     Typography,
     Tooltip,
+    useMediaQuery,
+    useTheme,
 } from '@mui/material';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import InventoryIcon from '@mui/icons-material/Inventory2';
@@ -79,10 +81,12 @@ function NavItem({
     item,
     collapsed,
     isActive,
+    onClick,
 }: {
     item: { label: string; path: string; icon: React.ReactNode };
     collapsed: boolean;
     isActive: boolean;
+    onClick?: () => void;
 }) {
     return (
         <Tooltip title={collapsed ? item.label : ''} placement="right">
@@ -90,6 +94,7 @@ function NavItem({
                 component={NavLink}
                 to={item.path}
                 selected={isActive}
+                onClick={onClick}
                 sx={{
                     borderRadius: 1.5,
                     mb: 0.25,
@@ -197,12 +202,18 @@ function NavGroupCollapsible({
 }
 
 export function Sidebar() {
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const collapsed = useUIStore((s) => s.sidebarCollapsed);
+    const mobileOpen = useUIStore((s) => s.sidebarMobileOpen);
+    const closeMobileSidebar = useUIStore((s) => s.closeMobileSidebar);
     const { can } = usePermissions();
     const location = useLocation();
     const [systemUserExpanded, setSystemUserExpanded] = useState(true);
 
-    const width = collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+    const width = isMobile ? SIDEBAR_WIDTH : (collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH);
+    const isCollapsed = isMobile ? false : collapsed;
+    const handleNavClick = isMobile ? closeMobileSidebar : undefined;
 
     const dashboardItems = DASHBOARD_ITEMS.filter((item) => can(item.permission));
     // const dashboardItems = DASHBOARD_ITEMS
@@ -212,9 +223,12 @@ export function Sidebar() {
 
     return (
         <Drawer
-            variant="permanent"
+            variant={isMobile ? 'temporary' : 'permanent'}
+            open={isMobile ? mobileOpen : true}
+            onClose={isMobile ? closeMobileSidebar : undefined}
+            ModalProps={{ keepMounted: true }}
             sx={{
-                width,
+                width: isMobile ? 0 : width,
                 flexShrink: 0,
                 '& .MuiDrawer-paper': {
                     width,
@@ -233,13 +247,13 @@ export function Sidebar() {
                     height: 64,
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: collapsed ? 'center' : 'flex-start',
-                    px: collapsed ? 1 : 2.5,
+                    justifyContent: isCollapsed ? 'center' : 'flex-start',
+                    px: isCollapsed ? 1 : 2.5,
                     borderBottom: '1px solid',
                     borderColor: colors.border['default'],
                 }}
             >
-                {collapsed ? (
+                {isCollapsed ? (
                     <Box
                         component="img"
                         src={headerLogo}
@@ -258,14 +272,15 @@ export function Sidebar() {
 
             {/* Dashboard group */}
             <Box sx={{ px: 1.5, flexGrow: 1 }}>
-                <NavGroup label="Dashboard" collapsed={collapsed} />
+                <NavGroup label="Dashboard" collapsed={isCollapsed} />
                 <List disablePadding>
                     {dashboardItems.map((item) => (
                         <NavItem
                             key={item.path}
                             item={item}
-                            collapsed={collapsed}
+                            collapsed={isCollapsed}
                             isActive={location.pathname.startsWith(item.path)}
+                            onClick={handleNavClick}
                         />
                     ))}
                 </List>
@@ -274,17 +289,18 @@ export function Sidebar() {
                 {systemUserItems.length > 0 && (
                     <NavGroupCollapsible
                         label="Settings User"
-                        collapsed={collapsed}
+                        collapsed={isCollapsed}
                         expanded={systemUserExpanded}
                         onToggle={() => setSystemUserExpanded((prev) => !prev)}
                     >
                         <List disablePadding>
                             {systemUserItems.map((item) => (
-                                <Box key={item.path} sx={{ pl: collapsed ? 0 : 1.5 }}>
+                                <Box key={item.path} sx={{ pl: isCollapsed ? 0 : 1.5 }}>
                                     <NavItem
                                         item={item}
-                                        collapsed={collapsed}
+                                        collapsed={isCollapsed}
                                         isActive={location.pathname.startsWith(item.path)}
+                                        onClick={handleNavClick}
                                     />
                                 </Box>
                             ))}
@@ -295,14 +311,15 @@ export function Sidebar() {
                 {/* Settings group */}
                 {settingsItems.length > 0 && (
                     <>
-                        <NavGroup label="Settings" collapsed={collapsed} />
+                        <NavGroup label="Settings" collapsed={isCollapsed} />
                         <List disablePadding>
                             {settingsItems.map((item) => (
                                 <NavItem
                                     key={item.path}
                                     item={item}
-                                    collapsed={collapsed}
+                                    collapsed={isCollapsed}
                                     isActive={location.pathname.startsWith(item.path)}
+                                    onClick={handleNavClick}
                                 />
                             ))}
                         </List>

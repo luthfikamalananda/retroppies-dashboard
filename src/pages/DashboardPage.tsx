@@ -268,20 +268,20 @@ export default function DashboardPage() {
                     >
                         Today's Overview
                     </Typography>
-                    <Stack direction="row" sx={{ gap: 0 }}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 0 }}>
                         <MetricItem
                             label="Total Transaction"
                             value={summaryQuery.data?.total_transactions}
                             loading={summaryQuery.isLoading}
                         />
-                        <Divider orientation="vertical" flexItem sx={{ mx: 3 }} />
+                        <Divider orientation="vertical" flexItem sx={{ mx: 3, display: { xs: 'none', sm: 'block' } }} />
                         <MetricItem
                             label="Total Transaction Success"
                             value={summaryQuery.data?.success_transactions}
                             loading={summaryQuery.isLoading}
                             color={colors.brand[500]}
                         />
-                        <Divider orientation="vertical" flexItem sx={{ mx: 3 }} />
+                        <Divider orientation="vertical" flexItem sx={{ mx: 3, display: { xs: 'none', sm: 'block' } }} />
                         <MetricItem
                             label="Total Transaction Failed &amp; Expired"
                             value={summaryQuery.data?.failed_transactions}

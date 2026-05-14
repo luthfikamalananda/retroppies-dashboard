@@ -28,7 +28,7 @@ export function AppShell({ children }: AppShellProps) {
                 <Topbar />
                 {/* Toolbar spacer to push content below the fixed AppBar */}
                 <Toolbar />
-                <Box sx={{ flex: 1, p: 3 }}>{children}</Box>
+                <Box sx={{ flex: 1, p: { xs: 2, md: 3 } }}>{children}</Box>
             </Box>
             <GlobalSnackbar />
         </Box>

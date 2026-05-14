@@ -146,7 +146,7 @@ export default function TimersPage() {
                                 ),
                             },
                         }}
-                        sx={{ width: 200, bgcolor: colors.base['white'] }}
+                        sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
                     />
                     <Button
                         variant="contained"
