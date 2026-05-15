@@ -1,5 +1,16 @@
-import { useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import BadgeIcon from '@mui/icons-material/Badge';
+import BusinessIcon from '@mui/icons-material/Business';
+import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import InventoryIcon from '@mui/icons-material/Inventory2';
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import PersonIcon from '@mui/icons-material/Person';
+import PhotoIcon from '@mui/icons-material/Photo';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import TimerIcon from '@mui/icons-material/Timer';
 import {
     Box,
     Collapse,
@@ -8,29 +19,17 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
-    Typography,
     Tooltip,
+    Typography,
     useMediaQuery,
     useTheme,
 } from '@mui/material';
-import DashboardIcon from '@mui/icons-material/Dashboard';
-import InventoryIcon from '@mui/icons-material/Inventory2';
-import PhotoIcon from '@mui/icons-material/Photo';
-import TimerIcon from '@mui/icons-material/Timer';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import BusinessIcon from '@mui/icons-material/Business';
-import PersonIcon from '@mui/icons-material/Person';
-import BadgeIcon from '@mui/icons-material/Badge';
-import SecurityIcon from '@mui/icons-material/Security';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import { useUIStore } from '../../stores/uiStore';
-import { usePermissions } from '../../hooks/usePermissions';
-import { colors } from '../../theme/colors';
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import headerLogo from '../../assets/header-logo.png';
+import { usePermissions } from '../../hooks/usePermissions';
+import { useUIStore } from '../../stores/uiStore';
+import { colors } from '../../theme/colors';
 
 export const SIDEBAR_WIDTH = 220;
 export const SIDEBAR_COLLAPSED_WIDTH = 64;

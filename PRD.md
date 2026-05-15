@@ -610,20 +610,16 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] `TenantsPage` — gate tombol Delete per row dengan `tenants:delete`
 
 ### Settings User — User
-- [ ] `UsersPage` — gate tombol "Tambah User" dengan `users:create`
-- [ ] `UsersPage` — gate tombol Edit per row dengan `users:update`
-- [ ] `UsersPage` — gate tombol Delete per row dengan `users:delete`
+- TIDAK ADA CREATE UPDATE DAN DELETE UNTUK `UsersPage.tsx`
 
 ### Settings User — Role
-- [ ] `RolesPage` — gate tombol "Tambah Role" dengan `roles:create`
-- [ ] `RolesPage` — gate tombol Edit per row dengan `roles:update`
-- [ ] `RolesPage` — gate tombol Delete per row dengan `roles:delete`
-- [ ] `RolesPage` — gate ikon Settings (navigate ke RolePermissionsPage) dengan `roles:update`
+- [x] `RolesPage` — gate tombol "Tambah Role" dengan `roles:create`
+- [x] `RolesPage` — gate tombol Edit per row dengan `roles:update`
+- [x] `RolesPage` — gate tombol Delete per row dengan `roles:delete`
+- [x] `RolesPage` — gate ikon Settings (navigate ke RolePermissionsPage) dengan `roles:update`
 
 ### Settings User — Permission
-- [ ] `PermissionsPage` — gate tombol "Tambah Permission" dengan `permissions:create`
-- [ ] `PermissionsPage` — gate tombol Edit per row dengan `permissions:update`
-- [ ] `PermissionsPage` — gate tombol Delete per row dengan `permissions:delete`
+- PERMISSION PAGE SEMENTARA DI HIDDEN `PermissionsPage.tsx`
 
 ### Role Permission Assignment
 - [ ] `RolePermissionsPage` — gate tombol "Save & Close" dengan `roles:update`
