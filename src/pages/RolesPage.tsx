@@ -34,12 +34,18 @@ import { ErrorAlert } from '../components/common/ErrorAlert';
 import { RoleFormDialog } from '../features/roles/RoleFormDialog';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
+import { usePermissions } from '../hooks/usePermissions';
 dayjs.extend(utc);
 
 export default function RolesPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const navigate = useNavigate();
+
+    const { can } = usePermissions();
+    const canCreate = can('roles:create');
+    const canUpdate = can('roles:update');
+    const canDelete = can('roles:delete');
 
     const [page] = useState(1);
     const [pageSize] = useState(10);
@@ -102,20 +108,22 @@ export default function RolesPage() {
                         }}
                         sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
                     />
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => { setFormOpen(true); }}
-                        sx={{
-                            bgcolor: colors.brand[500],
-                            '&:hover': { bgcolor: colors.brand[600] },
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            px: 2.5,
-                        }}
-                    >
-                        Add Role
-                    </Button>
+                    {canCreate && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => { setFormOpen(true); }}
+                            sx={{
+                                bgcolor: colors.brand[500],
+                                '&:hover': { bgcolor: colors.brand[600] },
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                px: 2.5,
+                            }}
+                        >
+                            Add Role
+                        </Button>
+                    )}
                 </Stack>
             </Stack>
 
@@ -152,12 +160,16 @@ export default function RolesPage() {
                                         </TableCell>
                                         <TableCell>
                                             <Stack direction="row" sx={{ gap: 0.5 }}>
-                                                <IconButton size="small" onClick={() => navigate(`/app/roles/${role.ID}/permissions`)} sx={{ color: colors.brand[500] }}>
-                                                    <SettingIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={() => setDeleteTarget(role)} sx={{ color: colors.brand[500] }}>
-                                                    <DeleteIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
+                                                {canUpdate && (
+                                                    <IconButton size="small" onClick={() => navigate(`/app/roles/${role.ID}/permissions`)} sx={{ color: colors.brand[500] }}>
+                                                        <SettingIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                )}
+                                                {canDelete && (
+                                                    <IconButton size="small" onClick={() => setDeleteTarget(role)} sx={{ color: colors.brand[500] }}>
+                                                        <DeleteIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                )}
                                             </Stack>
                                         </TableCell>
                                     </TableRow>

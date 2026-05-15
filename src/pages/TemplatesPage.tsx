@@ -31,6 +31,7 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { colors } from '../theme/colors';
 import { useAuthStore } from '../stores/authStore';
+import { usePermissions } from '../hooks/usePermissions';
 
 type TemplateItem = ResultTemplate['templates'][number];
 
@@ -54,6 +55,11 @@ export default function TemplatesPage() {
     const { user } = useAuthStore();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const { can } = usePermissions();
+    const canCreate = can('templates:create');
+    const canUpdate = can('templates:update');
+    const canDelete = can('templates:delete');
 
     // Upload dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -175,20 +181,22 @@ export default function TemplatesPage() {
                 <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
                     Your Layout
                 </Typography>
-                <Button
-                    variant="contained"
-                    startIcon={<AddIcon />}
-                    onClick={() => openUploadDialog(null)}
-                    sx={{
-                        bgcolor: colors.brand[500],
-                        '&:hover': { bgcolor: colors.brand[600] },
-                        borderRadius: 2,
-                        textTransform: 'none',
-                        fontWeight: 600,
-                    }}
-                >
-                    Upload Layout
-                </Button>
+                {canCreate && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => openUploadDialog(null)}
+                        sx={{
+                            bgcolor: colors.brand[500],
+                            '&:hover': { bgcolor: colors.brand[600] },
+                            borderRadius: 2,
+                            textTransform: 'none',
+                            fontWeight: 600,
+                        }}
+                    >
+                        Upload Layout
+                    </Button>
+                )}
             </Stack>
 
             {isError && <ErrorAlert onRetry={refetch} />}
@@ -252,24 +260,28 @@ export default function TemplatesPage() {
                                     </Typography>
 
                                     <Stack direction="row" sx={{ justifyContent: 'flex-end', gap: 0.5, mt: 1 }}>
-                                        <Tooltip title="Edit (ganti foto)">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => openUploadDialog(template)}
-                                                sx={{ color: colors.brand[500], '&:hover': { bgcolor: colors.brand[100] } }}
-                                            >
-                                                <EditIcon sx={{ fontSize: 18 }} />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Hapus">
-                                            <IconButton
-                                                size="small"
-                                                onClick={() => setDeleteTarget(template)}
-                                                sx={{ color: colors.error[500], '&:hover': { bgcolor: colors.error[100] } }}
-                                            >
-                                                <DeleteIcon sx={{ fontSize: 18 }} />
-                                            </IconButton>
-                                        </Tooltip>
+                                        {canUpdate && (
+                                            <Tooltip title="Edit (ganti foto)">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => openUploadDialog(template)}
+                                                    sx={{ color: colors.brand[500], '&:hover': { bgcolor: colors.brand[100] } }}
+                                                >
+                                                    <EditIcon sx={{ fontSize: 18 }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
+                                        {canDelete && (
+                                            <Tooltip title="Hapus">
+                                                <IconButton
+                                                    size="small"
+                                                    onClick={() => setDeleteTarget(template)}
+                                                    sx={{ color: colors.error[500], '&:hover': { bgcolor: colors.error[100] } }}
+                                                >
+                                                    <DeleteIcon sx={{ fontSize: 18 }} />
+                                                </IconButton>
+                                            </Tooltip>
+                                        )}
                                     </Stack>
                                 </Box>
                             </Card>

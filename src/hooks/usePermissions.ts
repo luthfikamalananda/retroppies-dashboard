@@ -19,21 +19,6 @@ export function usePermissions() {
      * Selalu baca dari getState() agar tidak kena stale closure.
      */
 
-    // const can = useMemo((permission: string) => {
-    //     if (!user || !user?.permissions) {
-    //         return () => false;
-    //     } else {
-    //         // return (permission: string): boolean => {
-    //         const permissions = useAuthStore.getState().user?.permissions ?? [];
-    //         console.log("Checking permission:", permission, "User permissions:", permissions);
-    //         if (permission.includes(':')) {
-    //             return permissions.includes(permission);
-    //         }
-    //         return permissions.some((p) => p.split(':')[0] === permission);
-    //         // }
-    //     }
-    // }, [user])
-
     function can(permission: string): boolean {
         if (permission === '*') {
             return true; // wildcard: punya semua permission
@@ -45,20 +30,7 @@ export function usePermissions() {
         return permissions.some((p) => p.split(':')[0] === permission);
     }
 
-    /**
-     * Kembalikan semua action yang dimiliki user untuk resource tertentu.
-     * Contoh: actions('products') → ['create', 'read', 'update']
-     */
-
-    function actions(resource: string): string[] {
-        const permissions = useAuthStore.getState().user?.permissions ?? [];
-        console.log("Getting actions for resource:", resource, "User permissions:", permissions);
-        return permissions
-            .filter((p) => p.split(':')[0] === resource)
-            .map((p) => p.split(':')[1]);
-    }
-
-    return { can, actions, role };
+    return { can, role };
 }
 
 

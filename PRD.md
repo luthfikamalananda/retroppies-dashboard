@@ -569,6 +569,65 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] `RolePermissionsPage` — header responsive, tombol "Save & Close" full-width pada mobile
 - [x] `LayoutsPage` / `TemplatesPage` / `LoginPage` — sudah responsive (Grid, hidden panel)
 
+## 14.15 Permission-based Access Control per Page
+> Setiap page wajib membaca `can()` dari `usePermissions()` di top-level komponen.
+> Pola: tombol Create/Edit/Delete disembunyikan jika permission tidak ada; kolom Action dihilangkan jika semua action-nya tidak ada.
+> Naming convention mengikuti backend: `resource:action` (read / create / update / delete).
+
+### Dashboard
+- [ ] `DashboardPage` — tidak ada aksi write; tidak perlu gate (read-only public bagi semua role terauth)
+
+### Products
+- [ ] `ProductsPage` — gate tombol "Tambah Produk" dengan `products:create`
+- [ ] `ProductsPage` — gate tombol Edit per row dengan `products:update`
+- [ ] `ProductsPage` — gate tombol Delete per row dengan `products:delete`
+
+### Layouts & Templates
+- [x] `LayoutsPage` — gate tombol "Choose Layout" / akses ke template dengan `templates:read` (atau `layouts:read`)
+- [x] `TemplatesPage` — gate tombol Upload/Tambah dengan `templates:create`
+- [x] `TemplatesPage` — gate tombol Edit per kartu dengan `templates:update`
+- [x] `TemplatesPage` — gate tombol Hapus per kartu dengan `templates:delete`
+
+### Timers
+- [x] `TimersPage` — gate tombol "Tambah Rule" dengan `rules:create`
+- [x] `TimersPage` — gate tombol Edit per row dengan `rules:update`
+- [x] `TimersPage` — gate tombol Delete per row dengan `rules:delete`
+
+### Vouchers
+- [x] `VouchersPage` — gate tombol "Tambah Voucher" dengan `vouchers:create`
+- [x] `VouchersPage` — gate tombol Edit per row dengan `vouchers:update`
+- [x] `VouchersPage` — gate tombol Delete per row dengan `vouchers:delete`
+
+### Transactions
+- [ ] `TransactionsPage` — read-only; tidak ada aksi write; tidak perlu gate tambahan
+
+### Accounts
+- [ ] `AccountsPage` — gate tombol Edit (role assignment) dengan `accounts:update`
+
+### Settings User — Tenant
+- [x] `TenantsPage` — gate tombol "Tambah Tenant" dengan `tenants:create`
+- [x] `TenantsPage` — gate tombol Edit per row dengan `tenants:update`
+- [x] `TenantsPage` — gate tombol Delete per row dengan `tenants:delete`
+
+### Settings User — User
+- [ ] `UsersPage` — gate tombol "Tambah User" dengan `users:create`
+- [ ] `UsersPage` — gate tombol Edit per row dengan `users:update`
+- [ ] `UsersPage` — gate tombol Delete per row dengan `users:delete`
+
+### Settings User — Role
+- [ ] `RolesPage` — gate tombol "Tambah Role" dengan `roles:create`
+- [ ] `RolesPage` — gate tombol Edit per row dengan `roles:update`
+- [ ] `RolesPage` — gate tombol Delete per row dengan `roles:delete`
+- [ ] `RolesPage` — gate ikon Settings (navigate ke RolePermissionsPage) dengan `roles:update`
+
+### Settings User — Permission
+- [ ] `PermissionsPage` — gate tombol "Tambah Permission" dengan `permissions:create`
+- [ ] `PermissionsPage` — gate tombol Edit per row dengan `permissions:update`
+- [ ] `PermissionsPage` — gate tombol Delete per row dengan `permissions:delete`
+
+### Role Permission Assignment
+- [ ] `RolePermissionsPage` — gate tombol "Save & Close" dengan `roles:update`
+
 ---
 
 ## 15) Open Questions (Need Decisions)

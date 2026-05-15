@@ -42,6 +42,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { VoucherFormDialog } from '../features/vouchers/VoucherFormDialog';
 import { colors } from '../theme/colors';
 import { useAuthStore } from '../stores/authStore';
+import { usePermissions } from '../hooks/usePermissions';
 
 type StatusChip = { label: string; bgcolor: string; color: string };
 
@@ -67,6 +68,11 @@ export default function VouchersPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const { user } = useAuthStore();
+
+    const { can } = usePermissions();
+    const canCreate = can('vouchers:create');
+    const canUpdate = can('vouchers:update');
+    const canDelete = can('vouchers:delete');
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -175,20 +181,22 @@ export default function VouchersPage() {
                         }}
                         sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
                     />
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={openCreate}
-                        sx={{
-                            bgcolor: colors.brand[500],
-                            '&:hover': { bgcolor: colors.brand[600] },
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            px: 2.5,
-                        }}
-                    >
-                        Create Voucher
-                    </Button>
+                    {canCreate && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={openCreate}
+                            sx={{
+                                bgcolor: colors.brand[500],
+                                '&:hover': { bgcolor: colors.brand[600] },
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                px: 2.5,
+                            }}
+                        >
+                            Create Voucher
+                        </Button>
+                    )}
                 </Stack>
             </Stack>
 
@@ -273,20 +281,24 @@ export default function VouchersPage() {
                                             </TableCell>
                                             <TableCell>
                                                 <Stack direction="row" sx={{ gap: 0.5 }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => openEdit(v)}
-                                                        sx={{ color: colors.brand[500] }}
-                                                    >
-                                                        <EditIcon sx={{ fontSize: 18 }} />
-                                                    </IconButton>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => setDeleteTarget(v)}
-                                                        sx={{ color: colors.brand[500] }}
-                                                    >
-                                                        <DeleteIcon sx={{ fontSize: 18 }} />
-                                                    </IconButton>
+                                                    {canUpdate && (
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => openEdit(v)}
+                                                            sx={{ color: colors.brand[500] }}
+                                                        >
+                                                            <EditIcon sx={{ fontSize: 18 }} />
+                                                        </IconButton>
+                                                    )}
+                                                    {canDelete && (
+                                                        <IconButton
+                                                            size="small"
+                                                            onClick={() => setDeleteTarget(v)}
+                                                            sx={{ color: colors.brand[500] }}
+                                                        >
+                                                            <DeleteIcon sx={{ fontSize: 18 }} />
+                                                        </IconButton>
+                                                    )}
                                                 </Stack>
                                             </TableCell>
                                         </TableRow>

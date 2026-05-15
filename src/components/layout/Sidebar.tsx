@@ -48,7 +48,7 @@ const SYSTEM_USER_ITEMS = [
     { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: 'tenants:read' },
     { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" />, permission: 'users:read' },
     { label: 'Role', path: '/app/roles', icon: <BadgeIcon fontSize="small" />, permission: 'roles:read' },
-    { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
+    // { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
 ];
 
 const SETTINGS_ITEMS = [
@@ -219,7 +219,6 @@ export function Sidebar() {
     // const dashboardItems = DASHBOARD_ITEMS
     const systemUserItems = SYSTEM_USER_ITEMS.filter((item) => can(item.permission));
     const settingsItems = SETTINGS_ITEMS.filter((item) => can(item.permission));
-    // const settingsItems = SETTINGS_ITEMS
 
     return (
         <Drawer

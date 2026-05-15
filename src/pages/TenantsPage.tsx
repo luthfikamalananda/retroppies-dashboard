@@ -37,6 +37,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { TenantFormDialog } from '../features/tenants/TenantFormDialog';
 import { colors } from '../theme/colors';
 import { useAuthStore } from '../stores/authStore';
+import { usePermissions } from '../hooks/usePermissions';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -44,6 +45,11 @@ export default function TenantsPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const { user } = useAuthStore();
+
+    const { can } = usePermissions();
+    const canCreate = can('tenants:create');
+    const canUpdate = can('tenants:update');
+    const canDelete = can('tenants:delete');
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -123,20 +129,22 @@ export default function TenantsPage() {
                         }}
                         sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
                     />
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => { setEditTarget(null); setFormOpen(true); }}
-                        sx={{
-                            bgcolor: colors.brand[500],
-                            '&:hover': { bgcolor: colors.brand[600] },
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            px: 2.5,
-                        }}
-                    >
-                        Add Data
-                    </Button>
+                    {canCreate && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => { setEditTarget(null); setFormOpen(true); }}
+                            sx={{
+                                bgcolor: colors.brand[500],
+                                '&:hover': { bgcolor: colors.brand[600] },
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                px: 2.5,
+                            }}
+                        >
+                            Add Data
+                        </Button>
+                    )}
                 </Stack>
             </Stack>
 
@@ -173,12 +181,16 @@ export default function TenantsPage() {
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tenant.address}</TableCell>
                                         <TableCell>
                                             <Stack direction="row" sx={{ gap: 0.5 }}>
-                                                <IconButton size="small" onClick={() => { setEditTarget(tenant); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
-                                                    <EditIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={() => setDeleteTarget(tenant)} sx={{ color: colors.brand[500] }}>
-                                                    <DeleteIcon sx={{ fontSize: 18 }} />
-                                                </IconButton>
+                                                {canUpdate && (
+                                                    <IconButton size="small" onClick={() => { setEditTarget(tenant); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
+                                                        <EditIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                )}
+                                                {canDelete && (
+                                                    <IconButton size="small" onClick={() => setDeleteTarget(tenant)} sx={{ color: colors.brand[500] }}>
+                                                        <DeleteIcon sx={{ fontSize: 18 }} />
+                                                    </IconButton>
+                                                )}
                                             </Stack>
                                         </TableCell>
                                     </TableRow>
