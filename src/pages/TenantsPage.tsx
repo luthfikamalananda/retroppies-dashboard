@@ -102,17 +102,20 @@ export default function TenantsPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Data Tenant</Typography>
             </Breadcrumbs>
 
+            {/* Header */}
             <Stack
                 direction="row"
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
+                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Data Unit Tenant
-                </Typography>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Stack sx={{ width: "50%" }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                        Data Unit Tenant
+                    </Typography>
+                </Stack>
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "40%", }}>
                     <TextField
                         size="small"
-                        placeholder="Search"
+                        placeholder="Cari kode / nama produk..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -124,9 +127,15 @@ export default function TenantsPage() {
                                 ),
                             },
                         }}
-                        sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                height: "36px",
+                            },
+                            width: { xs: '100%', sm: "100%" },
+                            bgcolor: colors.base['white']
+                        }}
                     />
-                    {canCreate && (
+                    {canCreate &&
                         <Button
                             variant="contained"
                             startIcon={<AddIcon />}
@@ -136,12 +145,14 @@ export default function TenantsPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                px: 2.5,
+                                // px: 2.5,
+                                width: "250px",
+                                // width: "400px",
                             }}
                         >
-                            Add Data
+                            Tambah Tenant
                         </Button>
-                    )}
+                    }
                 </Stack>
             </Stack>
 
@@ -151,12 +162,12 @@ export default function TenantsPage() {
                 <TableContainer>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant Code</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant Name</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Address</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
+                            <TableRow>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], width: 80  }}>#</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100] }}>Tenant Code</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], textAlign: "center" }}>Tenant Name</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], textAlign: "center" }}>Address</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], textAlign: "center" }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -174,10 +185,10 @@ export default function TenantsPage() {
                                             {(page - 1) * pageSize + idx + 1}
                                         </TableCell>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tenant.tenant_code}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tenant.name}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tenant.address}</TableCell>
-                                        <TableCell>
-                                            <Stack direction="row" sx={{ gap: 0.5 }}>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>{tenant.name}</TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>{tenant.address}</TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>
+                                            <Stack direction="row" sx={{ gap: 0.5, justifyContent: 'center' }}>
                                                 {canUpdate && (
                                                     <IconButton size="small" onClick={() => { setEditTarget(tenant); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>
                                                         <EditIcon sx={{ fontSize: 18 }} />

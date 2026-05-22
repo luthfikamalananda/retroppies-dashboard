@@ -198,13 +198,13 @@ export default function TimersPage() {
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
-                {isSuperAdmin && <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Tipe Rule</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Nilai (detik)</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Dibuat Oleh</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Diperbarui</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Action</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
+                {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Tipe Rule</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Nilai (detik)</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Dibuat Oleh</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Diperbarui</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Action</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>

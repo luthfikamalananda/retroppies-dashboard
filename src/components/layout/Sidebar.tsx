@@ -1,16 +1,8 @@
-import BadgeIcon from '@mui/icons-material/Badge';
-import BusinessIcon from '@mui/icons-material/Business';
-import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber';
-import DashboardIcon from '@mui/icons-material/Dashboard';
+import BadgeIcon from '@mui/icons-material/BadgeOutlined';
+import BusinessIcon from '@mui/icons-material/CorporateFareOutlined';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import InventoryIcon from '@mui/icons-material/Inventory2';
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import PersonIcon from '@mui/icons-material/Person';
-import PhotoIcon from '@mui/icons-material/Photo';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import TimerIcon from '@mui/icons-material/Timer';
+import PersonIcon from '@mui/icons-material/PersonOutlineOutlined';
 import {
     Box,
     Collapse,
@@ -26,21 +18,28 @@ import {
 } from '@mui/material';
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import headerLogo from '../../assets/header-logo.png';
+import headerLogo from '../../assets/header-logo.svg';
+import productIcon from '../../assets/product_icon.svg';
+import transactionIcon from '../../assets/report-trx_icon.svg';
+import settingIcon from '../../assets/setting_icon.svg';
+import summaryIcon from '../../assets/summary_icon.svg';
+import templateIcon from '../../assets/template_icon.svg';
+import timerIcon from '../../assets/time_icon.svg';
+import voucherIcon from '../../assets/voucher_icon.svg';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useUIStore } from '../../stores/uiStore';
 import { colors } from '../../theme/colors';
 
-export const SIDEBAR_WIDTH = 220;
+export const SIDEBAR_WIDTH = 300;
 export const SIDEBAR_COLLAPSED_WIDTH = 64;
 
 const DASHBOARD_ITEMS = [
-    { label: 'Summary', path: '/app/dashboard', icon: <DashboardIcon fontSize="small" />, permission: '*' },
-    { label: 'Product', path: '/app/products', icon: <InventoryIcon fontSize="small" />, permission: 'products:read' },
-    { label: 'Design Template', path: '/app/layouts', icon: <PhotoIcon fontSize="small" />, permission: 'templates:read' },
-    { label: 'Time', path: '/app/timers', icon: <TimerIcon fontSize="small" />, permission: 'rules:read' },
-    { label: 'Voucher', path: '/app/vouchers', icon: <ConfirmationNumberIcon fontSize="small" />, permission: 'vouchers:read' },
-    { label: 'Report Transaction', path: '/app/transactions', icon: <ReceiptLongIcon fontSize="small" />, permission: 'transactions:read' },
+    { label: 'Summary', path: '/app/dashboard', icon: <img src={summaryIcon} alt="Summary" />, permission: '*' },
+    { label: 'Product', path: '/app/products', icon: <img src={productIcon} alt="Product" />, permission: 'products:read' },
+    { label: 'Design Template', path: '/app/layouts', icon: <img src={templateIcon} alt="Design Template" />, permission: 'templates:read' },
+    { label: 'Time', path: '/app/timers', icon: <img src={timerIcon} alt="Time" />, permission: 'rules:read' },
+    { label: 'Voucher', path: '/app/vouchers', icon: <img src={voucherIcon} alt="Voucher" />, permission: 'vouchers:read' },
+    { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: 'transactions:read' },
 ];
 
 const SYSTEM_USER_ITEMS = [
@@ -51,24 +50,24 @@ const SYSTEM_USER_ITEMS = [
 ];
 
 const SETTINGS_ITEMS = [
-    { label: 'Setting User', path: '/app/accounts', icon: <ManageAccountsIcon fontSize="small" />, permission: 'accounts:read' },
+    { label: 'Advanced Settings', path: '/app/accounts', icon: <img src={settingIcon} alt="Setting UsersettingIcon" />, permission: 'accounts:read' },
 ];
 
 function NavGroup({ label, collapsed }: { label: string; collapsed: boolean }) {
     if (collapsed) return <Box sx={{ height: 8 }} />;
     return (
         <Typography
-            variant="caption"
             sx={{
-                px: 2,
+                // px: 2,
                 pt: 2,
-                pb: 0.5,
+                pb: 1,
                 display: 'block',
-                color: colors.base['grey'],
+                color: colors.base['black'],
                 fontWeight: 600,
-                letterSpacing: '0.04em',
-                textTransform: 'uppercase',
-                fontSize: 10,
+                // letterSpacing: '0.04em',
+                textTransform: 'capitalize',
+                fontSize: 16,
+                fontFamily: "public sans, sans-serif",
             }}
         >
             {label}
@@ -124,7 +123,7 @@ function NavItem({
                             primary: {
                                 style: {
                                     fontSize: 14,
-                                    fontWeight: isActive ? 600 : 400,
+                                    fontWeight: isActive ? 600 : 500,
                                     color: isActive ? colors.brand[500] : colors.base['black'],
                                 },
                             },
@@ -157,16 +156,20 @@ function NavGroupCollapsible({
                     sx={{
                         borderRadius: 1.5,
                         mb: 0.25,
+                        mt: 0.5,
                         minHeight: 40,
                         justifyContent: collapsed ? 'center' : 'flex-start',
-                        px: 1.5,
+                        // px: 1.5,
                         gap: 1.25,
-                        color: colors.base['grey'],
+                        p:0,
+                        py: 1,
+                        pr: 1,
+                        color: colors.base['black'],
                         '&:hover': { bgcolor: colors.base['background-light'] },
                     }}
                 >
                     <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
-                        <PeopleAltIcon fontSize="small" />
+                        <img src={settingIcon} alt="Setting Icon" />
                     </ListItemIcon>
                     {!collapsed && (
                         <>
@@ -175,11 +178,12 @@ function NavGroupCollapsible({
                                 slotProps={{
                                     primary: {
                                         style: {
-                                            fontSize: 12,
+                                            fontSize: 15,
                                             fontWeight: 600,
-                                            letterSpacing: '0.04em',
-                                            textTransform: 'uppercase',
-                                            color: colors.base['grey'],
+                                            // letterSpacing: '0.04em',
+                                            textTransform: 'capitalize',
+                                            color: colors.base['black'],
+                                            fontFamily: "public sans, sans-serif",
                                         },
                                     },
                                 }}
@@ -263,7 +267,7 @@ export function Sidebar() {
                         component="img"
                         src={headerLogo}
                         alt="The Retroppies"
-                        sx={{ height: 36, objectFit: 'contain' }}
+                        sx={{ width: "150px", objectFit: 'contain' }}
                     />
                 )}
             </Box>
@@ -286,7 +290,7 @@ export function Sidebar() {
                 {/* Settings User group */}
                 {systemUserItems.length > 0 && (
                     <NavGroupCollapsible
-                        label="Settings User"
+                        label="Advanced Settings"
                         collapsed={isCollapsed}
                         expanded={systemUserExpanded}
                         onToggle={() => setSystemUserExpanded((prev) => !prev)}

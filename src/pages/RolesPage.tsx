@@ -134,17 +134,17 @@ export default function RolesPage() {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Role Name</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tanggal Dibuat</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100], width: 80 }}>#</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100] }}>Role Name</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100], textAlign: "center" }}>Tanggal Dibuat</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100], textAlign: "center" }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {isLoading
                                 ? Array.from({ length: 5 }).map((_, i) => (
                                     <TableRow key={i}>
-                                        {Array.from({ length: 5 }).map((_, j) => (
+                                        {Array.from({ length: 4 }).map((_, j) => (
                                             <TableCell key={j}><Skeleton variant="text" width="80%" /></TableCell>
                                         ))}
                                     </TableRow>
@@ -155,11 +155,11 @@ export default function RolesPage() {
                                             {(page - 1) * pageSize + idx + 1}
                                         </TableCell>
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{role.Name}</TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>
                                             {dayjs.utc(role.CreatedAt).format('DD MMM YYYY')}
                                         </TableCell>
-                                        <TableCell>
-                                            <Stack direction="row" sx={{ gap: 0.5 }}>
+                                        <TableCell sx={{ textAlign: "center" }}>
+                                            <Stack direction="row" sx={{ gap: 0.5, justifyContent: "center" }}>
                                                 {canUpdate && (
                                                     <IconButton size="small" onClick={() => navigate(`/app/roles/${role.ID}/permissions`)} sx={{ color: colors.brand[500] }}>
                                                         <SettingIcon sx={{ fontSize: 18 }} />

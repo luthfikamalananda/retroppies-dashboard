@@ -97,18 +97,23 @@ export default function UsersPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>User</Typography>
             </Breadcrumbs>
 
+            {/* Header */}
             <Stack
                 direction="row"
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
+                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Data User
-                </Typography>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <TenantSelector />
+                <Stack sx={{ width: "50%" }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                        Data User
+                    </Typography>
+                </Stack>
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "50%", flexGrow: 1 }}>
+                    <Stack sx={{ width: "100%" }}>
+                        <TenantSelector />
+                    </Stack>
                     <TextField
                         size="small"
-                        placeholder="Search"
+                        placeholder="Cari kode / nama produk..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -120,7 +125,13 @@ export default function UsersPage() {
                                 ),
                             },
                         }}
-                        sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                height: "36px",
+                            },
+                            width: { xs: '100%', sm: "100%" },
+                            bgcolor: colors.base['white']
+                        }}
                     />
                     {/* <Button
                         variant="contained"
@@ -139,6 +150,7 @@ export default function UsersPage() {
                 </Stack>
             </Stack>
 
+
             {isError && <ErrorAlert onRetry={refetch} />}
 
             <Paper sx={{ borderRadius: 2, overflow: 'hidden', border: `1px solid ${colors.border['default']}`, boxShadow: 'none' }}>
@@ -146,10 +158,10 @@ export default function UsersPage() {
                     <Table>
                         <TableHead>
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Username</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Role</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Tenant</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100], width: 80 }}>#</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100] }}>Username</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100], textAlign: "center" }}>Role</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], bgcolor: colors.brand[100], textAlign: "center" }}>Tenant</TableCell>
                                 {/* <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell> */}
                             </TableRow>
                         </TableHead>

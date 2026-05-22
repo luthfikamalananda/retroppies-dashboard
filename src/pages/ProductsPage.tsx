@@ -192,13 +192,13 @@ export default function ProductsPage() {
                 <TableContainer>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
-                                {isSuperAdmin && <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Kode</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Nama Produk</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Harga</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Aksi</TableCell>
+                            <TableRow>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
+                                {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Kode</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Nama Produk</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Harga</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Aksi</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -220,13 +220,13 @@ export default function ProductsPage() {
                                                 {product.tenantName}
                                             </TableCell>
                                         )}
-                                        <TableCell sx={{ fontSize: 13 }}>
+                                        <TableCell sx={{ fontSize: 13, textAlign: "center" }}>
                                             <Chip label={product.productCode} size="small" variant="outlined" />
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>
                                             {product.productName}
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>
                                             {new Intl.NumberFormat('id-ID', {
                                                 style: 'currency',
                                                 currency: 'IDR',

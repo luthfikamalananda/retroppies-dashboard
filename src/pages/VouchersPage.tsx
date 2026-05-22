@@ -223,25 +223,25 @@ export default function VouchersPage() {
                 <TableContainer>
                     <Table>
                         <TableHead>
-                            <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Voucher Code</TableCell>
-                                {isSuperAdmin && <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
+                            <TableRow>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80  }}>#</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Voucher Code</TableCell>
+                                {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
                                 <TableCell
-                                    sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], cursor: 'pointer', userSelect: 'none' }}
+                                    sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                                     onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
                                 >
-                                    <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
+                                    <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                                         Promo Title
                                         <UnfoldMoreIcon sx={{ fontSize: 16, color: colors.base['grey'] }} />
                                     </Stack>
                                 </TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Discount</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Period</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Usage Limit</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Used</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Status</TableCell>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Action</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Discount</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Period</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Usage Limit</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Used</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Status</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -277,15 +277,15 @@ export default function VouchersPage() {
                                                 />
                                             </TableCell>
                                             {isSuperAdmin && <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.tenantName}</TableCell>}
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.name}</TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>{v.name}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
                                                 Rp{v.value.toLocaleString('id-ID')}
                                             </TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'], whiteSpace: 'nowrap' }}>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center', whiteSpace: 'nowrap' }}>
                                                 {parseDate(v.dateFrom).format('DD MMM')} - {parseDate(v.dateTo).format('DD MMM')}
                                             </TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.limitQty == 0 ? '∞' : `${v.limitQty}x`}</TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.tempLimitQty}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>{v.limitQty == 0 ? '∞' : `${v.limitQty}x`}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>{v.tempLimitQty}</TableCell>
                                             <TableCell>
                                                 <Chip
                                                     label={chipStyle.label}
