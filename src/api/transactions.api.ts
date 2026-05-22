@@ -1,4 +1,4 @@
-import { apiClient } from './client';
+import { apiClient, type BaseResponse } from './client';
 
 export interface Transaction {
   transaction_id: string;
@@ -10,15 +10,18 @@ export interface Transaction {
   outlet?: string;
 }
 
+export interface TransactionResult {
+  trxList: Transaction[];
+  total: number;
+}
+
 export interface TransactionListParams {
-  date_start?: string;
-  date_end?: string;
-  status?: 'success' | 'failed';
-  product?: string;
-  outlet?: string;
-  page?: number;
-  page_size?: number;
-  sort?: 'asc' | 'desc';
+  dateFrom: string;
+  dateTo: string;
+  productCode: string;
+  tenantId: number | null;
+  page: number;
+  limit: number;
 }
 
 export interface PaginatedResponse<T> {
@@ -31,7 +34,7 @@ export interface PaginatedResponse<T> {
 export const transactionsApi = {
   list: (params?: TransactionListParams) =>
     apiClient
-      .get<PaginatedResponse<Transaction>>('/transactions', { params })
+      .post<BaseResponse<TransactionResult>>('/transactions/get-list', { ...params })
       .then((r) => r.data),
 
   getById: (id: string) =>

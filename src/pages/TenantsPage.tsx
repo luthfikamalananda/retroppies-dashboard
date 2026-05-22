@@ -36,7 +36,6 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { TenantFormDialog } from '../features/tenants/TenantFormDialog';
 import { colors } from '../theme/colors';
-import { useAuthStore } from '../stores/authStore';
 import { usePermissions } from '../hooks/usePermissions';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -44,7 +43,6 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 export default function TenantsPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { user } = useAuthStore();
 
     const { can } = usePermissions();
     const canCreate = can('tenants:create');
@@ -68,7 +66,6 @@ export default function TenantsPage() {
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['tenants', page, pageSize, debouncedSearch],
         queryFn: () => tenantsApi.list({
-            tenant_id: user?.tenantId ?? 0,
             keyword: debouncedSearch,
             page,
             limit: pageSize,

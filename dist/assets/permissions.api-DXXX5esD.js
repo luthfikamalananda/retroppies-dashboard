@@ -1,0 +1,1 @@
+import{t as e}from"./client-CgZy0NkF.js";var t={list:()=>e.get(`/permissions/get`).then(e=>e.data),getByRole:t=>e.post(`/role-permissions/get`,{role_id:t}).then(e=>e.data),assign:t=>e.post(`/role-permissions/replace`,t).then(e=>e.data)};export{t};

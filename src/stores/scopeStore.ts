@@ -4,15 +4,12 @@ import { create } from 'zustand';
 
 interface ScopeState {
   activeTenantId: number | null;
-  activeOutletId: string | null;
-  setScope: (tenantId: number, outletId?: string) => void;
+  setScope: (tenantId: number) => void;
   clearScope: () => void;
 }
 
 export const useScopeStore = create<ScopeState>((set) => ({
   activeTenantId: null,
-  activeOutletId: null,
-  setScope: (tenantId, outletId) =>
-    set({ activeTenantId: tenantId, activeOutletId: outletId ?? null }),
-  clearScope: () => set({ activeTenantId: null, activeOutletId: null }),
+  setScope: (tenantId) => set({ activeTenantId: tenantId }),
+  clearScope: () => set({ activeTenantId: null }),
 }));

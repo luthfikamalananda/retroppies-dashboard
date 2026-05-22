@@ -17,11 +17,16 @@ export interface ResultTenants {
 }
 
 export interface TenantListParams {
-    tenant_id: number;
+    // tenant_id: number;
     keyword: string;
     page: number;
     limit: number;
 }
+
+export interface TenantListParamsV2 {
+    keyword: string;
+}
+
 export interface TenantPayload {
     name: string
     address: string
@@ -29,6 +34,9 @@ export interface TenantPayload {
 }
 
 export const tenantsApi = {
+    get: (params: TenantListParamsV2) =>
+        apiClient.post<BaseResponse<Tenant[]>>('/tenants/get-v2', { ...params }).then((r) => r.data),
+
     list: (params: TenantListParams) =>
         apiClient.post<BaseResponse<ResultTenants>>('/tenants/get', { ...params }).then((r) => r.data),
 

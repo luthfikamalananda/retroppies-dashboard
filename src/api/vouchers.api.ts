@@ -9,19 +9,20 @@ export interface Voucher {
   id: number
   name: string
   value: number
-  limit_qty: number
-  limit_rp: number
-  temp_limit_qty: number
-  temp_limit_rp: number
+  limitQty: number
+  limitRp: number
+  tempLimitQty: number
+  tempLimitRp: number
+  tenantName: string
   code: string
-  date_from: string
-  date_to: string
+  dateFrom: string
+  dateTo: string
   status: string
-  tenant_id: number
-  CreatedAt: string
-  CreatedBy: string
-  UpdatedAt: string
-  UpdatedBy: string
+  tenantId: number
+  createdAt: string
+  createdBy: string
+  updatedAt: string
+  updatedBy: string
 }
 
 // export type VoucherPayload = Omit<Voucher, 'usage_count'>;
@@ -29,16 +30,16 @@ export interface Voucher {
 export interface VoucherPayload {
   name: string
   value: number
-  limit_rp: number
+  limitRp: number
   code: string
-  date_from: string
-  date_to: string
+  dateFrom: string
+  dateTo: string
   status: string
-  tenant_id: number
+  tenantId: number
 }
 
 export interface VoucherListParams {
-  tenant_id: number;
+  tenantId: number | null;
   keyword: string;
   page: number;
   limit: number;

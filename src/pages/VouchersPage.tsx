@@ -41,8 +41,9 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { VoucherFormDialog } from '../features/vouchers/VoucherFormDialog';
 import { colors } from '../theme/colors';
-import { useAuthStore } from '../stores/authStore';
 import { usePermissions } from '../hooks/usePermissions';
+import { TenantSelector } from '../components/common/TenantSelector';
+import { useScopeStore } from '../stores/scopeStore';
 
 type StatusChip = { label: string; bgcolor: string; color: string };
 
@@ -53,7 +54,7 @@ function parseDate(isoString: string) {
 
 function getStatusChip(voucher: Voucher): StatusChip {
     const now = dayjs.utc();
-    if (parseDate(voucher.date_to).isBefore(now)) {
+    if (parseDate(voucher.dateTo).isBefore(now)) {
         return { label: 'Expired', bgcolor: '#FDE8E8', color: '#B23E3E' };
     }
     if (voucher.status === 'active') {
@@ -67,9 +68,9 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 export default function VouchersPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { user } = useAuthStore();
+    const { activeTenantId } = useScopeStore();
 
-    const { can } = usePermissions();
+    const { can, isSuperAdmin } = usePermissions();
     const canCreate = can('vouchers:create');
     const canUpdate = can('vouchers:update');
     const canDelete = can('vouchers:delete');
@@ -93,13 +94,13 @@ export default function VouchersPage() {
     }, [search]);
 
     // const queryKey = ['vouchers', activeTenantId, page, pageSize];
-    const queryKey = ['vouchers', page, pageSize, debouncedSearch];
+    const queryKey = ['vouchers', activeTenantId, page, pageSize, debouncedSearch];
 
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey,
         queryFn: () =>
             vouchersApi.list({
-                tenant_id: user?.tenantId ?? 0,
+                tenantId: activeTenantId,
                 keyword: debouncedSearch,
                 page,
                 limit: pageSize,
@@ -110,7 +111,7 @@ export default function VouchersPage() {
     const deleteMutation = useMutation({
         mutationFn: (id: number) => vouchersApi.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['vouchers'] });
+            queryClient.invalidateQueries({ queryKey: ['vouchers', activeTenantId] });
             showSnackbar('Voucher berhasil dihapus');
             setDeleteTarget(null);
         },
@@ -159,15 +160,20 @@ export default function VouchersPage() {
             {/* Header */}
             <Stack
                 direction="row"
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
+                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Voucher
-                </Typography>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Stack sx={{ width: "50%" }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                        Voucher
+                    </Typography>
+                </Stack>
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
+                    <Stack sx={{ width: "100%" }}>
+                        <TenantSelector />
+                    </Stack>
                     <TextField
                         size="small"
-                        placeholder="Search"
+                        placeholder="Cari kode / nama produk..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -179,9 +185,18 @@ export default function VouchersPage() {
                                 ),
                             },
                         }}
-                        sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
+                        // change the height into 36px
+                        // change the width into 100%
+
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                height: "36px",
+                            },
+                            width: { xs: '100%', sm: "100%" },
+                            bgcolor: colors.base['white']
+                        }}
                     />
-                    {canCreate && (
+                    {canCreate &&
                         <Button
                             variant="contained"
                             startIcon={<AddIcon />}
@@ -191,12 +206,14 @@ export default function VouchersPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                px: 2.5,
+                                // px: 2.5,
+                                width: "410px",
+                                // width: "400px",
                             }}
                         >
-                            Create Voucher
+                            Tambah Voucher
                         </Button>
-                    )}
+                    }
                 </Stack>
             </Stack>
 
@@ -209,6 +226,7 @@ export default function VouchersPage() {
                             <TableRow sx={{ bgcolor: colors.base['section'] }}>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 48 }}>#</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Voucher Code</TableCell>
+                                {isSuperAdmin && <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
                                 <TableCell
                                     sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], cursor: 'pointer', userSelect: 'none' }}
                                     onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
@@ -230,7 +248,7 @@ export default function VouchersPage() {
                             {isLoading
                                 ? Array.from({ length: 5 }).map((_, i) => (
                                     <TableRow key={i}>
-                                        {Array.from({ length: 10 }).map((_, j) => (
+                                        {Array.from({ length: isSuperAdmin ? 11 : 10 }).map((_, j) => (
                                             <TableCell key={j}>
                                                 <Skeleton variant="text" width="80%" />
                                             </TableCell>
@@ -244,6 +262,7 @@ export default function VouchersPage() {
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                                                 {(page - 1) * pageSize + idx + 1}
                                             </TableCell>
+
                                             <TableCell>
                                                 <Chip
                                                     label={v.code}
@@ -257,15 +276,16 @@ export default function VouchersPage() {
                                                     }}
                                                 />
                                             </TableCell>
+                                            {isSuperAdmin && <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.tenantName}</TableCell>}
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.name}</TableCell>
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                                                 Rp{v.value.toLocaleString('id-ID')}
                                             </TableCell>
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'], whiteSpace: 'nowrap' }}>
-                                                {parseDate(v.date_from).format('DD MMM')} - {parseDate(v.date_to).format('DD MMM')}
+                                                {parseDate(v.dateFrom).format('DD MMM')} - {parseDate(v.dateTo).format('DD MMM')}
                                             </TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.limit_qty == 0 ? '∞' : `${v.limit_qty}x`}</TableCell>
-                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.temp_limit_qty}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.limitQty == 0 ? '∞' : `${v.limitQty}x`}</TableCell>
+                                            <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.tempLimitQty}</TableCell>
                                             <TableCell>
                                                 <Chip
                                                     label={chipStyle.label}

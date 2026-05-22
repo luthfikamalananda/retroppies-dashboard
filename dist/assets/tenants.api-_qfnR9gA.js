@@ -1,0 +1,1 @@
+import{t as e}from"./client-CgZy0NkF.js";var t={get:t=>e.post(`/tenants/get-v2`,{...t}).then(e=>e.data),list:t=>e.post(`/tenants/get`,{...t}).then(e=>e.data),create:t=>e.post(`/tenants/create`,{...t}).then(e=>e.data),update:(t,n)=>e.post(`/tenants/update`,{id:t,...n}).then(e=>e.data),delete:t=>e.post(`/tenants/delete`,{id:t}).then(e=>e.data)};export{t};

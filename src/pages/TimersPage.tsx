@@ -33,7 +33,6 @@ import utc from 'dayjs/plugin/utc';
 dayjs.extend(utc);
 import { timersApi, type Rule } from '../api/timers.api';
 import { useUIStore } from '../stores/uiStore';
-import { useAuthStore } from '../stores/authStore';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
@@ -41,6 +40,8 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { TimerFormDialog } from '../features/timers/TimerFormDialog';
 import { colors } from '../theme/colors';
 import { usePermissions } from '../hooks/usePermissions';
+import { TenantSelector } from '../components/common/TenantSelector';
+import { useScopeStore } from '../stores/scopeStore';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -52,11 +53,12 @@ const RULE_TYPE_LABELS: Record<string, string> = {
 export default function TimersPage() {
   const queryClient = useQueryClient();
   const showSnackbar = useUIStore((s) => s.showSnackbar);
-  const { can } = usePermissions();
+
+  const { can, isSuperAdmin } = usePermissions();
   const canCreate = can('rules:create');
   const canUpdate = can('rules:update');
   const canDelete = can('rules:delete');
-  const { user } = useAuthStore();
+  const { activeTenantId } = useScopeStore()
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -76,10 +78,10 @@ export default function TimersPage() {
   }, [search]);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['timers', page, pageSize, debouncedSearch],
+    queryKey: ['timers', activeTenantId, page, pageSize, debouncedSearch],
     queryFn: () =>
       timersApi.get({
-        tenant_id: user?.tenantId ?? 0,
+        tenantId: activeTenantId,
         keyword: debouncedSearch,
         page,
         limit: pageSize,
@@ -89,7 +91,7 @@ export default function TimersPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: number) => timersApi.delete(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['timers'] });
+      queryClient.invalidateQueries({ queryKey: ['timers', activeTenantId] });
       showSnackbar('Rule berhasil dihapus');
       setDeleteTarget(null);
     },
@@ -131,15 +133,20 @@ export default function TimersPage() {
       {/* Header */}
       <Stack
         direction="row"
-        sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
+        sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-          Pengaturan Timer
-        </Typography>
-        <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+        <Stack sx={{ width: "50%" }}>
+          <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+            Pengaturan Timer
+          </Typography>
+        </Stack>
+        <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
+          <Stack sx={{ width: "100%" }}>
+            <TenantSelector />
+          </Stack>
           <TextField
             size="small"
-            placeholder="Search"
+            placeholder="Cari kode / nama produk..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             slotProps={{
@@ -151,7 +158,16 @@ export default function TimersPage() {
                 ),
               },
             }}
-            sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
+            // change the height into 36px
+            // change the width into 100%
+
+            sx={{
+              '& .MuiInputBase-root': {
+                height: "36px",
+              },
+              width: { xs: '100%', sm: "100%" },
+              bgcolor: colors.base['white']
+            }}
           />
           {canCreate &&
             <Button
@@ -163,15 +179,17 @@ export default function TimersPage() {
                 '&:hover': { bgcolor: colors.brand[600] },
                 textTransform: 'none',
                 fontWeight: 600,
-                px: 2.5,
+                // px: 2.5,
+                width: "400px",
+                // width: "400px",
               }}
             >
               Tambah Rule
             </Button>
           }
-
         </Stack>
       </Stack>
+
 
       {isError && <ErrorAlert onRetry={refetch} />}
 
@@ -180,8 +198,9 @@ export default function TimersPage() {
           <Table>
             <TableHead>
               <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80}}>#</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tipe Rule</TableCell>
+                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
+                {isSuperAdmin && <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
+                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Tipe Rule</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Nilai (detik)</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Dibuat Oleh</TableCell>
                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Diperbarui</TableCell>
@@ -192,7 +211,7 @@ export default function TimersPage() {
               {isLoading
                 ? Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    {Array.from({ length: 6 }).map((_, j) => (
+                    {Array.from({ length: isSuperAdmin ? 7 : 6 }).map((_, j) => (
                       <TableCell key={j}><Skeleton variant="text" width="80%" /></TableCell>
                     ))}
                   </TableRow>
@@ -202,17 +221,22 @@ export default function TimersPage() {
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], width: 80 }}>
                       {(page - 1) * pageSize + idx + 1}
                     </TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                    {isSuperAdmin && (
+                      <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
+                        {rule.tenantName}
+                      </TableCell>
+                    )}
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
                       {RULE_TYPE_LABELS[rule.rulesType] ?? rule.rulesType}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
                       {rule.value}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
-                      {rule.CreatedBy}
+                      {rule.createdBy}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
-                      {dayjs.utc(rule.UpdatedAt).format('DD MMM YYYY')}
+                      {dayjs.utc(rule.updatedAt).format('DD MMM YYYY')}
                     </TableCell>
                     <TableCell>
                       <Stack direction="row" sx={{ gap: 0.5, width: "100%", justifyContent: "center", alignItems: "center" }}>

@@ -416,6 +416,11 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] Delete product confirm dialog
 - [x] Zod validations + error display
 - [x] Query invalidation rules
+- [x] TenantSelector di header (isSuperAdmin) + kolom Tenant conditional
+- [x] ProductFormDialog: foto produk upload File (FormData multipart) + preview + LinearProgress
+- [x] ProductFormDialog: TenantSelector hanya untuk superAdmin; non-superAdmin auto-fill tenantId dari activeTenantId
+- [x] ProductFormDialog: validasi foto required (muncul setelah submit), border merah saat error, TenantSelector outline merah saat error
+- [x] Breadcrumb + layout header identik TimersPage
 
 ## 14.5 Templates (CRUD)
 - [x] Template list (grid + thumbnail)
@@ -480,12 +485,12 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] AppShell — background-light bg, padding
 - [x] Sidebar — header-logo.png, Dashboard/Settings group labels, active item brand[100] + brand[500] text, nav item icons
 - [x] Topbar — header-button.svg toggle, user avatar + name + dropdown arrow
-- [ ] Products Page
+- [x] Products Page — Breadcrumb, header layout identik TimersPage (TenantSelector + Search + Tambah Produk), tabel dengan kolom Tenant conditional (isSuperAdmin), Skeleton, permission gates, custom pagination footer
 - [x] Templates Page — layout card grid + edit/delete/upload dialog + flow layout→template selesai (lihat 14.5)
 - [x] Layouts Page — grid kartu pemilihan layout sebelum masuk ke halaman template
 - [x] Timers Page — rewrite menjadi tabel CRUD rules (struktur identik VouchersPage)
 - [x] Vouchers Page
-- [ ] Transactions Page
+- [x] Transactions Page — Breadcrumb, header layout identik TimersPage (TenantSelector + DateRange + Status filter + Search), tabel dengan Skeleton, custom pagination footer, detail Drawer
 - [ ] Accounts Page
 
 ## 14.12 Playwright Tests
@@ -578,9 +583,9 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [ ] `DashboardPage` — tidak ada aksi write; tidak perlu gate (read-only public bagi semua role terauth)
 
 ### Products
-- [ ] `ProductsPage` — gate tombol "Tambah Produk" dengan `products:create`
-- [ ] `ProductsPage` — gate tombol Edit per row dengan `products:update`
-- [ ] `ProductsPage` — gate tombol Delete per row dengan `products:delete`
+- [x] `ProductsPage` — gate tombol "Tambah Produk" dengan `products:create`
+- [x] `ProductsPage` — gate tombol Edit per row dengan `products:update`
+- [x] `ProductsPage` — gate tombol Delete per row dengan `products:delete`
 
 ### Layouts & Templates
 - [x] `LayoutsPage` — gate tombol "Choose Layout" / akses ke template dengan `templates:read` (atau `layouts:read`)
@@ -599,7 +604,7 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] `VouchersPage` — gate tombol Delete per row dengan `vouchers:delete`
 
 ### Transactions
-- [ ] `TransactionsPage` — read-only; tidak ada aksi write; tidak perlu gate tambahan
+- [x] `TransactionsPage` — read-only; tidak ada aksi write; tidak perlu gate tambahan
 
 ### Accounts
 - [ ] `AccountsPage` — gate tombol Edit (role assignment) dengan `accounts:update`
@@ -623,6 +628,48 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 
 ### Role Permission Assignment
 - [ ] `RolePermissionsPage` — gate tombol "Save & Close" dengan `roles:update`
+
+## 14.16 Tenant Selector (Superadmin)
+> Hanya tampil jika `user.isSuperadmin === true` (tenantId: -99 dari backend).
+> Memungkinkan superadmin memilih tenant aktif yang akan mempengaruhi data di seluruh halaman.
+
+- [x] Komponen `TenantSelector` (`src/components/common/TenantSelector.tsx`)
+  - [x] Fetch tenants via `tenantsApi.list({ tenant_id: 0, ... })` — keyword-searchable (server-side), limit 100
+  - [x] MUI Autocomplete single-select; stores hasil pilihan ke `scopeStore.activeTenantId`
+  - [x] Tidak tampil (`return null`) jika user bukan superadmin
+- [x] Integrasi di `Topbar` — selector muncul di semua page secara otomatis (sebelum user avatar)
+- [x] Fix `usePermissions.ts` — `role` expression dilengkapi (`? 'superadmin' : 'user'`)
+
+## 14.17 Integrasi TenantSelector ke Setiap Halaman
+> TenantSelector sudah tampil di Topbar dan menyimpan pilihan ke `scopeStore.activeTenantId`.
+> Namun setiap halaman masih menggunakan `user?.tenantId` (dari authStore) secara langsung.
+> Task ini: ganti semua `user?.tenantId` → baca dari `scopeStore` agar berubah reaktif saat superadmin memilih tenant.
+>
+> **Pola yang benar:**
+> - Non-superadmin: `activeTenantId` diinisialisasi dari `user.tenantId` saat login (di authStore / App.tsx)
+> - Superadmin: `activeTenantId` berubah sesuai pilihan TenantSelector
+> - Setiap page: `const { activeTenantId } = useScopeStore();` — tidak perlu baca `useAuthStore` untuk `tenantId`
+
+### Prerequisite
+- [x] `scopeStore` / login flow — saat login sukses, panggil `setScope(user.tenantId)` agar `activeTenantId` terisi otomatis untuk user non-superadmin
+
+### Pages & Features
+- [x] `DashboardPage` — menggunakan `activeTenantId`, `enabled: !!activeTenantId` (blocking query saat belum pilih tenant — behavior yang benar)
+- [x] `ProductsPage` — menggunakan `activeTenantId`, `queryFn` pass `tenantId: activeTenantId` ke API
+- [x] `AccountsPage` — menggunakan `activeTenantId` di query key (accounts tidak perlu tenant filter per API)
+- [x] `TransactionsPage` — menggunakan `activeTenantId`, pass `tenantId: activeTenantId` ke API
+- [x] `VouchersPage` — sudah ganti ke `activeTenantId` dari scopeStore
+- [x] `TimersPage` — sudah ganti ke `activeTenantId` dari scopeStore
+- [x] `TenantsPage` — tidak ada tenant scoping (global admin page; tidak perlu perubahan)
+- [ ] `LayoutsPage` — masih `user?.tenantId` → ganti ke `activeTenantId` dari scopeStore
+- [x] `TemplatesPage` — sudah ganti ke `activeTenantId` di query + upload/update mutation
+- [x] `UsersPage` — menggunakan `activeTenantId`, pass `tenantId: activeTenantId` ke API
+- [x] `RolesPage` — tidak ada tenant_id di query (roles bersifat global; tidak perlu perubahan)
+- [x] `RolePermissionsPage` — tidak ada tenant_id; tidak perlu perubahan
+
+### Features / Dialogs
+- [ ] `VoucherFormDialog` — masih `user?.tenantId` di mutation → ganti ke `activeTenantId` (pass sebagai prop atau baca dari store)
+- [ ] `TimerFormDialog` — masih `user?.tenantId` di mutation → ganti ke `activeTenantId`
 
 ---
 

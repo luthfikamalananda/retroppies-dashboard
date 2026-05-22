@@ -8,15 +8,16 @@ export interface ResultUsers {
 export interface User {
     id: number
     username: string
-    tenant_id: number
-    role_id: number
-    is_superadmin: boolean
-    created_at: string
-    role_name: string
-    tenant_name: string
+    tenantId: number
+    roleId: number
+    isSuperadmin: boolean
+    createdAt: string
+    roleName: string
+    tenantName: string
 }
 
 export interface UserListParams {
+    tenantId: number | null;
     keyword: string;
     page: number;
     limit: number;

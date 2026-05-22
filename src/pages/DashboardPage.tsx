@@ -170,7 +170,7 @@ const PRODUCT_OPTIONS = [
 ];
 
 export default function DashboardPage() {
-    const { activeTenantId, activeOutletId } = useScopeStore();
+    const { activeTenantId } = useScopeStore();
 
     const [revenuePeriod, setRevenuePeriod] = useState<Period>('weekly');
     const [txPeriod, setTxPeriod] = useState<Period>('weekly');
@@ -185,14 +185,12 @@ export default function DashboardPage() {
     const [revenueProduct, setRevenueProduct] = useState('photostrip');
     const [txProduct, setTxProduct] = useState('all');
 
-    const baseParams = { outlet_id: activeOutletId ?? undefined };
-    const queryKey = ['dashboard', activeTenantId, activeOutletId];
+    const queryKey = ['dashboard', activeTenantId];
 
     const summaryQuery = useQuery({
         queryKey: [...queryKey, 'summary'],
         queryFn: () =>
             dashboardApi.getSummary({
-                ...baseParams,
                 date_start: dayjs().format('YYYY-MM-DD'),
                 date_end: dayjs().format('YYYY-MM-DD'),
             }),
@@ -203,7 +201,6 @@ export default function DashboardPage() {
         queryKey: [...queryKey, 'revenue', revenuePeriod, revenueDateRange, revenueProduct],
         queryFn: () =>
             dashboardApi.getRevenueChart({
-                ...baseParams,
                 date_start: revenueDateRange.start,
                 date_end: revenueDateRange.end,
             }),
@@ -214,7 +211,6 @@ export default function DashboardPage() {
         queryKey: [...queryKey, 'txChart', txPeriod, txDateRange, txProduct],
         queryFn: () =>
             dashboardApi.getTransactionChart({
-                ...baseParams,
                 date_start: txDateRange.start,
                 date_end: txDateRange.end,
             }),

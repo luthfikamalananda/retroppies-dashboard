@@ -1,1 +1,0 @@
-import{t as e}from"./client-D0GEKGWT.js";var t={list:()=>e.get(`/roles/get`).then(e=>e.data),create:t=>e.post(`/roles/create`,t).then(e=>e.data),delete:t=>e.post(`/roles/delete`,{id:t}).then(e=>e.data)};export{t};

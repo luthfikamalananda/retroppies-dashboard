@@ -30,8 +30,9 @@ import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { colors } from '../theme/colors';
-import { useAuthStore } from '../stores/authStore';
 import { usePermissions } from '../hooks/usePermissions';
+import { useScopeStore } from '../stores/scopeStore';
+import { TenantSelector } from '../components/common/TenantSelector';
 
 type TemplateItem = ResultTemplate['templates'][number];
 
@@ -52,7 +53,7 @@ function SkeletonCard() {
 export default function TemplatesPage() {
     const { layoutId } = useParams<{ layoutId: string }>();
     const queryClient = useQueryClient();
-    const { user } = useAuthStore();
+    const { activeTenantId } = useScopeStore();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,18 +74,18 @@ export default function TemplatesPage() {
     const [deleteTarget, setDeleteTarget] = useState<TemplateItem | null>(null);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['templates', layoutId, user?.tenantId],
-        queryFn: () => templatesApi.list({ page: 1, tenantId: user?.tenantId ?? 0, limit: 50, layoutId: Number(layoutId) }),
+        queryKey: ['templates', layoutId, activeTenantId],
+        queryFn: () => templatesApi.list({ page: 1, tenantId: activeTenantId, limit: 50, layoutId: Number(layoutId) }),
         enabled: !!layoutId,
     });
 
     const uploadMutation = useMutation({
         mutationFn: (file: File) =>
             editTarget
-                ? templatesApi.update(editTarget.id, user?.tenantId ?? 0, Number(layoutId), file, (pct) => setUploadProgress(pct))
-                : templatesApi.upload(user?.tenantId ?? 0, Number(layoutId), file, (pct) => setUploadProgress(pct)),
+                ? templatesApi.update(editTarget.id, activeTenantId, Number(layoutId), file, (pct) => setUploadProgress(pct))
+                : templatesApi.upload(activeTenantId, Number(layoutId), file, (pct) => setUploadProgress(pct)),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: ['templates', layoutId, activeTenantId] });
             showSnackbar(editTarget ? 'Template berhasil diperbarui' : 'Template berhasil diupload');
             closeDialog();
         },
@@ -97,7 +98,7 @@ export default function TemplatesPage() {
     const deleteMutation = useMutation({
         mutationFn: (id: number) => templatesApi.delete(id),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates'] });
+            queryClient.invalidateQueries({ queryKey: ['templates', layoutId, activeTenantId] });
             showSnackbar('Template berhasil dihapus');
             setDeleteTarget(null);
         },
@@ -178,25 +179,31 @@ export default function TemplatesPage() {
 
             {/* ── Header ── */}
             <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Your Layout
-                </Typography>
-                {canCreate && (
-                    <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => openUploadDialog(null)}
-                        sx={{
-                            bgcolor: colors.brand[500],
-                            '&:hover': { bgcolor: colors.brand[600] },
-                            borderRadius: 2,
-                            textTransform: 'none',
-                            fontWeight: 600,
-                        }}
-                    >
-                        Upload Layout
-                    </Button>
-                )}
+                <Stack>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                        Your Layout
+                    </Typography>
+                </Stack>
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <TenantSelector />
+                    {canCreate && (
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => openUploadDialog(null)}
+                            sx={{
+                                bgcolor: colors.brand[500],
+                                '&:hover': { bgcolor: colors.brand[600] },
+                                borderRadius: 2,
+                                textTransform: 'none',
+                                fontWeight: 600,
+                            }}
+                        >
+                            Upload Layout
+                        </Button>
+                    )}
+                </Stack>
+
             </Stack>
 
             {isError && <ErrorAlert onRetry={refetch} />}

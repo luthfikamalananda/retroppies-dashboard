@@ -9,7 +9,7 @@ import { useAuthStore } from '../stores/authStore';
 export function usePermissions() {
     // Subscribe untuk reactivity (komponen re-render saat user berubah)
     const user = useAuthStore((s) => s.user);
-    const role = user?.isSuperadmin ? 'superadmin' : 'user';
+    const isSuperAdmin = Boolean(user?.isSuperadmin) ? true : false;
 
     /**
      * Check permission — dua mode:
@@ -30,7 +30,7 @@ export function usePermissions() {
         return permissions.some((p) => p.split(':')[0] === permission);
     }
 
-    return { can, role };
+    return { can, isSuperAdmin };
 }
 
 

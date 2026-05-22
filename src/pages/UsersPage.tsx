@@ -32,6 +32,8 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { UserFormDialog } from '../features/users/UserFormDialog';
 import { colors } from '../theme/colors';
+import { TenantSelector } from '../components/common/TenantSelector';
+import { useScopeStore } from '../stores/scopeStore';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -44,6 +46,8 @@ export default function UsersPage() {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
+    const { activeTenantId } = useScopeStore();
+
     const [formOpen, setFormOpen] = useState(false);
     const [editTarget] = useState<User | null>(null);
     const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
@@ -54,8 +58,13 @@ export default function UsersPage() {
     }, [search]);
 
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['users', page, pageSize, debouncedSearch],
-        queryFn: () => usersApi.list({ keyword: debouncedSearch, page, limit: pageSize }),
+        queryKey: ['users', activeTenantId, page, pageSize, debouncedSearch],
+        queryFn: () => usersApi.list({
+            tenantId: activeTenantId,
+            keyword: debouncedSearch,
+            page,
+            limit: pageSize
+        }),
     });
 
     const deleteMutation = useMutation({
@@ -96,6 +105,7 @@ export default function UsersPage() {
                     Data User
                 </Typography>
                 <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <TenantSelector />
                     <TextField
                         size="small"
                         placeholder="Search"
@@ -163,12 +173,12 @@ export default function UsersPage() {
                                                 sx={{ width: "100%", justifyContent: "center", alignItems: "center" }}
                                             >
                                                 <Chip
-                                                    label={user.role_name}
+                                                    label={user.roleName}
                                                     size="small"
                                                     sx={{
                                                         width: "fit-content",
-                                                        bgcolor: user.tenant_id === -99 ? colors.brand[100] : colors.base['section'],
-                                                        color: user.tenant_id === -99 ? colors.brand[500] : colors.base['black'],
+                                                        bgcolor: user.tenantId === null ? colors.brand[100] : colors.base['section'],
+                                                        color: user.tenantId === null ? colors.brand[500] : colors.base['black'],
                                                         fontWeight: 600,
                                                         fontSize: 12,
                                                         borderRadius: 1
@@ -176,7 +186,7 @@ export default function UsersPage() {
                                                 />
                                             </Stack>
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>{user.tenant_name ?? "-"}</TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>{user.tenantName ?? "-"}</TableCell>
                                         {/* <TableCell>
                                             <Stack direction="row" sx={{ gap: 0.5 }}>
                                                 <IconButton size="small" onClick={() => { setEditTarget(user); setFormOpen(true); }} sx={{ color: colors.brand[500] }}>

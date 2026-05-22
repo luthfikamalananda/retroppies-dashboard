@@ -9,15 +9,16 @@ export interface Rule {
   id: number;
   rulesType: string;
   value: number;
-  tenant_id: number;
-  CreatedAt: string;
-  CreatedBy: string;
-  UpdatedAt: string;
-  UpdatedBy: string;
+  tenantId: number;
+  tenantName: string;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface RuleListParams {
-  tenant_id: number;
+  tenantId: number | null;
   keyword: string;
   page: number;
   limit: number;

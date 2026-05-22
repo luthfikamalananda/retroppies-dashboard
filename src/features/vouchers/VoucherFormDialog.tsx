@@ -108,9 +108,9 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         code: editTarget.code,
         name: editTarget.name,
         value: editTarget.value,
-        limit_rp: editTarget.limit_rp,
-        date_from: toInputDate(editTarget.date_from),
-        date_to: toInputDate(editTarget.date_to),
+        limit_rp: editTarget.limitRp,
+        date_from: toInputDate(editTarget.dateFrom),
+        date_to: toInputDate(editTarget.dateTo),
         status: editTarget.status as 'active' | 'inactive',
       });
     } else if (open && !editTarget) {
@@ -121,10 +121,14 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
       const payload: VoucherPayload = {
-        ...values,
-        date_from: toIso(values.date_from),
-        date_to: toIso(values.date_to),
-        tenant_id: user?.tenantId ?? 0,
+        code: values.code,
+        name: values.name,
+        value: values.value,
+        limitRp: values.limit_rp,
+        dateFrom: toIso(values.date_from),
+        dateTo: toIso(values.date_to),
+        status: values.status,
+        tenantId: user?.tenantId ?? 0,
       };
       console.log('Payload to submit:', payload); // Debug log
       // dummy return

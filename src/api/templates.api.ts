@@ -16,7 +16,7 @@ export interface ResultTemplate {
 
 export interface RequestTemplateList {
     page: number,
-    tenantId: number,
+    tenantId: number | null,
     limit: number,
     layoutId?: number,
 }
@@ -24,12 +24,12 @@ export interface RequestTemplateList {
 export const templatesApi = {
     list: (request: RequestTemplateList) =>
         apiClient.post<BaseResponse<ResultTemplate>>('/template/get', request).then((r) => r.data),
-    upload: (tenantId: number, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
+    upload: (tenantId: number | null, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
         const form = new FormData();
         form.append('display', file);
         form.append('production', file);
         form.append('layout_id', layoutId.toString());
-        form.append('tenant_id', tenantId.toString());
+        form.append('tenant_id', String(tenantId ?? ''));
         return apiClient
             .post<BaseResponse<ResultTemplate>>('/template/create', form, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -42,12 +42,12 @@ export const templatesApi = {
             .then((r) => r.data);
     },
 
-    update: (id: number, tenantId: number, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
+    update: (id: number, tenantId: number | null, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
         const form = new FormData();
         form.append('display', file);
         form.append('production', file);
         form.append('layout_id', layoutId.toString());
-        form.append('tenant_id', tenantId.toString());
+        form.append('tenant_id', String(tenantId ?? ''));
         return apiClient
             .put<BaseResponse<ResultTemplate>>(`/template/update/${id}`, form, {
                 headers: { 'Content-Type': 'multipart/form-data' },
