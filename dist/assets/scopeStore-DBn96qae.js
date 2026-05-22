@@ -1,1 +1,0 @@
-import{n as e}from"./authStore-DgRJ72RU.js";var t=e(e=>({activeTenantId:null,setScope:t=>e({activeTenantId:t}),clearScope:()=>e({activeTenantId:null})}));export{t};
