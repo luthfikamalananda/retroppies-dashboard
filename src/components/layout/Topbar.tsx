@@ -58,7 +58,7 @@ export function Topbar() {
             component="img"
             src={headerButton}
             alt="toggle sidebar"
-            sx={{ width: 18, height: 18 }}
+            sx={{ width: 18, height: 18, transform: collapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s ease' }}
           />
         </IconButton>
 

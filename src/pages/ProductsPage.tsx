@@ -128,15 +128,15 @@ export default function ProductsPage() {
 
             {/* Header */}
             <Stack
-                direction="row"
+                direction={{ xs: 'column', lg: 'row' }}
                 sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
             >
-                <Stack sx={{ width: "50%" }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], justifySelf: "start" }}>
                         Produk
                     </Typography>
                 </Stack>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
                     <Stack sx={{ width: "100%" }}>
                         <TenantSelector />
                     </Stack>
@@ -154,12 +154,10 @@ export default function ProductsPage() {
                                 ),
                             },
                         }}
-                        // change the height into 36px
-                        // change the width into 100%
-
                         sx={{
                             '& .MuiInputBase-root': {
                                 height: "36px",
+                                fontSize: 14,
                             },
                             width: { xs: '100%', sm: "100%" },
                             bgcolor: colors.base['white']
@@ -175,9 +173,7 @@ export default function ProductsPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                // px: 2.5,
-                                width: "400px",
-                                // width: "400px",
+                                width: { xs: '100%', sm: "420px" },
                             }}
                         >
                             Tambah Produk

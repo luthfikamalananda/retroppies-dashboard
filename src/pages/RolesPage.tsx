@@ -85,13 +85,15 @@ export default function RolesPage() {
             </Breadcrumbs>
 
             <Stack
-                direction="row"
+                direction={{ xs: 'column', lg: 'row' }}
                 sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Data Role
-                </Typography>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                        Data Role
+                    </Typography>
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
                     <TextField
                         size="small"
                         placeholder="Search"
@@ -106,7 +108,14 @@ export default function RolesPage() {
                                 ),
                             },
                         }}
-                        sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                height: "36px",
+                                fontSize: 14,
+                            },
+                            width: { xs: '100%', sm: "100%" },
+                            bgcolor: colors.base['white']
+                        }}
                     />
                     {canCreate && (
                         <Button
@@ -118,10 +127,10 @@ export default function RolesPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                px: 2.5,
+                                width: { xs: '100%', sm: "420px" },
                             }}
                         >
-                            Add Role
+                            Tambah Role
                         </Button>
                     )}
                 </Stack>

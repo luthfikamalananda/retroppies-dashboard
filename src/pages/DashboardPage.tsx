@@ -190,19 +190,28 @@ export default function DashboardPage() {
     const summaryQuery = useQuery({
         queryKey: [...queryKey, 'summary'],
         queryFn: () =>
-            dashboardApi.getSummary({
-                date_start: dayjs().format('YYYY-MM-DD'),
-                date_end: dayjs().format('YYYY-MM-DD'),
+            dashboardApi.getSummaryChart({
+                startDate: dayjs().format('YYYY-MM-DD'),
+                endDate: dayjs().format('YYYY-MM-DD'),
+                startMonth: dayjs().format('YYYY-MM'),
+                endMonth: dayjs().format('YYYY-MM'),
+                startYear: dayjs().format('YYYY'),
+                endYear: dayjs().format('YYYY'),
+                tenantId: activeTenantId,
             }),
-        enabled: !!activeTenantId,
     });
 
     const revenueQuery = useQuery({
         queryKey: [...queryKey, 'revenue', revenuePeriod, revenueDateRange, revenueProduct],
         queryFn: () =>
             dashboardApi.getRevenueChart({
-                date_start: revenueDateRange.start,
-                date_end: revenueDateRange.end,
+                startDate: revenueDateRange.start,
+                endDate: revenueDateRange.end,
+                startMonth: dayjs(revenueDateRange.start).format('YYYY-MM'),
+                endMonth: dayjs(revenueDateRange.end).format('YYYY-MM'),
+                startYear: dayjs(revenueDateRange.start).format('YYYY'),
+                endYear: dayjs(revenueDateRange.end).format('YYYY'),
+                tenantId: activeTenantId,
             }),
         enabled: !!activeTenantId,
     });
@@ -211,8 +220,13 @@ export default function DashboardPage() {
         queryKey: [...queryKey, 'txChart', txPeriod, txDateRange, txProduct],
         queryFn: () =>
             dashboardApi.getTransactionChart({
-                date_start: txDateRange.start,
-                date_end: txDateRange.end,
+                startDate: txDateRange.start,
+                endDate: txDateRange.end,
+                startMonth: dayjs(txDateRange.start).format('YYYY-MM'),
+                endMonth: dayjs(txDateRange.end).format('YYYY-MM'),
+                startYear: dayjs(txDateRange.start).format('YYYY'),
+                endYear: dayjs(txDateRange.end).format('YYYY'),
+                tenantId: activeTenantId,
             }),
         enabled: !!activeTenantId,
     });

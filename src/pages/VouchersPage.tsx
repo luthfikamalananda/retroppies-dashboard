@@ -185,12 +185,10 @@ export default function VouchersPage() {
                                 ),
                             },
                         }}
-                        // change the height into 36px
-                        // change the width into 100%
-
                         sx={{
                             '& .MuiInputBase-root': {
                                 height: "36px",
+                                fontSize: 14,
                             },
                             width: { xs: '100%', sm: "100%" },
                             bgcolor: colors.base['white']
@@ -206,9 +204,7 @@ export default function VouchersPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                // px: 2.5,
-                                width: "410px",
-                                // width: "400px",
+                                width: { xs: '100%', sm: "420px" },
                             }}
                         >
                             Tambah Voucher
@@ -224,7 +220,7 @@ export default function VouchersPage() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80  }}>#</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Voucher Code</TableCell>
                                 {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
                                 <TableCell

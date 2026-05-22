@@ -18,20 +18,24 @@ export interface TransactionDataPoint {
 }
 
 export interface DashboardParams {
-  date_start: string;
-  date_end: string;
-  outlet_id?: string;
+  startDate: string;
+  endDate: string;
+  startMonth: string;
+  endMonth: string;
+  startYear: string;
+  endYear: string;
+  tenantId: number | null;
 }
 
 export const dashboardApi = {
-  getSummary: (params: DashboardParams) =>
+  getSummaryChart: (params: DashboardParams) =>
     apiClient
-      .get<DashboardSummary>('/dashboard/summary', { params })
+      .post<DashboardSummary>('/transactions/get-chart-summary', { ...params })
       .then((r) => r.data),
 
   getRevenueChart: (params: DashboardParams) =>
     apiClient
-      .get<RevenueDataPoint[]>('/dashboard/revenue', { params })
+      .post<RevenueDataPoint[]>('/dashboard/revenue', { ...params })
       .then((r) => r.data),
 
   getTransactionChart: (params: DashboardParams) =>

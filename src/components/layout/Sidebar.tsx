@@ -42,7 +42,7 @@ const DASHBOARD_ITEMS = [
     { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: 'transactions:read' },
 ];
 
-const SYSTEM_USER_ITEMS = [
+const SETTING_USER_ITEMS = [
     { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: 'tenants:read' },
     { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" />, permission: 'users:read' },
     { label: 'Role', path: '/app/roles', icon: <BadgeIcon fontSize="small" />, permission: 'roles:read' },
@@ -50,8 +50,10 @@ const SYSTEM_USER_ITEMS = [
 ];
 
 const SETTINGS_ITEMS = [
-    { label: 'Advanced Settings', path: '/app/accounts', icon: <img src={settingIcon} alt="Setting UsersettingIcon" />, permission: 'accounts:read' },
+    { label: 'Manage Account', path: '/testing', icon: <img src={settingIcon} alt="Manage Account" />, permission: '*' },
 ];
+
+
 
 function NavGroup({ label, collapsed }: { label: string; collapsed: boolean }) {
     if (collapsed) return <Box sx={{ height: 8 }} />;
@@ -59,7 +61,7 @@ function NavGroup({ label, collapsed }: { label: string; collapsed: boolean }) {
         <Typography
             sx={{
                 // px: 2,
-                pt: 2,
+                pt: 1.5,
                 pb: 1,
                 display: 'block',
                 color: colors.base['black'],
@@ -159,9 +161,9 @@ function NavGroupCollapsible({
                         mt: 0.5,
                         minHeight: 40,
                         justifyContent: collapsed ? 'center' : 'flex-start',
-                        // px: 1.5,
+                        px: 1.5,
                         gap: 1.25,
-                        p:0,
+                        // p:0,
                         py: 1,
                         pr: 1,
                         color: colors.base['black'],
@@ -169,7 +171,7 @@ function NavGroupCollapsible({
                     }}
                 >
                     <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
-                        <img src={settingIcon} alt="Setting Icon" />
+                        <img src={settingIcon} alt="Setting User" />
                     </ListItemIcon>
                     {!collapsed && (
                         <>
@@ -179,11 +181,11 @@ function NavGroupCollapsible({
                                     primary: {
                                         style: {
                                             fontSize: 15,
-                                            fontWeight: 600,
+                                            fontWeight: 500,
                                             // letterSpacing: '0.04em',
                                             textTransform: 'capitalize',
                                             color: colors.base['black'],
-                                            fontFamily: "public sans, sans-serif",
+                                            // fontFamily: "public sans, sans-serif",
                                         },
                                     },
                                 }}
@@ -220,7 +222,7 @@ export function Sidebar() {
 
     const dashboardItems = DASHBOARD_ITEMS.filter((item) => can(item.permission));
     // const dashboardItems = DASHBOARD_ITEMS
-    const systemUserItems = SYSTEM_USER_ITEMS.filter((item) => can(item.permission));
+    const systemUserItems = SETTING_USER_ITEMS.filter((item) => can(item.permission));
     const settingsItems = SETTINGS_ITEMS.filter((item) => can(item.permission));
 
     return (
@@ -290,7 +292,7 @@ export function Sidebar() {
                 {/* Settings User group */}
                 {systemUserItems.length > 0 && (
                     <NavGroupCollapsible
-                        label="Advanced Settings"
+                        label="Setting User"
                         collapsed={isCollapsed}
                         expanded={systemUserExpanded}
                         onToggle={() => setSystemUserExpanded((prev) => !prev)}
@@ -310,23 +312,18 @@ export function Sidebar() {
                     </NavGroupCollapsible>
                 )}
 
-                {/* Settings group */}
-                {settingsItems.length > 0 && (
-                    <>
-                        <NavGroup label="Settings" collapsed={isCollapsed} />
-                        <List disablePadding>
-                            {settingsItems.map((item) => (
-                                <NavItem
-                                    key={item.path}
-                                    item={item}
-                                    collapsed={isCollapsed}
-                                    isActive={location.pathname.startsWith(item.path)}
-                                    onClick={handleNavClick}
-                                />
-                            ))}
-                        </List>
-                    </>
-                )}
+
+                <NavGroup label="Settings" collapsed={isCollapsed} />
+                {settingsItems.map((item) => (
+                    <NavItem
+                        key={item.path}
+                        item={item}
+                        collapsed={isCollapsed}
+                        isActive={location.pathname.startsWith(item.path)}
+                        onClick={handleNavClick}
+                    />
+                ))}
+
             </Box>
         </Drawer>
     );

@@ -104,18 +104,18 @@ export default function TenantsPage() {
 
             {/* Header */}
             <Stack
-                direction="row"
+                direction={{ xs: 'column', lg: 'row' }}
                 sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
             >
-                <Stack sx={{ width: "50%" }}>
+                <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
                     <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
                         Data Unit Tenant
                     </Typography>
                 </Stack>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "40%", }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "40%", }}>
                     <TextField
                         size="small"
-                        placeholder="Cari kode / nama produk..."
+                        placeholder="Masukkan keyword..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -130,6 +130,7 @@ export default function TenantsPage() {
                         sx={{
                             '& .MuiInputBase-root': {
                                 height: "36px",
+                                fontSize: 14,
                             },
                             width: { xs: '100%', sm: "100%" },
                             bgcolor: colors.base['white']
@@ -145,9 +146,7 @@ export default function TenantsPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                // px: 2.5,
-                                width: "250px",
-                                // width: "400px",
+                                width: { xs: '100%', sm: "420px" },
                             }}
                         >
                             Tambah Tenant
@@ -163,7 +162,7 @@ export default function TenantsPage() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], width: 80  }}>#</TableCell>
+                                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], width: 80 }}>#</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100] }}>Tenant Code</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], textAlign: "center" }}>Tenant Name</TableCell>
                                 <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base["black"], bgcolor: colors.brand[100], textAlign: "center" }}>Address</TableCell>

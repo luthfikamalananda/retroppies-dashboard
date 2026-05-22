@@ -99,21 +99,21 @@ export default function UsersPage() {
 
             {/* Header */}
             <Stack
-                direction="row"
+                direction={{ xs: 'column', lg: 'row' }}
                 sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
             >
-                <Stack sx={{ width: "50%" }}>
+                <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
                     <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
                         Data User
                     </Typography>
                 </Stack>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "50%", flexGrow: 1 }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "50%", flexGrow: 1 }}>
                     <Stack sx={{ width: "100%" }}>
                         <TenantSelector />
                     </Stack>
                     <TextField
                         size="small"
-                        placeholder="Cari kode / nama produk..."
+                        placeholder="Masukkan keyword..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -128,6 +128,7 @@ export default function UsersPage() {
                         sx={{
                             '& .MuiInputBase-root': {
                                 height: "36px",
+                                fontSize: 14,
                             },
                             width: { xs: '100%', sm: "100%" },
                             bgcolor: colors.base['white']
