@@ -103,7 +103,7 @@ export default function RolePermissionsPage() {
 
     const assignMutation = useMutation({
         mutationFn: () =>
-            permissionsApi.assign({ role_id: roleId, permission_ids: [...checkedIds] }),
+            permissionsApi.assign({ roleId: roleId, permissionIds: [...checkedIds] }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['role-permissions', roleId] });
             showSnackbar('Permission berhasil disimpan');

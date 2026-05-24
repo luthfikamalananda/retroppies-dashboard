@@ -7,13 +7,13 @@ export interface ResultPermissions {
 
 
 export interface PayloadAssignPermission {
-    role_id: number;
-    permission_ids: number[];
+    roleId: number;
+    permissionIds: number[];
 }
 
 export interface ResultRolePermission {
-    role_id: number,
-    role_name: string,
+    roleId: number,
+    roleName: string,
     permissions: ResultPermissions[]
 }
 
@@ -22,7 +22,7 @@ export const permissionsApi = {
         apiClient.get<BaseResponse<ResultPermissions[]>>('/permissions/get').then((r) => r.data),
 
     getByRole: (roleId: number) =>
-        apiClient.post<BaseResponse<ResultRolePermission>>('/role-permissions/get', { role_id: roleId }).then((r) => r.data),
+        apiClient.post<BaseResponse<ResultRolePermission>>('/role-permissions/get', { roleId }).then((r) => r.data),
 
     assign: (payload: PayloadAssignPermission) =>
         apiClient.post<BaseResponse<any>>('/role-permissions/replace', payload).then((r) => r.data),
