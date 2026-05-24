@@ -20,6 +20,9 @@ export function usePermissions() {
      */
 
     function can(permission: string): boolean {
+        if (isSuperAdmin === true) {
+            return true;
+        }
         if (permission === '*') {
             return true; // wildcard: punya semua permission
         }

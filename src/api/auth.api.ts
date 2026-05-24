@@ -15,6 +15,11 @@ export interface ResultLogin {
     isSuperadmin: boolean
 }
 
+export interface PayloadChangePassword {
+    oldPassword: string;
+    newPassword: string;
+}
+
 export const authApi = {
     login: (payload: LoginPayload) =>
         apiClient.post<BaseResponse<ResultLogin>>('/users/login', payload, {
@@ -27,4 +32,7 @@ export const authApi = {
         apiClient.post<BaseResponse<ResultLogin>>('/auth/refresh').then((r) => r.data),
 
     logout: () => apiClient.post('/auth/logout'),
+
+    changePassword: (payload: PayloadChangePassword) =>
+        apiClient.post<BaseResponse<null>>('/users/change-password', { ...payload }).then((r) => r.data),
 };

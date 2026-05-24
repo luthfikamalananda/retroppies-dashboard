@@ -492,6 +492,7 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] Vouchers Page
 - [x] Transactions Page — Breadcrumb, header layout identik TimersPage (TenantSelector + DateRange + Status filter + Search), tabel dengan Skeleton, custom pagination footer, detail Drawer
 - [ ] Accounts Page
+- [x] Manage Account Page — Breadcrumb (Settings → Manage Account), Profile Information (read-only: username dari authStore), Security section dengan "Change Password" button; Change Password dialog (New Password + Confirmation + eye toggle + Discard/Save); `authApi.changePassword` endpoint
 
 ## 14.12 Playwright Tests
 > Semua tes dijalankan dengan `@playwright/test` + Chromium.
@@ -628,6 +629,23 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 
 ### Role Permission Assignment
 - [ ] `RolePermissionsPage` — gate tombol "Save & Close" dengan `roles:update`
+
+## 14.18 Manage Account (Settings — Ganti Password)
+> Halaman untuk user mengelola akun sendiri. API hanya support ganti password.
+> Profile information (username) ditampilkan read-only dari `authStore`.
+> Sidebar path: Settings → Manage Account → `/app/manage-account`
+
+- [x] `authApi.changePassword({ new_password, confirm_password })` — POST `/users/change-password`
+- [x] `ManagementAccount` page (`src/pages/ManagementAccount.tsx`)
+  - [x] Breadcrumb: Home → Settings → Manage Account
+  - [x] Paper: header dengan back arrow + judul "Profile Information"
+  - [x] Profile section read-only: avatar icon + username dari `authStore`
+  - [x] Security section: tombol "Change Password" (outlined brand)
+  - [x] Change Password Dialog: New Password + Confirmation (eye toggle), Discard/Save buttons
+  - [x] Zod validation: min 8 karakter, password confirmation match
+  - [x] Error display dari API + success snackbar
+- [x] Route: `/app/manage-account` ditambahkan di `AppRoutes.tsx`
+- [x] Sidebar path `/testing` → `/app/manage-account`
 
 ## 14.16 Tenant Selector (Superadmin)
 > Hanya tampil jika `user.isSuperadmin === true` (tenantId: -99 dari backend).

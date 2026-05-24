@@ -1,45 +1,316 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import CloseIcon from '@mui/icons-material/Close';
+import HomeIcon from '@mui/icons-material/Home';
+import SearchIcon from '@mui/icons-material/Search';
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import {
   Box,
-  Typography,
-  Stack,
+  Breadcrumbs,
+  Button,
+  Chip,
+  Divider,
+  Drawer,
+  IconButton,
+  InputAdornment,
+  Link,
+  MenuItem,
+  Pagination,
   Paper,
+  Popover,
+  Select,
+  Skeleton,
+  Stack,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
-  TableContainer,
-  IconButton,
   TextField,
-  InputAdornment,
-  Chip,
-  Select,
-  MenuItem,
-  Drawer,
-  Divider,
-  Breadcrumbs,
-  Link,
-  Skeleton,
-  Pagination,
+  Typography,
 } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
-import HomeIcon from '@mui/icons-material/Home';
-import dayjs from 'dayjs';
+import { useQuery } from '@tanstack/react-query';
+import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
+import { useEffect, useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { transactionsApi, type Transaction } from '../api/transactions.api';
-import { useScopeStore } from '../stores/scopeStore';
-import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
-import { DateRangeFilter } from '../features/dashboard/DateRangeFilter';
-import { colors } from '../theme/colors';
+import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { useScopeStore } from '../stores/scopeStore';
+import { colors } from '../theme/colors';
+dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
+const WEEKDAYS = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+
+// ─── Dual-month date range picker ──────────────────────────────────────────
+
+interface DateRange {
+  start: string; // YYYY-MM-DD
+  end: string;
+}
+
+interface CalendarMonthProps {
+  viewMonth: Dayjs;
+  rangeStart: Dayjs | null;
+  rangeEnd: Dayjs | null;
+  hovered: Dayjs | null;
+  onSelectDay: (d: Dayjs) => void;
+  onHoverDay: (d: Dayjs | null) => void;
+}
+
+function CalendarMonth({ viewMonth, rangeStart, rangeEnd, hovered, onSelectDay, onHoverDay }: CalendarMonthProps) {
+  const firstDay = viewMonth.startOf('month');
+  // Monday-based: 0=Mo … 6=Su
+  const startOffset = (firstDay.day() + 6) % 7;
+  const daysInMonth = viewMonth.daysInMonth();
+
+  const cells: (Dayjs | null)[] = [
+    ...Array(startOffset).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => firstDay.add(i, 'day')),
+  ];
+
+  // Pad to full weeks
+  while (cells.length % 7 !== 0) cells.push(null);
+
+  const effectiveEnd = rangeEnd ?? hovered;
+
+  function isInRange(d: Dayjs) {
+    if (!rangeStart || !effectiveEnd) return false;
+    const [s, e] = rangeStart.isBefore(effectiveEnd)
+      ? [rangeStart, effectiveEnd]
+      : [effectiveEnd, rangeStart];
+    return (d.isAfter(s) || d.isSame(s, 'day')) && (d.isBefore(e) || d.isSame(e, 'day'));
+  }
+
+  function isStart(d: Dayjs) {
+    if (!rangeStart) return false;
+    if (!effectiveEnd) return d.isSame(rangeStart, 'day');
+    const [s] = rangeStart.isBefore(effectiveEnd) ? [rangeStart] : [effectiveEnd];
+    return d.isSame(s, 'day');
+  }
+
+  function isEnd(d: Dayjs) {
+    if (!rangeStart || !effectiveEnd) return false;
+    const [, e] = rangeStart.isBefore(effectiveEnd) ? [rangeStart, effectiveEnd] : [effectiveEnd, rangeStart];
+    return d.isSame(e, 'day');
+  }
+
+  return (
+    <Box sx={{ width: 280 }}>
+      {/* Weekday headers */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', mb: 0.5 }}>
+        {WEEKDAYS.map((w) => (
+          <Typography key={w} sx={{ textAlign: 'center', fontSize: 12, fontWeight: 600, color: colors.base['grey'], py: 0.5 }}>
+            {w}
+          </Typography>
+        ))}
+      </Box>
+      {/* Days */}
+      <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
+        {cells.map((d, i) => {
+          if (!d) return <Box key={i} />;
+
+          const start = isStart(d);
+          const end = isEnd(d);
+          const inRange = isInRange(d);
+          const isToday = d.isSame(dayjs(), 'day');
+
+          return (
+            <Box
+              key={i}
+              onClick={() => onSelectDay(d)}
+              onMouseEnter={() => onHoverDay(d)}
+              onMouseLeave={() => onHoverDay(null)}
+              sx={{
+                position: 'relative',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 36,
+                cursor: 'pointer',
+                // Range background (half-width left or right to bridge between cells)
+                '&::before': inRange && !start && !end ? {
+                  content: '""',
+                  position: 'absolute',
+                  inset: 0,
+                  bgcolor: colors.brand[100],
+                } : {},
+                '&::after': (start || end) && inRange ? {
+                  content: '""',
+                  position: 'absolute',
+                  top: 0,
+                  bottom: 0,
+                  left: start ? '50%' : 0,
+                  right: end ? '50%' : 0,
+                  bgcolor: colors.brand[100],
+                } : {},
+              }}
+            >
+              <Box
+                sx={{
+                  position: 'relative',
+                  zIndex: 1,
+                  width: 32,
+                  height: 32,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: '50%',
+                  bgcolor: start || end ? colors.brand[600] : inRange ? colors.brand[100] : 'transparent',
+                  color: start || end ? '#fff' : inRange ? colors.brand[700] : isToday ? colors.brand[600] : colors.base['black'],
+                  fontWeight: start || end || isToday ? 700 : 400,
+                  fontSize: 13,
+                  '&:hover': {
+                    bgcolor: start || end ? colors.brand[700] : colors.brand[200],
+                  },
+                  transition: 'background-color 0.15s',
+                }}
+              >
+                {d.date()}
+              </Box>
+            </Box>
+          );
+        })}
+      </Box>
+    </Box>
+  );
+}
+
+interface DateRangePickerProps {
+  value: DateRange;
+  onChange: (r: DateRange) => void;
+}
+
+function DateRangePicker({ value, onChange }: DateRangePickerProps) {
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
+  const [leftMonth, setLeftMonth] = useState<Dayjs>(dayjs(value.start).startOf('month'));
+  const [picking, setPicking] = useState<Dayjs | null>(null); // first click
+  const [hovered, setHovered] = useState<Dayjs | null>(null);
+  const rightMonth = leftMonth.add(1, 'month');
+
+  // const rangeStart = picking ?? (value.start ? dayjs(value.start) : null);
+  // const rangeEnd = !picking && value.end ? dayjs(value.end) : null;
+
+  function handleSelectDay(d: Dayjs) {
+    if (!picking) {
+      // First click: start new range
+      setPicking(d);
+    } else {
+      // Second click: confirm range
+      const [s, e] = d.isBefore(picking) ? [d, picking] : [picking, d];
+      onChange({ start: s.format('YYYY-MM-DD'), end: e.format('YYYY-MM-DD') });
+      setPicking(null);
+      setAnchorEl(null);
+    }
+  }
+
+  function handleOpen(e: React.MouseEvent<HTMLElement>) {
+    setLeftMonth(dayjs(value.start).startOf('month'));
+    setPicking(null);
+    setAnchorEl(e.currentTarget);
+  }
+
+  const displayLabel = value.start && value.end
+    ? `${dayjs(value.start).format('DD MMM YYYY')} - ${dayjs(value.end).format('DD MMM YYYY')}`
+    : 'Pilih tanggal';
+
+  return (
+    <>
+      <Button
+        onClick={handleOpen}
+        variant="outlined"
+        size="small"
+        endIcon={<CalendarMonthIcon sx={{ fontSize: 16 }} />}
+        sx={{
+          height: 40,
+          fontSize: 13,
+          fontWeight: 500,
+          color: colors.base['black'],
+          borderColor: colors.border['default'],
+          bgcolor: colors.base['white'],
+          textTransform: 'none',
+          px: 1.5,
+          whiteSpace: 'nowrap',
+          '&:hover': { borderColor: colors.brand[400], bgcolor: colors.base['white'] },
+        }}
+      >
+        {displayLabel}
+      </Button>
+
+      <Popover
+        open={Boolean(anchorEl)}
+        anchorEl={anchorEl}
+        onClose={() => { setAnchorEl(null); setPicking(null); }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        slotProps={{ paper: { sx: { mt: 0.5, borderRadius: 2, boxShadow: '0 8px 24px rgba(0,0,0,0.12)', p: 2.5 } } }}
+      >
+        <Stack direction="row" sx={{ gap: 3 }}>
+          {/* Left month */}
+          <Box>
+            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <IconButton size="small" onClick={() => setLeftMonth(leftMonth.subtract(1, 'month'))}>
+                <ChevronLeftIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: colors.base['black'] }}>
+                {leftMonth.format('MMMM')}
+                <Typography component="span" sx={{ fontWeight: 700, fontSize: 14, color: colors.brand[600], ml: 0.5 }}>
+                  {leftMonth.format('YYYY')}
+                </Typography>
+              </Typography>
+              <Box sx={{ width: 28 }} /> {/* spacer */}
+            </Stack>
+            <CalendarMonth
+              viewMonth={leftMonth}
+              rangeStart={picking ?? (value.start ? dayjs(value.start) : null)}
+              rangeEnd={picking ? null : (value.end ? dayjs(value.end) : null)}
+              hovered={picking ? hovered : null}
+              onSelectDay={handleSelectDay}
+              onHoverDay={setHovered}
+            />
+          </Box>
+
+          {/* Right month */}
+          <Box>
+            <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
+              <Box sx={{ width: 28 }} /> {/* spacer */}
+              <Typography sx={{ fontWeight: 700, fontSize: 14, color: colors.base['black'] }}>
+                {rightMonth.format('MMMM')}
+                <Typography component="span" sx={{ fontWeight: 700, fontSize: 14, color: colors.brand[600], ml: 0.5 }}>
+                  {rightMonth.format('YYYY')}
+                </Typography>
+              </Typography>
+              <IconButton size="small" onClick={() => setLeftMonth(leftMonth.add(1, 'month'))}>
+                <ChevronRightIcon sx={{ fontSize: 18 }} />
+              </IconButton>
+            </Stack>
+            <CalendarMonth
+              viewMonth={rightMonth}
+              rangeStart={picking ?? (value.start ? dayjs(value.start) : null)}
+              rangeEnd={picking ? null : (value.end ? dayjs(value.end) : null)}
+              hovered={picking ? hovered : null}
+              onSelectDay={handleSelectDay}
+              onHoverDay={setHovered}
+            />
+          </Box>
+        </Stack>
+
+        {picking && (
+          <Typography sx={{ fontSize: 12, color: colors.base['grey'], mt: 1.5, textAlign: 'center' }}>
+            Pilih tanggal akhir
+          </Typography>
+        )}
+      </Popover>
+    </>
+  );
+}
+
+// ─── Main Page ──────────────────────────────────────────────────────────────
 
 export default function TransactionsPage() {
   const { activeTenantId } = useScopeStore();
@@ -48,12 +319,13 @@ export default function TransactionsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'' | 'success' | 'failed'>('');
-  const [dateRange, setDateRange] = useState({
+  // const [statusFilter, setStatusFilter] = useState<'' | 'success' | 'failed'>('');
+  const [dateRange, setDateRange] = useState<DateRange>({
     start: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
     end: dayjs().format('YYYY-MM-DD'),
   });
   const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -61,15 +333,16 @@ export default function TransactionsPage() {
   }, [search]);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['transactions', activeTenantId, statusFilter, dateRange, debouncedSearch, page, pageSize],
+    // queryKey: ['transactions', activeTenantId, statusFilter, dateRange, debouncedSearch, page, pageSize, sortDir],
+    queryKey: ['transactions', activeTenantId, dateRange, debouncedSearch, page, pageSize, sortDir],
     queryFn: () =>
       transactionsApi.list({
         dateFrom: dateRange.start,
         dateTo: dateRange.end,
         productCode: debouncedSearch,
-        tenantId: activeTenantId ,
+        tenantId: activeTenantId,
         page,
-        limit: pageSize
+        limit: pageSize,
       }),
   });
 
@@ -78,6 +351,13 @@ export default function TransactionsPage() {
   const totalPages = Math.max(1, Math.ceil(total / pageSize));
   const fromEntry = total === 0 ? 0 : (page - 1) * pageSize + 1;
   const toEntry = Math.min(page * pageSize, total);
+
+  const HEADER_CELL = {
+    bgcolor: colors.brand[100],
+    fontWeight: 600,
+    fontSize: 13,
+    color: colors.base['black'],
+  } as const;
 
   return (
     <Box>
@@ -98,13 +378,27 @@ export default function TransactionsPage() {
       {/* Header */}
       <Stack
         direction="row"
-        sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
+        sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, width: "100%", gap: 2 }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-          Laporan Transaksi
-        </Typography>
-        <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-          <TenantSelector />
+        <Stack sx={{ width: "40%", justifyContent: "flex-end" }} >
+          <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+            Laporan Transaksi
+          </Typography>
+        </Stack>
+
+        <Stack
+          direction="row"
+          sx={{
+            width: "100%",
+            gap: 1.5,
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Stack sx={{ width: "30%" }}>
+            <TenantSelector />
+          </Stack>
+
           <TextField
             size="small"
             placeholder="Search"
@@ -119,10 +413,17 @@ export default function TransactionsPage() {
                 ),
               },
             }}
-            sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
+            sx={{
+              width: '30%', bgcolor: colors.base['white']
+            }}
           />
-          <DateRangeFilter value={dateRange} onChange={(r) => { setDateRange(r); setPage(1); }} />
-          <TextField
+
+          <DateRangePicker
+            value={dateRange}
+            onChange={(r) => { setDateRange(r); setPage(1); }}
+          />
+
+          {/* <TextField
             select
             size="small"
             value={statusFilter}
@@ -132,7 +433,7 @@ export default function TransactionsPage() {
             <MenuItem value="" sx={{ fontSize: 13 }}>Semua Status</MenuItem>
             <MenuItem value="success" sx={{ fontSize: 13 }}>Berhasil</MenuItem>
             <MenuItem value="failed" sx={{ fontSize: 13 }}>Gagal</MenuItem>
-          </TextField>
+          </TextField> */}
         </Stack>
       </Stack>
 
@@ -142,15 +443,28 @@ export default function TransactionsPage() {
         <TableContainer>
           <Table>
             <TableHead>
-              <TableRow sx={{ bgcolor: colors.base['section'] }}>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 60 }}>#</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>ID Transaksi</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Produk</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Metode Bayar</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Outlet</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Status</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'right' }}>Nominal</TableCell>
-                <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Waktu</TableCell>
+              <TableRow>
+                <TableCell sx={{ ...HEADER_CELL, width: 50 }}>#</TableCell>
+                <TableCell sx={HEADER_CELL}>
+                  <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
+                    Product Name
+                    <UnfoldMoreIcon
+                      sx={{ fontSize: 16, cursor: 'pointer', color: colors.base['grey'] }}
+                      onClick={() => setSortDir((d) => d === 'asc' ? 'desc' : 'asc')}
+                    />
+                  </Stack>
+                </TableCell>
+                <TableCell sx={HEADER_CELL}>Product Code</TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'right' }}>Price</TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>.amount</TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'right' }}>
+                  <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                    Grand Total
+                    <UnfoldMoreIcon sx={{ fontSize: 16, color: colors.base['grey'] }} />
+                  </Stack>
+                </TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>Transaction Date</TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>Status</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -172,21 +486,20 @@ export default function TransactionsPage() {
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                       {(page - 1) * pageSize + idx + 1}
                     </TableCell>
-                    <TableCell sx={{ fontSize: 12, fontFamily: 'monospace', color: colors.base['black'] }}>
-                      {tx.transaction_id}
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], fontWeight: 500 }}>
+                      {tx.product}
                     </TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tx.product}</TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tx.payment_method ?? '—'}</TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{tx.outlet ?? '—'}</TableCell>
-                    <TableCell sx={{ textAlign: 'center' }}>
+                    <TableCell>
                       <Chip
-                        label={tx.status === 'success' ? 'Berhasil' : 'Gagal'}
+                        label={tx.transaction_id}
                         size="small"
                         sx={{
-                          bgcolor: tx.status === 'success' ? colors.brand[100] : colors.error[100],
-                          color: tx.status === 'success' ? colors.brand[600] : colors.error[600],
+                          bgcolor: colors.base['section'],
+                          color: colors.base['black'],
                           fontWeight: 600,
-                          fontSize: 12,
+                          fontSize: 11,
+                          fontFamily: 'monospace',
+                          borderRadius: 1,
                         }}
                       />
                     </TableCell>
@@ -194,7 +507,26 @@ export default function TransactionsPage() {
                       {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(tx.amount)}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
-                      {dayjs.utc(tx.date_time).format('DD MMM YYYY HH:mm')}
+                      {tx.amount ?? 1}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'right', fontWeight: 600 }}>
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format((tx.amount ?? 1) * tx.amount)}
+                    </TableCell>
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center', whiteSpace: 'nowrap' }}>
+                      {dayjs.utc(tx.date_time).format('DD/MM/YYYY HH:mm:ss')}
+                    </TableCell>
+                    <TableCell sx={{ textAlign: 'center' }}>
+                      <Chip
+                        label={tx.status === 'success' ? 'Success' : 'Failed'}
+                        size="small"
+                        sx={{
+                          bgcolor: tx.status === 'success' ? '#E8F5E9' : '#FDE8E8',
+                          color: tx.status === 'success' ? '#2E7D32' : '#B23E3E',
+                          fontWeight: 600,
+                          fontSize: 12,
+                          borderRadius: 1,
+                        }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -247,7 +579,7 @@ export default function TransactionsPage() {
         anchor="right"
         open={!!selectedTx}
         onClose={() => setSelectedTx(null)}
-        slotProps={{ paper: { sx: { width: { xs: '100vw', sm: 360 }, p: 3 } } }}
+        slotProps={{ paper: { sx: { width: { xs: '100vw', sm: 380 }, p: 3 } } }}
       >
         <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography sx={{ fontWeight: 700, fontSize: 16, color: colors.base['black'] }}>
@@ -264,17 +596,19 @@ export default function TransactionsPage() {
               { label: 'ID Transaksi', value: selectedTx.transaction_id },
               { label: 'Waktu', value: dayjs.utc(selectedTx.date_time).format('DD MMMM YYYY, HH:mm:ss') },
               { label: 'Produk', value: selectedTx.product },
+              { label: 'amount', value: selectedTx.amount ?? 1 },
               { label: 'Metode Pembayaran', value: selectedTx.payment_method ?? '—' },
               { label: 'Outlet', value: selectedTx.outlet ?? '—' },
               {
                 label: 'Status', value: (
                   <Chip
-                    label={selectedTx.status === 'success' ? 'Berhasil' : 'Gagal'}
+                    label={selectedTx.status === 'success' ? 'Success' : 'Failed'}
                     size="small"
                     sx={{
-                      bgcolor: selectedTx.status === 'success' ? colors.brand[100] : colors.error[100],
-                      color: selectedTx.status === 'success' ? colors.brand[600] : colors.error[600],
+                      bgcolor: selectedTx.status === 'success' ? '#E8F5E9' : '#FDE8E8',
+                      color: selectedTx.status === 'success' ? '#2E7D32' : '#B23E3E',
                       fontWeight: 600,
+                      borderRadius: 1,
                     }}
                   />
                 ),
@@ -282,6 +616,10 @@ export default function TransactionsPage() {
               {
                 label: 'Nominal',
                 value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(selectedTx.amount),
+              },
+              {
+                label: 'Grand Total',
+                value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format((selectedTx.amount ?? 1) * selectedTx.amount),
               },
             ] as { label: string; value: React.ReactNode }[]).map(({ label, value }) => (
               <Box key={label}>

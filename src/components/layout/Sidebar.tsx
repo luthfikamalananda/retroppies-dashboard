@@ -42,6 +42,15 @@ const DASHBOARD_ITEMS = [
     { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: 'transactions:read' },
 ];
 
+// const DASHBOARD_ITEMS = [
+//     { label: 'Summary', path: '/app/dashboard', icon: <img src={summaryIcon} alt="Summary" />, permission: '*' },
+//     { label: 'Product', path: '/app/products', icon: <img src={productIcon} alt="Product" />, permission: '*' },
+//     { label: 'Design Template', path: '/app/layouts', icon: <img src={templateIcon} alt="Design Template" />, permission: '*' },
+//     { label: 'Time', path: '/app/timers', icon: <img src={timerIcon} alt="Time" />, permission: '*' },
+//     { label: 'Voucher', path: '/app/vouchers', icon: <img src={voucherIcon} alt="Voucher" />, permission: '*' },
+//     { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: '*' },
+// ];
+
 const SETTING_USER_ITEMS = [
     { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: 'tenants:read' },
     { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" />, permission: 'users:read' },
@@ -49,8 +58,15 @@ const SETTING_USER_ITEMS = [
     // { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
 ];
 
+// const SETTING_USER_ITEMS = [
+//     { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: '*' },
+//     { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" />, permission: '*' },
+//     { label: 'Role', path: '/app/roles', icon: <BadgeIcon fontSize="small" />, permission: '*' },
+//     // { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
+// ];
+
 const SETTINGS_ITEMS = [
-    { label: 'Manage Account', path: '/testing', icon: <img src={settingIcon} alt="Manage Account" />, permission: '*' },
+    { label: 'Manage Account', path: '/app/manage-account', icon: <img src={settingIcon} alt="Manage Account" />, permission: '*' },
 ];
 
 
