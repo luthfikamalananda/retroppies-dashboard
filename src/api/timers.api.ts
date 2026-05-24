@@ -27,7 +27,7 @@ export interface RuleListParams {
 export interface RulePayload {
   rulesType: string;
   value: number;
-  tenantId: number;
+  tenantId: number | null;
 }
 
 export interface RulePayloadUpdate {

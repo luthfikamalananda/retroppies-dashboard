@@ -1,26 +1,27 @@
-import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import dayjs from 'dayjs';
-import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
 import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  TextField,
-  Button,
-  Stack,
   Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   MenuItem,
+  Stack,
+  TextField,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { vouchersApi, type Voucher, type VoucherPayload } from '../../api/vouchers.api';
-import { useUIStore } from '../../stores/uiStore';
-import { useAuthStore } from '../../stores/authStore';
+import dayjs from 'dayjs';
+import utc from 'dayjs/plugin/utc';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { extractErrorMessage } from '../../api/client';
+import { vouchersApi, type Voucher, type VoucherPayload } from '../../api/vouchers.api';
+import { TenantSelector } from '../../components/common/TenantSelector';
+import { useScopeStore } from '../../stores/scopeStore';
+import { useUIStore } from '../../stores/uiStore';
+dayjs.extend(utc);
 
 /** Convert YYYY-MM-DD (from date input) to UTC ISO string for API */
 function toIso(dateStr: string) {
@@ -37,47 +38,38 @@ const schema = z
     code: z.string().min(1, 'Kode voucher wajib diisi'),
     name: z.string().min(1, 'Judul voucher wajib diisi'),
     value: z.number().min(0, 'Min 0'),
-    limit_rp: z.number().min(0, 'Min 0'),
-    date_from: z.string().min(1, 'Tanggal mulai wajib diisi'),
-    date_to: z.string().min(1, 'Tanggal selesai wajib diisi'),
+    limitRp: z.number().min(0, 'Min 0'),
+    dateFrom: z.string().min(1, 'Tanggal mulai wajib diisi'),
+    dateTo: z.string().min(1, 'Tanggal selesai wajib diisi'),
     status: z.enum(['active', 'inactive']),
+    tenantId: z.number().min(1, 'Tenant wajib dipilih').nullable(),
   })
   .superRefine((d, ctx) => {
-    if ((d.value > 0) && (d.limit_rp % d.value !== 0)) {
+    if ((d.value > 0) && (d.limitRp % d.value !== 0)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Total Budget harus bisa dibagi habis oleh Discount Value',
-        path: ['limit_rp'],
+        path: ['limitRp'],
       });
     }
     const today = dayjs.utc().format('YYYY-MM-DD');
-    if (d.date_from && d.date_from < today) {
+    if (d.dateFrom && d.dateFrom < today) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Tanggal mulai tidak boleh sebelum hari ini',
-        path: ['date_from'],
+        path: ['dateFrom'],
       });
     }
-    if (d.date_from && d.date_to && d.date_to < d.date_from) {
+    if (d.dateFrom && d.dateTo && d.dateTo < d.dateFrom) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: 'Tanggal selesai harus >= tanggal mulai',
-        path: ['date_to'],
+        path: ['dateTo'],
       });
     }
   });
 
 type FormValues = z.infer<typeof schema>;
-
-const EMPTY_VALUES: FormValues = {
-  code: '',
-  name: '',
-  value: 0,
-  limit_rp: 0,
-  date_from: '',
-  date_to: '',
-  status: 'active',
-};
 
 interface VoucherFormDialogProps {
   open: boolean;
@@ -88,7 +80,7 @@ interface VoucherFormDialogProps {
 export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDialogProps) {
   const queryClient = useQueryClient();
   const showSnackbar = useUIStore((s) => s.showSnackbar);
-  const { user } = useAuthStore();
+  const { activeTenantId } = useScopeStore()
   const isEditing = !!editTarget;
 
   const {
@@ -99,7 +91,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: EMPTY_VALUES,
+    defaultValues: { code: '', name: '', value: 0, limitRp: 0, dateFrom: '', dateTo: '', status: 'active', tenantId: activeTenantId ?? null },
   });
 
   useEffect(() => {
@@ -108,15 +100,25 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         code: editTarget.code,
         name: editTarget.name,
         value: editTarget.value,
-        limit_rp: editTarget.limitRp,
-        date_from: toInputDate(editTarget.dateFrom),
-        date_to: toInputDate(editTarget.dateTo),
+        limitRp: editTarget.limitRp,
+        dateFrom: toInputDate(editTarget.dateFrom),
+        dateTo: toInputDate(editTarget.dateTo),
         status: editTarget.status as 'active' | 'inactive',
+        tenantId: editTarget.tenantId,
       });
     } else if (open && !editTarget) {
-      reset(EMPTY_VALUES);
+      reset({
+        code: '',
+        name: '',
+        value: 0,
+        limitRp: 0,
+        dateFrom: '',
+        dateTo: '',
+        status: 'active',
+        tenantId: activeTenantId ?? null,
+      });
     }
-  }, [open, editTarget, reset]);
+  }, [open, editTarget, reset, activeTenantId]);
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
@@ -124,26 +126,12 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         code: values.code,
         name: values.name,
         value: values.value,
-        limitRp: values.limit_rp,
-        dateFrom: toIso(values.date_from),
-        dateTo: toIso(values.date_to),
+        limitRp: values.limitRp,
+        dateFrom: toIso(values.dateFrom),
+        dateTo: toIso(values.dateTo),
         status: values.status,
-        tenantId: user?.tenantId ?? 0,
+        tenantId: values.tenantId ?? activeTenantId,
       };
-      console.log('Payload to submit:', payload); // Debug log
-      // dummy return
-      // return new Promise((resolve) => {
-      //   setTimeout(() => {
-      //     resolve({
-      //       id: editTarget?.id ?? Math.floor(Math.random() * 1000),
-      //       ...payload,
-      //       CreatedAt: new Date().toISOString(),
-      //       CreatedBy: 'unknown',
-      //       UpdatedAt: new Date().toISOString(),
-      //       UpdatedBy: 'unknown',
-      //     } as Voucher);
-      //   }, 1000);
-      // });
       return isEditing
         ? vouchersApi.update(editTarget!.id, payload)
         : vouchersApi.create(payload);
@@ -167,6 +155,9 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
           sx={{ pt: 1, display: 'flex', flexDirection: 'column', gap: 2 }}
           noValidate
         >
+          {!isEditing &&
+            <TenantSelector height='40px' />
+          }
           <TextField
             label="Voucher Code"
             fullWidth
@@ -196,10 +187,10 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
               label="Total Budget (Rp)"
               type="number"
               fullWidth
-              error={!!errors.limit_rp}
-              helperText={errors.limit_rp?.message}
+              error={!!errors.limitRp}
+              helperText={errors.limitRp?.message}
               slotProps={{ htmlInput: { min: 0 } }}
-              {...register('limit_rp', { valueAsNumber: true })}
+              {...register('limitRp', { valueAsNumber: true })}
             />
           </Stack>
           <Stack direction="row" sx={{ gap: 2 }}>
@@ -208,18 +199,18 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
               type="date"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
-              error={!!errors.date_from}
-              helperText={errors.date_from?.message}
-              {...register('date_from')}
+              error={!!errors.dateFrom}
+              helperText={errors.dateFrom?.message}
+              {...register('dateFrom')}
             />
             <TextField
               label="End"
               type="date"
               fullWidth
               slotProps={{ inputLabel: { shrink: true } }}
-              error={!!errors.date_to}
-              helperText={errors.date_to?.message}
-              {...register('date_to')}
+              error={!!errors.dateTo}
+              helperText={errors.dateTo?.message}
+              {...register('dateTo')}
             />
           </Stack>
           <Controller

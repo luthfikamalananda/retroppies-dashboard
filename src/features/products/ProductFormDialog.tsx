@@ -205,7 +205,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
                     borderColor: `${colors.error[500]} !important`,
                   },
                 } : {}}>
-                  <TenantSelector />
+                  <TenantSelector height='40px' />
                 </Box>
               )}
               {errors.tenantId && (

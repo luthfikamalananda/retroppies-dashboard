@@ -35,7 +35,7 @@ export interface VoucherPayload {
   dateFrom: string
   dateTo: string
   status: string
-  tenantId: number
+  tenantId: number | null
 }
 
 export interface VoucherListParams {

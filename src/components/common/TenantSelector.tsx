@@ -26,7 +26,7 @@ const getLabel = (t: Tenant) =>
  * Default: "Semua Tenant" (tenant_id 0). Tidak bisa dikosongkan (disableClearable).
  * Pilihan disimpan ke scopeStore.activeTenantId (null = semua tenant).
  */
-export function TenantSelector() {
+export function TenantSelector({ height = "36px" }) {
     const user = useAuthStore((s) => s.user);
     const { activeTenantId, setScope, clearScope } = useScopeStore();
 
@@ -101,7 +101,7 @@ export function TenantSelector() {
                     placeholder="Pilih Tenant"
                     sx={{
                         bgcolor: colors.base['white'],
-                        '& .MuiOutlinedInput-root': { fontSize: 13, height: "36px" },
+                        '& .MuiOutlinedInput-root': { fontSize: 13, height: height },
                     }}
                 />
             )}

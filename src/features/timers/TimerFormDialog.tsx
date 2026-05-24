@@ -1,31 +1,33 @@
-import { useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    TextField,
     Button,
-    Stack,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
     MenuItem,
+    Stack,
+    TextField,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { timersApi, type Rule } from '../../api/timers.api';
-import { useUIStore } from '../../stores/uiStore';
-import { useAuthStore } from '../../stores/authStore';
+import { useEffect } from 'react';
+import { Controller, useForm } from 'react-hook-form';
+import { z } from 'zod';
 import { extractErrorMessage } from '../../api/client';
+import { timersApi, type Rule } from '../../api/timers.api';
+import { TenantSelector } from '../../components/common/TenantSelector';
+import { useScopeStore } from '../../stores/scopeStore';
+import { useUIStore } from '../../stores/uiStore';
 
 const RULE_TYPES = [
-    { value: 'Qris', label: 'Timer QRIS' },
-    { value: 'Timer', label: 'Timer Sesi Foto' },
+    { value: 'QRIS', label: 'Timer QRIS' },
+    { value: 'TIMER', label: 'Timer Sesi Foto' },
 ];
 
 const schema = z.object({
     rulesType: z.string().min(1, 'Tipe rule wajib diisi'),
     value: z.number().min(0, 'Min 0 detik').max(600, 'Maks 600 detik'),
+    tenantId: z.number().min(1, 'Tenant wajib dipilih').nullable(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -39,7 +41,7 @@ interface Props {
 export function TimerFormDialog({ open, editTarget, onClose }: Props) {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { user } = useAuthStore();
+    const { activeTenantId } = useScopeStore();
 
     const {
         register,
@@ -49,24 +51,24 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
         formState: { errors },
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { rulesType: '', value: 0 },
+        defaultValues: { rulesType: '', value: 0, tenantId: activeTenantId ?? null },
     });
 
     useEffect(() => {
         if (open) {
             reset(
                 editTarget
-                    ? { rulesType: editTarget.rulesType, value: editTarget.value }
-                    : { rulesType: '', value: 0 },
+                    ? { rulesType: editTarget.rulesType, value: editTarget.value, tenantId: editTarget.tenantId }
+                    : { rulesType: '', value: 0, tenantId: activeTenantId ?? null },
             );
         }
-    }, [open, editTarget, reset]);
+    }, [open, editTarget, reset, activeTenantId]);
 
     const mutation = useMutation({
         mutationFn: (values: FormValues) =>
             editTarget
                 ? timersApi.update(editTarget.id, { ...values })
-                : timersApi.create({ ...values, tenantId: user?.tenantId ?? 0 }),
+                : timersApi.create({ ...values, tenantId: activeTenantId ?? null }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['timers'] });
             showSnackbar(editTarget ? 'Rule berhasil diperbarui' : 'Rule berhasil ditambahkan');
@@ -77,10 +79,13 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-            <DialogTitle>{editTarget ? 'Edit Rule' : 'Tambah Rule'}</DialogTitle>
+            <DialogTitle >{editTarget ? 'Edit Rule' : 'Tambah Rule'}</DialogTitle>
             <form onSubmit={handleSubmit((v) => mutation.mutate(v))} noValidate>
                 <DialogContent>
-                    <Stack sx={{ gap: 2.5, pt: 0.5 }}>
+                    <Stack sx={{ gap: 2.5 }}>
+                        {!editTarget &&
+                            <TenantSelector height='40px' />
+                        }
                         <Controller
                             name="rulesType"
                             control={control}
