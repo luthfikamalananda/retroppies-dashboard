@@ -84,7 +84,7 @@ export default function RolesPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Role</Typography>
             </Breadcrumbs>
 
-            <Stack
+            {/* <Stack
                 direction={{ xs: 'column', lg: 'row' }}
                 sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
             >
@@ -133,6 +133,59 @@ export default function RolesPage() {
                             Tambah Role
                         </Button>
                     )}
+                </Stack>
+            </Stack> */}
+
+            {/* Header */}
+            <Stack
+                direction="row"
+                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
+            >
+                <Stack sx={{ width: "50%" }}>
+                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
+                        Data Role
+                    </Typography>
+                </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "40%", }}>
+                    <TextField
+                        size="small"
+                        placeholder="Masukkan keyword..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        slotProps={{
+                            input: {
+                                startAdornment: (
+                                    <InputAdornment position="start">
+                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
+                                    </InputAdornment>
+                                ),
+                            },
+                        }}
+                        sx={{
+                            '& .MuiInputBase-root': {
+                                height: "36px",
+                                fontSize: 14,
+                            },
+                            width: { xs: '100%', sm: "100%" },
+                            bgcolor: colors.base['white']
+                        }}
+                    />
+                    {canCreate &&
+                        <Button
+                            variant="contained"
+                            startIcon={<AddIcon />}
+                            onClick={() => { setFormOpen(true); }}  
+                            sx={{
+                                bgcolor: colors.brand[500],
+                                '&:hover': { bgcolor: colors.brand[600] },
+                                textTransform: 'none',
+                                fontWeight: 600,
+                                width: { xs: '100%', sm: "420px" },
+                            }}
+                        >
+                            Tambah Role
+                        </Button>
+                    }
                 </Stack>
             </Stack>
 
