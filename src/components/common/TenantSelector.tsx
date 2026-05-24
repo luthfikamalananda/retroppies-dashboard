@@ -23,17 +23,36 @@ const getLabel = (t: Tenant) =>
 
 /**
  * Tenant selector — hanya tampil jika user berstatus superadmin (isSuperadmin: true).
- * Default: "Semua Tenant" (tenant_id 0). Tidak bisa dikosongkan (disableClearable).
- * Pilihan disimpan ke scopeStore.activeTenantId (null = semua tenant).
+ * Pilihan disimpan ke scopeStore.activeTenantId (null = semua tenant / belum dipilih).
+ *
+ * @param height      - Tinggi input field (default "36px").
+ * @param displayNull - Mengontrol perilaku "tidak ada pilihan":
+ *   - false (default): sentinel "Semua Tenant" selalu tersedia di daftar dan
+ *                      menjadi nilai awal; komponen tidak bisa dikosongkan.
+ *   - true:            sentinel dihilangkan; placeholder berubah menjadi
+ *                      "Pilih Tenant"; value boleh null (belum dipilih) dan
+ *                      komponen bisa dikosongkan (clearable).
  */
-export function TenantSelector({ height = "36px" }) {
+export function TenantSelector({
+    height = "36px",
+    isSubmitted = false,
+    displayNull = false,
+    errorMsg = "Tenant wajib dipilih",
+}: {
+    height?: string;
+    isSubmitted?: boolean;
+    displayNull?: boolean;
+    errorMsg?: string;
+}) {
     const user = useAuthStore((s) => s.user);
     const { activeTenantId, setScope, clearScope } = useScopeStore();
 
     // searchTerm = query yang dikirim ke API (debounced)
     // inputValue = teks yang tampil di input field (controlled)
     const [searchTerm, setSearchTerm] = useState('');
-    const [inputValue, setInputValue] = useState('Semua Tenant');
+    // displayNull true  → awal kosong (belum pilih apa-apa)
+    // displayNull false → awal "Semua Tenant" (sentinel ALL_TENANT)
+    const [inputValue, setInputValue] = useState(displayNull ? '' : 'Semua Tenant');
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     // useQuery dipanggil tanpa kondisi agar tidak melanggar Rules of Hooks.
@@ -47,10 +66,19 @@ export function TenantSelector({ height = "36px" }) {
 
     if (!user?.isSuperadmin) return null;
 
-    const options: Tenant[] = [ALL_TENANT, ...(data?.result ?? [])];
-    const selectedTenant = activeTenantId === null
-        ? ALL_TENANT
-        : (options.find((t) => t.id === activeTenantId) ?? ALL_TENANT);
+    // displayNull true  → tanpa sentinel; value null berarti "belum dipilih"
+    // displayNull false → dengan sentinel ALL_TENANT; value null tidak mungkin terjadi di UI
+    const options: Tenant[] = displayNull
+        ? (data?.result ?? [])
+        : [ALL_TENANT, ...(data?.result ?? [])];
+
+    const selectedTenant: Tenant | null = displayNull
+        ? (activeTenantId === null
+            ? null
+            : (options.find((t) => t.id === activeTenantId) ?? null))
+        : (activeTenantId === null
+            ? ALL_TENANT
+            : (options.find((t) => t.id === activeTenantId) ?? ALL_TENANT));
 
     function handleInputChange(
         _: React.SyntheticEvent,
@@ -68,7 +96,7 @@ export function TenantSelector({ height = "36px" }) {
             if (debounceRef.current) clearTimeout(debounceRef.current);
             setSearchTerm('');
         } else {
-            // reason 'reset' (user memilih option) atau 'clear' —
+            // reason 'reset' (user memilih option) —
             // batalkan debounce yang pending dan reset query ke kosong
             if (debounceRef.current) clearTimeout(debounceRef.current);
             setSearchTerm('');
@@ -84,6 +112,8 @@ export function TenantSelector({ height = "36px" }) {
             loading={isLoading}
             getOptionLabel={getLabel}
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
+            // displayNull false → disableClearable (tidak bisa dikosongkan)
+            // disableClearable={!displayNull}
             onChange={(_, tenant) => {
                 if (tenant === null || tenant.id === 0) {
                     clearScope();
@@ -98,7 +128,11 @@ export function TenantSelector({ height = "36px" }) {
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    placeholder="Pilih Tenant"
+                    // displayNull true  → "Pilih Tenant" (belum ada pilihan)
+                    // displayNull false → "Semua Tenant" (sudah ada default)
+                    placeholder={displayNull ? "Pilih Tenant" : "Semua Tenant"}
+                    error={isSubmitted && selectedTenant === null}
+                    helperText={isSubmitted && selectedTenant === null ? errorMsg : undefined}
                     sx={{
                         bgcolor: colors.base['white'],
                         '& .MuiOutlinedInput-root': { fontSize: 13, height: height },

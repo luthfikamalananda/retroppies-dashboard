@@ -42,7 +42,7 @@ const schema = z
     dateFrom: z.string().min(1, 'Tanggal mulai wajib diisi'),
     dateTo: z.string().min(1, 'Tanggal selesai wajib diisi'),
     status: z.enum(['active', 'inactive']),
-    tenantId: z.number().min(1, 'Tenant wajib dipilih').nullable(),
+    tenantId: z.number('Tenant wajib dipilih').min(1, 'Tenant wajib dipilih'),
   })
   .superRefine((d, ctx) => {
     if ((d.value > 0) && (d.limitRp % d.value !== 0)) {
@@ -91,7 +91,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { code: '', name: '', value: 0, limitRp: 0, dateFrom: '', dateTo: '', status: 'active', tenantId: activeTenantId ?? null },
+    defaultValues: { code: '', name: '', value: 0, limitRp: 0, dateFrom: '', dateTo: '', status: 'active', tenantId: activeTenantId ?? undefined },
   });
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         dateFrom: '',
         dateTo: '',
         status: 'active',
-        tenantId: activeTenantId ?? null,
+        tenantId: activeTenantId ?? undefined,
       });
     }
   }, [open, editTarget, reset, activeTenantId]);
@@ -156,7 +156,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
           noValidate
         >
           {!isEditing &&
-            <TenantSelector height='40px' />
+            <TenantSelector height='40px' displayNull isSubmitted={!!errors.tenantId} errorMsg={errors.tenantId?.message} />
           }
           <TextField
             label="Voucher Code"

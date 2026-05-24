@@ -27,7 +27,7 @@ const RULE_TYPES = [
 const schema = z.object({
     rulesType: z.string().min(1, 'Tipe rule wajib diisi'),
     value: z.number().min(0, 'Min 0 detik').max(600, 'Maks 600 detik'),
-    tenantId: z.number().min(1, 'Tenant wajib dipilih').nullable(),
+    tenantId: z.number('Tenant wajib dipilih').min(1, 'Tenant wajib dipilih'),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -51,7 +51,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
         formState: { errors },
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { rulesType: '', value: 0, tenantId: activeTenantId ?? null },
+        defaultValues: { rulesType: '', value: 0, tenantId: activeTenantId ?? undefined },
     });
 
     useEffect(() => {
@@ -59,7 +59,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
             reset(
                 editTarget
                     ? { rulesType: editTarget.rulesType, value: editTarget.value, tenantId: editTarget.tenantId }
-                    : { rulesType: '', value: 0, tenantId: activeTenantId ?? null },
+                    : { rulesType: '', value: 0, tenantId: activeTenantId ?? undefined },
             );
         }
     }, [open, editTarget, reset, activeTenantId]);
@@ -68,7 +68,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
         mutationFn: (values: FormValues) =>
             editTarget
                 ? timersApi.update(editTarget.id, { ...values })
-                : timersApi.create({ ...values, tenantId: activeTenantId ?? null }),
+                : timersApi.create({ ...values, tenantId: activeTenantId ?? undefined }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['timers'] });
             showSnackbar(editTarget ? 'Rule berhasil diperbarui' : 'Rule berhasil ditambahkan');
@@ -84,7 +84,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
                 <DialogContent>
                     <Stack sx={{ gap: 2.5 }}>
                         {!editTarget &&
-                            <TenantSelector height='40px' />
+                            <TenantSelector height='40px' displayNull isSubmitted={!!errors.tenantId} errorMsg={errors.tenantId?.message} />
                         }
                         <Controller
                             name="rulesType"

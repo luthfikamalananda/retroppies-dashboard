@@ -18,7 +18,7 @@ export interface Rule {
 }
 
 export interface RuleListParams {
-  tenantId: number | null;
+  tenantId: number;
   keyword: string;
   page: number;
   limit: number;
@@ -27,7 +27,7 @@ export interface RuleListParams {
 export interface RulePayload {
   rulesType: string;
   value: number;
-  tenantId: number | null;
+  tenantId: number;
 }
 
 export interface RulePayloadUpdate {

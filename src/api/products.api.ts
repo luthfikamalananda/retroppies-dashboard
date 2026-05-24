@@ -23,11 +23,11 @@ export interface ProductPayload {
   productCode: string
   productName: string
   productPrice: number
-  tenantId: number | null
+  tenantId: number
 }
 
 export interface ProductListParams {
-  tenantId: number | null;
+  tenantId: number;
   keyword: string;
   page: number;
   limit: number;

@@ -32,7 +32,7 @@ const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 const schema = z.object({
   productCode: z.string().min(1, 'Kode produk wajib diisi'),
   productName: z.string().min(1, 'Nama produk wajib diisi'),
-  tenantId: z.number().min(1, 'Tenant wajib diisi').nullable(),
+  tenantId: z.number('Tenant wajib dipilih').min(1, 'Tenant wajib dipilih'),
   productPrice: z.number().min(0, 'Harga tidak boleh negatif'),
 });
 
@@ -65,7 +65,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { productCode: '', productName: '', productPrice: 0, tenantId: activeTenantId ?? null },
+    defaultValues: { productCode: '', productName: '', productPrice: 0, tenantId: activeTenantId ?? undefined },
   });
 
   useEffect(() => {
@@ -82,7 +82,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
             productPrice: editTarget.productPrice,
             tenantId: editTarget.tenantId,
           }
-          : { productCode: '', productName: '', productPrice: 0, tenantId: activeTenantId ?? null }
+          : { productCode: '', productName: '', productPrice: 0, tenantId: activeTenantId ?? undefined }
       );
     }
   }, [open, editTarget, reset]);
@@ -169,6 +169,10 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
             noValidate
           >
             <Stack sx={{ gap: 2 }}>
+              {/* Tenant Selector — hanya untuk superAdmin */}
+              {(isSuperAdmin && !isEditing) && (
+                <TenantSelector height='40px' displayNull isSubmitted={!!errors.tenantId} errorMsg={errors.tenantId?.message} />
+              )}
               <TextField
                 label="Kode Produk"
                 fullWidth
@@ -195,24 +199,6 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
                 slotProps={{ htmlInput: { min: 0, step: 1000 } }}
                 {...register('productPrice', { valueAsNumber: true })}
               />
-              {/* Tenant Selector — hanya untuk superAdmin */}
-              {(isSuperAdmin && !isEditing) && (
-                <Box sx={errors.tenantId ? {
-                  '& .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline': {
-                    borderColor: `${colors.error[500]} !important`,
-                  },
-                  '& .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline': {
-                    borderColor: `${colors.error[500]} !important`,
-                  },
-                } : {}}>
-                  <TenantSelector height='40px' />
-                </Box>
-              )}
-              {errors.tenantId && (
-                <Typography sx={{ fontSize: 12, color: colors.error[500], mt: -1 }}>
-                  {errors.tenantId.message}
-                </Typography>
-              )}
               {/* <TextField
                 label="Tenant ID"
                 type="number"
