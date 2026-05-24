@@ -13,7 +13,7 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { extractErrorMessage } from '../../api/client';
@@ -82,6 +82,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
   const showSnackbar = useUIStore((s) => s.showSnackbar);
   const { activeTenantId } = useScopeStore()
   const isEditing = !!editTarget;
+  const [selectedTenantId, setSelectedTenantId] = useState<number>(activeTenantId);
 
   const {
     register,
@@ -91,7 +92,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
     formState: { errors },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { code: '', name: '', value: 0, limitRp: 0, dateFrom: '', dateTo: '', status: 'active', tenantId: activeTenantId ?? undefined },
+    defaultValues: { code: '', name: '', value: 0, limitRp: 0, dateFrom: '', dateTo: '', status: 'active', tenantId: selectedTenantId ?? undefined },
   });
 
   useEffect(() => {
@@ -115,10 +116,10 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         dateFrom: '',
         dateTo: '',
         status: 'active',
-        tenantId: activeTenantId ?? undefined,
+        tenantId: selectedTenantId ?? undefined,
       });
     }
-  }, [open, editTarget, reset, activeTenantId]);
+  }, [open, editTarget, reset, selectedTenantId]);
 
   const mutation = useMutation({
     mutationFn: (values: FormValues) => {
@@ -130,7 +131,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         dateFrom: toIso(values.dateFrom),
         dateTo: toIso(values.dateTo),
         status: values.status,
-        tenantId: values.tenantId ?? activeTenantId,
+        tenantId: values.tenantId ?? selectedTenantId,
       };
       return isEditing
         ? vouchersApi.update(editTarget!.id, payload)
@@ -156,7 +157,14 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
           noValidate
         >
           {!isEditing &&
-            <TenantSelector height='40px' displayNull isSubmitted={!!errors.tenantId} errorMsg={errors.tenantId?.message} />
+            <TenantSelector
+              height='40px'
+              displayNull
+              isSubmitted={!!errors.tenantId}
+              errorMsg={errors.tenantId?.message}
+              value={selectedTenantId}
+              onChange={(value) => setSelectedTenantId(value)}
+            />
           }
           <TextField
             label="Voucher Code"

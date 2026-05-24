@@ -10,7 +10,7 @@ import {
     TextField,
 } from '@mui/material';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { extractErrorMessage } from '../../api/client';
@@ -42,6 +42,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const { activeTenantId } = useScopeStore();
+    const [selectedTenantId, setSelectedTenantId] = useState<number>(activeTenantId);
 
     const {
         register,
@@ -51,7 +52,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
         formState: { errors },
     } = useForm<FormValues>({
         resolver: zodResolver(schema),
-        defaultValues: { rulesType: '', value: 0, tenantId: activeTenantId ?? undefined },
+        defaultValues: { rulesType: '', value: 0, tenantId: selectedTenantId ?? undefined },
     });
 
     useEffect(() => {
@@ -59,16 +60,17 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
             reset(
                 editTarget
                     ? { rulesType: editTarget.rulesType, value: editTarget.value, tenantId: editTarget.tenantId }
-                    : { rulesType: '', value: 0, tenantId: activeTenantId ?? undefined },
+                    : { rulesType: '', value: 0, tenantId: selectedTenantId ?? undefined },
             );
         }
-    }, [open, editTarget, reset, activeTenantId]);
+    }, [open, editTarget, reset, selectedTenantId]);
 
     const mutation = useMutation({
+
         mutationFn: (values: FormValues) =>
             editTarget
                 ? timersApi.update(editTarget.id, { ...values })
-                : timersApi.create({ ...values, tenantId: activeTenantId ?? undefined }),
+                : timersApi.create({ ...values, tenantId: selectedTenantId ?? undefined }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['timers'] });
             showSnackbar(editTarget ? 'Rule berhasil diperbarui' : 'Rule berhasil ditambahkan');
@@ -84,7 +86,14 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
                 <DialogContent>
                     <Stack sx={{ gap: 2.5 }}>
                         {!editTarget &&
-                            <TenantSelector height='40px' displayNull isSubmitted={!!errors.tenantId} errorMsg={errors.tenantId?.message} />
+                            <TenantSelector
+                                height='40px'
+                                displayNull
+                                isSubmitted={!!errors.tenantId}
+                                errorMsg={errors.tenantId?.message}
+                                value={selectedTenantId}
+                                onChange={(value) => setSelectedTenantId(value)}
+                            />
                         }
                         <Controller
                             name="rulesType"

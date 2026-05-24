@@ -54,8 +54,9 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [fileError, setFileError] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const { activeTenantId } = useScopeStore();
   const { isSuperAdmin } = usePermissions();
+  const { activeTenantId } = useScopeStore()
+  const [selectedTenantId, setSelectedTenantId] = useState<number>(activeTenantId);
 
   const {
     register,
@@ -65,7 +66,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { productCode: '', productName: '', productPrice: 0, tenantId: activeTenantId ?? undefined },
+    defaultValues: { productCode: '', productName: '', productPrice: 0, tenantId: selectedTenantId ?? undefined },
   });
 
   useEffect(() => {
@@ -82,17 +83,17 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
             productPrice: editTarget.productPrice,
             tenantId: editTarget.tenantId,
           }
-          : { productCode: '', productName: '', productPrice: 0, tenantId: activeTenantId ?? undefined }
+          : { productCode: '', productName: '', productPrice: 0, tenantId: selectedTenantId ?? undefined }
       );
     }
   }, [open, editTarget, reset]);
 
-  // Sync activeTenantId (dari TenantSelector) ke field tenantId setiap kali berubah
+  // Sync selectedTenantId (dari TenantSelector) ke field tenantId setiap kali berubah
   useEffect(() => {
     if (open && !editTarget) {
-      setValue('tenantId', activeTenantId ?? null);
+      setValue('tenantId', selectedTenantId ?? null);
     }
-  }, [activeTenantId, open, editTarget, setValue]);
+  }, [selectedTenantId, open, editTarget, setValue]);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -171,7 +172,14 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
             <Stack sx={{ gap: 2 }}>
               {/* Tenant Selector — hanya untuk superAdmin */}
               {(isSuperAdmin && !isEditing) && (
-                <TenantSelector height='40px' displayNull isSubmitted={!!errors.tenantId} errorMsg={errors.tenantId?.message} />
+                <TenantSelector
+                  height='40px'
+                  displayNull
+                  isSubmitted={!!errors.tenantId}
+                  errorMsg={errors.tenantId?.message}
+                  value={selectedTenantId}
+                  onChange={(value) => setSelectedTenantId(value)}
+                />
               )}
               <TextField
                 label="Kode Produk"
@@ -206,7 +214,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
                 size="small"
                 error={!!errors.tenantId}
                 helperText={errors.tenantId?.message}
-                value={activeTenantId}
+                value={selectedTenantId}
                 disabled
                 slotProps={{ htmlInput: { min: 1 } }}
                 {...register('tenantId', { valueAsNumber: true })}

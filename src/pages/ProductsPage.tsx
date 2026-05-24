@@ -82,6 +82,7 @@ export default function ProductsPage() {
                 page,
                 limit: pageSize,
             }),
+        enabled: formOpen === false
     });
 
     const deleteMutation = useMutation({

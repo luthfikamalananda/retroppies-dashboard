@@ -21,42 +21,57 @@ const ALL_TENANT: Tenant = {
 const getLabel = (t: Tenant) =>
     t.id === 0 ? 'Semua Tenant' : `${t.tenant_code} — ${t.name}`;
 
+interface TenantSelectorProps {
+    height?: string;
+    isSubmitted?: boolean;
+    displayNull?: boolean;
+    errorMsg?: string;
+    /**
+     * Mode controlled — jika diberikan, komponen TIDAK membaca/menulis Zustand.
+     * Gunakan ini di dalam form/dialog agar tidak men-trigger refetch halaman lain.
+     * `value` adalah tenantId yang dipilih (null = belum dipilih).
+     */
+    value?: number | null;
+    onChange?: (tenantId: number | null) => void;
+}
+
 /**
  * Tenant selector — hanya tampil jika user berstatus superadmin (isSuperadmin: true).
- * Pilihan disimpan ke scopeStore.activeTenantId (null = semua tenant / belum dipilih).
+ *
+ * ## Mode Uncontrolled (default)
+ * Membaca & menulis `activeTenantId` di Zustand (scopeStore).
+ * Cocok untuk filter tabel di halaman utama.
+ *
+ * ## Mode Controlled (`value` + `onChange`)
+ * Tidak menyentuh Zustand sama sekali — state dikelola sepenuhnya oleh parent.
+ * Cocok untuk dipakai di dalam dialog/form agar tidak memicu refetch halaman lain.
  *
  * @param height      - Tinggi input field (default "36px").
- * @param displayNull - Mengontrol perilaku "tidak ada pilihan":
- *   - false (default): sentinel "Semua Tenant" selalu tersedia di daftar dan
- *                      menjadi nilai awal; komponen tidak bisa dikosongkan.
- *   - true:            sentinel dihilangkan; placeholder berubah menjadi
- *                      "Pilih Tenant"; value boleh null (belum dipilih) dan
- *                      komponen bisa dikosongkan (clearable).
+ * @param displayNull - false (default): sentinel "Semua Tenant" selalu ada, tidak bisa dikosongkan.
+ *                      true: tanpa sentinel; placeholder "Pilih Tenant"; value boleh null.
+ * @param value       - (Controlled) tenantId yang dipilih saat ini.
+ * @param onChange    - (Controlled) callback saat user memilih tenant.
  */
 export function TenantSelector({
     height = "36px",
     isSubmitted = false,
     displayNull = false,
     errorMsg = "Tenant wajib dipilih",
-}: {
-    height?: string;
-    isSubmitted?: boolean;
-    displayNull?: boolean;
-    errorMsg?: string;
-}) {
+    value: controlledValue,
+    onChange: controlledOnChange,
+}: TenantSelectorProps) {
     const user = useAuthStore((s) => s.user);
+
+    // Hanya baca Zustand jika mode uncontrolled
+    const isControlled = controlledValue !== undefined;
     const { activeTenantId, setScope, clearScope } = useScopeStore();
 
-    // searchTerm = query yang dikirim ke API (debounced)
-    // inputValue = teks yang tampil di input field (controlled)
+    const activeTenantIdResolved = isControlled ? controlledValue : activeTenantId;
+
     const [searchTerm, setSearchTerm] = useState('');
-    // displayNull true  → awal kosong (belum pilih apa-apa)
-    // displayNull false → awal "Semua Tenant" (sentinel ALL_TENANT)
     const [inputValue, setInputValue] = useState(displayNull ? '' : 'Semua Tenant');
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-    // useQuery dipanggil tanpa kondisi agar tidak melanggar Rules of Hooks.
-    // enabled: false saat bukan superadmin agar tidak melakukan fetch.
     const { data, isLoading } = useQuery({
         queryKey: ['tenants-selector', searchTerm],
         queryFn: () => tenantsApi.get({ keyword: searchTerm }),
@@ -66,19 +81,33 @@ export function TenantSelector({
 
     if (!user?.isSuperadmin) return null;
 
-    // displayNull true  → tanpa sentinel; value null berarti "belum dipilih"
-    // displayNull false → dengan sentinel ALL_TENANT; value null tidak mungkin terjadi di UI
     const options: Tenant[] = displayNull
         ? (data?.result ?? [])
         : [ALL_TENANT, ...(data?.result ?? [])];
 
     const selectedTenant: Tenant | null = displayNull
-        ? (activeTenantId === null
+        ? (activeTenantIdResolved === null
             ? null
-            : (options.find((t) => t.id === activeTenantId) ?? null))
-        : (activeTenantId === null
+            : (options.find((t) => t.id === activeTenantIdResolved) ?? null))
+        : (activeTenantIdResolved === null
             ? ALL_TENANT
-            : (options.find((t) => t.id === activeTenantId) ?? ALL_TENANT));
+            : (options.find((t) => t.id === activeTenantIdResolved) ?? ALL_TENANT));
+
+    function handleChange(_: React.SyntheticEvent, tenant: Tenant | null) {
+        const isNullish = tenant === null || tenant.id === 0;
+
+        if (isControlled) {
+            // Mode controlled — hanya panggil callback parent, Zustand tidak disentuh
+            controlledOnChange?.(isNullish ? null : tenant.id);
+        } else {
+            // Mode uncontrolled — tulis ke Zustand seperti sebelumnya
+            if (isNullish) {
+                clearScope();
+            } else {
+                setScope(tenant.id);
+            }
+        }
+    }
 
     function handleInputChange(
         _: React.SyntheticEvent,
@@ -88,16 +117,10 @@ export function TenantSelector({
         setInputValue(val);
 
         if (reason === 'input') {
-            // User mengetik — debounce 400ms sebelum kirim ke API
             if (debounceRef.current) clearTimeout(debounceRef.current);
             debounceRef.current = setTimeout(() => setSearchTerm(val), 400);
-        } else if (reason === 'clear') {
-            // User klik tombol X — reset input ke kosong dan kosongkan scope
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            setSearchTerm('');
         } else {
-            // reason 'reset' (user memilih option) —
-            // batalkan debounce yang pending dan reset query ke kosong
+            // 'reset' (pilih option) atau 'clear' — batalkan debounce pending
             if (debounceRef.current) clearTimeout(debounceRef.current);
             setSearchTerm('');
         }
@@ -112,15 +135,7 @@ export function TenantSelector({
             loading={isLoading}
             getOptionLabel={getLabel}
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            // displayNull false → disableClearable (tidak bisa dikosongkan)
-            // disableClearable={!displayNull}
-            onChange={(_, tenant) => {
-                if (tenant === null || tenant.id === 0) {
-                    clearScope();
-                } else {
-                    setScope(tenant.id);
-                }
-            }}
+            onChange={handleChange}
             onInputChange={handleInputChange}
             noOptionsText="Tenant tidak ditemukan"
             loadingText="Memuat..."
@@ -128,8 +143,6 @@ export function TenantSelector({
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    // displayNull true  → "Pilih Tenant" (belum ada pilihan)
-                    // displayNull false → "Semua Tenant" (sudah ada default)
                     placeholder={displayNull ? "Pilih Tenant" : "Semua Tenant"}
                     error={isSubmitted && selectedTenant === null}
                     helperText={isSubmitted && selectedTenant === null ? errorMsg : undefined}
