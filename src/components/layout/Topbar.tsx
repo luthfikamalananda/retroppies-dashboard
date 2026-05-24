@@ -8,17 +8,21 @@ import {
   IconButton,
   Menu,
   MenuItem,
+  Stack,
   Toolbar,
   Typography,
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import ExitToAppOutlinedIcon from '@mui/icons-material/ExitToAppOutlined';
 import { useState } from 'react';
 import headerButton from '../../assets/header-button.svg';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { colors } from '../../theme/colors';
 import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
+import { useLocation, NavLink } from 'react-router-dom';
 
 export function Topbar() {
   const theme = useTheme();
@@ -27,6 +31,7 @@ export function Topbar() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const openMobileSidebar = useUIStore((s) => s.openMobileSidebar);
   const { user, clearUser } = useAuthStore();
+  const location = useLocation();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);
@@ -113,14 +118,34 @@ export function Topbar() {
             </Typography>
           </Box>
           <Divider />
+          <NavLink to="/app/manage-account" style={{ textDecoration: 'none' }}>
+            <MenuItem
+              onClick={() => {
+                setAnchorEl(null);
+              }}
+              sx={{ color: colors.base['black'], fontSize: 14 }}
+            >
+              <Stack direction={'row'} sx={{ alignItems: "center", gap: 1 }}>
+                <SettingsOutlinedIcon sx={{ fontSize: 16, color: colors.base['black'], fontWeight: 500 }} />
+                <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>
+                  Manage Account
+                </Typography>
+              </Stack>
+            </MenuItem>
+          </NavLink>
           <MenuItem
             onClick={() => {
               setAnchorEl(null);
               clearUser();
             }}
-            sx={{ color: colors.brand[500], fontSize: 14 }}
+
           >
-            Keluar
+            <Stack direction={'row'} sx={{ alignItems: "center", gap: 1 }}>
+              <ExitToAppOutlinedIcon sx={{ fontSize: 16, color: colors.brand[500], fontWeight: 500 }} />
+              <Typography sx={{ color: colors.brand[500], fontSize: 14, fontWeight: 500 }}>
+                Log Out
+              </Typography>
+            </Stack>
           </MenuItem>
         </Menu>
       </Toolbar>

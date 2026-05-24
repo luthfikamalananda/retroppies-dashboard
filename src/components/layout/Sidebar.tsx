@@ -329,7 +329,8 @@ export function Sidebar() {
                 )}
 
 
-                <NavGroup label="Settings" collapsed={isCollapsed} />
+                {/* Manage Account */}
+                {/* <NavGroup label="Settings" collapsed={isCollapsed} />
                 {settingsItems.map((item) => (
                     <NavItem
                         key={item.path}
@@ -338,7 +339,7 @@ export function Sidebar() {
                         isActive={location.pathname.startsWith(item.path)}
                         onClick={handleNavClick}
                     />
-                ))}
+                ))} */}
 
             </Box>
         </Drawer>

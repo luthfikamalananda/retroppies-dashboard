@@ -186,12 +186,12 @@ export default function UsersPage() {
                                                 sx={{ width: "100%", justifyContent: "center", alignItems: "center" }}
                                             >
                                                 <Chip
-                                                    label={user.roleName}
+                                                    label={user.roleName ?? "Super Admin"}
                                                     size="small"
                                                     sx={{
                                                         width: "fit-content",
-                                                        bgcolor: user.tenantId === null ? colors.brand[100] : colors.base['section'],
-                                                        color: user.tenantId === null ? colors.brand[500] : colors.base['black'],
+                                                        bgcolor: user.tenantId === -99 ? colors.brand[100] : colors.base['section'],
+                                                        color: user.tenantId === -99 ? colors.brand[500] : colors.base['black'],
                                                         fontWeight: 600,
                                                         fontSize: 12,
                                                         borderRadius: 1

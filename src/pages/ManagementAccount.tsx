@@ -97,7 +97,6 @@ export default function ManagementAccount() {
                 >
                     <HomeIcon sx={{ fontSize: 18 }} />
                 </Link>
-                <Typography sx={{ color: colors.base['black'], fontSize: 14 }}>Settings</Typography>
                 <Typography sx={{ color: colors.brand[500], fontSize: 14, fontWeight: 600 }}>
                     Manage Account
                 </Typography>
