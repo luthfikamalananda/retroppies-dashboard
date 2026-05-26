@@ -6,10 +6,10 @@ import { useAuthStore } from '../../stores/authStore';
 import { useScopeStore } from '../../stores/scopeStore';
 import { colors } from '../../theme/colors';
 
-/** Sentinel option — mewakili "semua tenant" (activeTenantId: null) */
+/** Sentinel option — mewakili "All Tenants" (activeTenantId: null) */
 const ALL_TENANT: Tenant = {
     id: 0,
-    name: 'Semua Tenant',
+    name: 'All Tenants',
     tenant_code: 'ALL',
     address: '',
     CreatedAt: '',
@@ -19,7 +19,7 @@ const ALL_TENANT: Tenant = {
 };
 
 const getLabel = (t: Tenant) =>
-    t.id === 0 ? 'Semua Tenant' : `${t.tenant_code} — ${t.name}`;
+    t.id === 0 ? 'All Tenants' : `${t.tenant_code} — ${t.name}`;
 
 interface TenantSelectorProps {
     height?: string;
@@ -47,7 +47,7 @@ interface TenantSelectorProps {
  * Cocok untuk dipakai di dalam dialog/form agar tidak memicu refetch halaman lain.
  *
  * @param height      - Tinggi input field (default "36px").
- * @param displayNull - false (default): sentinel "Semua Tenant" selalu ada, tidak bisa dikosongkan.
+ * @param displayNull - false (default): sentinel "All Tenants" selalu ada, tidak bisa dikosongkan.
  *                      true: tanpa sentinel; placeholder "Pilih Tenant"; value boleh null.
  * @param value       - (Controlled) tenantId yang dipilih saat ini.
  * @param onChange    - (Controlled) callback saat user memilih tenant.
@@ -69,7 +69,7 @@ export function TenantSelector({
     const activeTenantIdResolved = isControlled ? controlledValue : activeTenantId;
 
     const [searchTerm, setSearchTerm] = useState('');
-    const [inputValue, setInputValue] = useState(displayNull ? '' : 'Semua Tenant');
+    const [inputValue, setInputValue] = useState(displayNull ? '' : 'All Tenants');
     const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const { data, isLoading } = useQuery({
@@ -137,18 +137,19 @@ export function TenantSelector({
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
             onChange={handleChange}
             onInputChange={handleInputChange}
-            noOptionsText="Tenant tidak ditemukan"
-            loadingText="Memuat..."
+            noOptionsText="Tenant not found"
+            loadingText="Loading..."
             sx={{ width: "100%" }}
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    placeholder={displayNull ? "Pilih Tenant" : "Semua Tenant"}
+                    placeholder={displayNull ? "Choose Tenant" : "All Tenants"}
                     error={isSubmitted && selectedTenant === null}
                     helperText={isSubmitted && selectedTenant === null ? errorMsg : undefined}
                     sx={{
                         bgcolor: colors.base['white'],
-                        '& .MuiOutlinedInput-root': { fontSize: 13, height: height },
+                        '& .MuiOutlinedInput-root': { height: height },
+                        '& .MuiInputBase-input': { fontSize: 14 },
                     }}
                 />
             )}

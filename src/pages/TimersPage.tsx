@@ -1,47 +1,44 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
-  Typography,
   Button,
-  Stack,
+  Chip,
+  IconButton,
+  InputAdornment,
+  MenuItem,
+  Pagination,
   Paper,
+  Select,
+  Skeleton,
+  Stack,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
-  TableContainer,
-  IconButton,
   TextField,
-  InputAdornment,
-  Select,
-  MenuItem,
-  Breadcrumbs,
-  Link,
-  Skeleton,
-  Pagination,
+  Typography
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import HomeIcon from '@mui/icons-material/Home';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
-import { timersApi, type Rule } from '../api/timers.api';
-import { useUIStore } from '../stores/uiStore';
+import { useEffect, useState } from 'react';
 import { extractErrorMessage } from '../api/client';
-import { ErrorAlert } from '../components/common/ErrorAlert';
-import { EmptyState } from '../components/common/EmptyState';
+import { timersApi, type Rule } from '../api/timers.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { TimerFormDialog } from '../features/timers/TimerFormDialog';
-import { colors } from '../theme/colors';
-import { usePermissions } from '../hooks/usePermissions';
+import { EmptyState } from '../components/common/EmptyState';
+import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { TimerFormDialog } from '../features/timers/TimerFormDialog';
+import { usePermissions } from '../hooks/usePermissions';
 import { useScopeStore } from '../stores/scopeStore';
+import { useUIStore } from '../stores/uiStore';
+import { colors } from '../theme/colors';
+dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -117,7 +114,7 @@ export default function TimersPage() {
   return (
     <Box>
       {/* Breadcrumb */}
-      <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
+      {/* <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
         <Link
           component={NavLink}
           to="/app/dashboard"
@@ -126,9 +123,9 @@ export default function TimersPage() {
           <HomeIcon sx={{ fontSize: 18 }} />
         </Link>
         <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>
-          Pengaturan Timer
+          Setting Time Rules
         </Typography>
-      </Breadcrumbs>
+      </Breadcrumbs> */}
 
       {/* Header */}
       <Stack
@@ -137,7 +134,7 @@ export default function TimersPage() {
       >
         <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
           <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-            Pengaturan Timer
+            Setting Time Rules
           </Typography>
         </Stack>
         <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
@@ -146,7 +143,7 @@ export default function TimersPage() {
           </Stack>
           <TextField
             size="small"
-            placeholder="Masukkan keyword..."
+            placeholder="Keyword..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             slotProps={{
@@ -180,7 +177,7 @@ export default function TimersPage() {
                 width: { xs: '100%', sm: "420px" },
               }}
             >
-              Tambah Rule
+              Add Rule
             </Button>
           }
         </Stack>
@@ -196,10 +193,10 @@ export default function TimersPage() {
               <TableRow sx={{ bgcolor: colors.base['section'] }}>
                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
                 {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
-                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Tipe Rule</TableCell>
-                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Nilai (detik)</TableCell>
-                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Dibuat Oleh</TableCell>
-                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Diperbarui</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Timer Type</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Value (seconds)</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Created By</TableCell>
+                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Updated At</TableCell>
                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Action</TableCell>
               </TableRow>
             </TableHead>
@@ -223,7 +220,19 @@ export default function TimersPage() {
                       </TableCell>
                     )}
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
-                      {RULE_TYPE_LABELS[rule.rulesType] ?? rule.rulesType}
+                      <Chip
+                        label={RULE_TYPE_LABELS[rule.rulesType] ?? rule.rulesType}
+                        size="small"
+                        sx={{
+                          width: "fit-content",
+                          bgcolor: colors.base['section'],
+                          color: colors.base['black'],
+                          fontWeight: 600,
+                          fontSize: 12,
+                          borderRadius: 1
+                        }}
+                      />
+                      {/* {RULE_TYPE_LABELS[rule.rulesType] ?? rule.rulesType} */}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
                       {rule.value}

@@ -52,7 +52,7 @@ export default function LayoutsPage() {
                 >
                     <HomeIcon sx={{ fontSize: 18 }} />
                 </Link>
-                <Typography sx={{ color: colors.base['grey'], fontSize: 14 }}>Template &amp; Layout</Typography>
+                {/* <Typography sx={{ color: colors.base['grey'], fontSize: 14 }}>Template &amp; Layout</Typography> */}
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Layout</Typography>
             </Breadcrumbs>
 

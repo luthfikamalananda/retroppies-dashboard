@@ -1,49 +1,44 @@
-import { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SearchIcon from '@mui/icons-material/Search';
 import {
     Box,
-    Typography,
     Button,
-    Stack,
+    Chip,
+    IconButton,
+    InputAdornment,
+    MenuItem,
+    Pagination,
     Paper,
+    Select,
+    Skeleton,
+    Stack,
     Table,
+    TableBody,
+    TableCell,
+    TableContainer,
     TableHead,
     TableRow,
-    TableCell,
-    TableBody,
-    TableContainer,
-    IconButton,
-    Chip,
     TextField,
-    InputAdornment,
-    Select,
-    MenuItem,
-    Breadcrumbs,
-    Link,
-    Skeleton,
-    Pagination,
+    Typography
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import HomeIcon from '@mui/icons-material/Home';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
-dayjs.extend(utc);
-import { vouchersApi, type Voucher } from '../api/vouchers.api';
-import { useUIStore } from '../stores/uiStore';
+import { useEffect, useState } from 'react';
 import { extractErrorMessage } from '../api/client';
-import { ErrorAlert } from '../components/common/ErrorAlert';
-import { EmptyState } from '../components/common/EmptyState';
+import { vouchersApi, type Voucher } from '../api/vouchers.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { VoucherFormDialog } from '../features/vouchers/VoucherFormDialog';
-import { colors } from '../theme/colors';
-import { usePermissions } from '../hooks/usePermissions';
+import { EmptyState } from '../components/common/EmptyState';
+import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { VoucherFormDialog } from '../features/vouchers/VoucherFormDialog';
+import { usePermissions } from '../hooks/usePermissions';
 import { useScopeStore } from '../stores/scopeStore';
+import { useUIStore } from '../stores/uiStore';
+import { colors } from '../theme/colors';
+dayjs.extend(utc);
 
 type StatusChip = { label: string; bgcolor: string; color: string };
 
@@ -144,7 +139,7 @@ export default function VouchersPage() {
     return (
         <Box>
             {/* Breadcrumb */}
-            <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
+            {/* <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
                 <Link
                     component={NavLink}
                     to="/app/dashboard"
@@ -155,7 +150,7 @@ export default function VouchersPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>
                     Voucher
                 </Typography>
-            </Breadcrumbs>
+            </Breadcrumbs> */}
 
             {/* Header */}
             <Stack
@@ -173,7 +168,7 @@ export default function VouchersPage() {
                     </Stack>
                     <TextField
                         size="small"
-                        placeholder="Cari kode / nama produk..."
+                        placeholder="Keyword..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -207,7 +202,7 @@ export default function VouchersPage() {
                                 width: { xs: '100%', sm: "420px" },
                             }}
                         >
-                            Tambah Voucher
+                            Add Voucher
                         </Button>
                     }
                 </Stack>
@@ -221,23 +216,23 @@ export default function VouchersPage() {
                         <TableHead>
                             <TableRow>
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Voucher Code</TableCell>
-                                {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
+                                {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap' }}>Tenant</TableCell>}
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: "center" }}>Voucher Code</TableCell>
                                 <TableCell
-                                    sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
+                                    sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', cursor: 'pointer', userSelect: 'none', textAlign: 'center' }}
                                     onClick={() => setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'))}
                                 >
                                     <Stack direction="row" sx={{ alignItems: 'center', justifyContent: 'center', gap: 0.5 }}>
                                         Promo Title
-                                        <UnfoldMoreIcon sx={{ fontSize: 16, color: colors.base['grey'] }} />
+                                        {/* <UnfoldMoreIcon sx={{ fontSize: 16, color: colors.base['grey'] }} /> */}
                                     </Stack>
                                 </TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Discount</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Period</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Usage Limit</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Used</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Status</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Action</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: 'center' }}>Discount</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: 'center' }}>Period</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: 'center' }}>Usage Limit</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: 'center' }}>Used</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: 'center' }}>Status</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textWrap: 'nowrap', textAlign: 'center' }}>Action</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -258,8 +253,8 @@ export default function VouchersPage() {
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                                                 {(page - 1) * pageSize + idx + 1}
                                             </TableCell>
-
-                                            <TableCell>
+                                            {isSuperAdmin && <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.tenantName}</TableCell>}
+                                            <TableCell sx={{ justifyContent: 'center', width: "100%", display: "flex" }}>
                                                 <Chip
                                                     label={v.code}
                                                     size="small"
@@ -269,10 +264,10 @@ export default function VouchersPage() {
                                                         fontWeight: 600,
                                                         fontSize: 12,
                                                         borderRadius: 1,
+                                                        textAlign: 'center',
                                                     }}
                                                 />
                                             </TableCell>
-                                            {isSuperAdmin && <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>{v.tenantName}</TableCell>}
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>{v.name}</TableCell>
                                             <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
                                                 Rp{v.value.toLocaleString('id-ID')}

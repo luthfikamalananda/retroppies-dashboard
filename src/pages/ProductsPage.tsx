@@ -114,7 +114,7 @@ export default function ProductsPage() {
     return (
         <Box>
             {/* Breadcrumb */}
-            <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
+            {/* <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
                 <Link
                     component={NavLink}
                     to="/app/dashboard"
@@ -123,9 +123,9 @@ export default function ProductsPage() {
                     <HomeIcon sx={{ fontSize: 18 }} />
                 </Link>
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>
-                    Produk
+                    Product
                 </Typography>
-            </Breadcrumbs>
+            </Breadcrumbs> */}
 
             {/* Header */}
             <Stack
@@ -134,7 +134,7 @@ export default function ProductsPage() {
             >
                 <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
                     <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], justifySelf: "start" }}>
-                        Produk
+                        Product
                     </Typography>
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
@@ -143,7 +143,7 @@ export default function ProductsPage() {
                     </Stack>
                     <TextField
                         size="small"
-                        placeholder="Cari kode / nama produk..."
+                        placeholder="Keyword..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                         slotProps={{
@@ -177,7 +177,7 @@ export default function ProductsPage() {
                                 width: { xs: '100%', sm: "420px" },
                             }}
                         >
-                            Tambah Produk
+                            Add Product
                         </Button>
                     )}
                 </Stack>
@@ -192,10 +192,10 @@ export default function ProductsPage() {
                             <TableRow>
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], width: 80 }}>#</TableCell>
                                 {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Kode</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Nama Produk</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Harga</TableCell>
-                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Aksi</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Product Code</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Product Name</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Price</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>

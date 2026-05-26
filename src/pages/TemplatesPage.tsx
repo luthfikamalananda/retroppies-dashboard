@@ -166,7 +166,6 @@ export default function TemplatesPage() {
                 >
                     <HomeIcon sx={{ fontSize: 18 }} />
                 </Link>
-                <Typography sx={{ color: colors.base['grey'], fontSize: 14 }}>Template &amp; Layout</Typography>
                 <Link
                     component={NavLink}
                     to="/app/layouts"
@@ -174,7 +173,7 @@ export default function TemplatesPage() {
                 >
                     Layout
                 </Link>
-                <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Your Layout</Typography>
+                <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Your Template</Typography>
             </Breadcrumbs>
 
             {/* ── Header ── */}

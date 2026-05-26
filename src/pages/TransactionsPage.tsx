@@ -10,6 +10,7 @@ import {
   Breadcrumbs,
   Button,
   Chip,
+  Dialog,
   Divider,
   Drawer,
   IconButton,
@@ -36,12 +37,13 @@ import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
 import { NavLink } from 'react-router-dom';
-import { transactionsApi, type Transaction } from '../api/transactions.api';
+import { transactionsApi, type ItemTransaction, type Transaction } from '../api/transactions.api';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
 import { useScopeStore } from '../stores/scopeStore';
 import { colors } from '../theme/colors';
+import { usePermissions } from '../hooks/usePermissions';
 dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -314,6 +316,7 @@ function DateRangePicker({ value, onChange }: DateRangePickerProps) {
 
 export default function TransactionsPage() {
   const { activeTenantId } = useScopeStore();
+  const { can, isSuperAdmin } = usePermissions();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -324,7 +327,7 @@ export default function TransactionsPage() {
     start: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
     end: dayjs().format('YYYY-MM-DD'),
   });
-  const [selectedTx, setSelectedTx] = useState<Transaction | null>(null);
+  const [selectedTx, setSelectedTx] = useState<ItemTransaction[] | null>(null);
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
@@ -362,7 +365,7 @@ export default function TransactionsPage() {
   return (
     <Box>
       {/* Breadcrumb */}
-      <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
+      {/* <Breadcrumbs sx={{ mb: 2 }} aria-label="breadcrumb">
         <Link
           component={NavLink}
           to="/app/dashboard"
@@ -373,7 +376,7 @@ export default function TransactionsPage() {
         <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>
           Laporan Transaksi
         </Typography>
-      </Breadcrumbs>
+      </Breadcrumbs> */}
 
       {/* Header */}
       <Stack
@@ -396,12 +399,12 @@ export default function TransactionsPage() {
           }}
         >
           <Stack sx={{ width: "30%" }}>
-            <TenantSelector />
+            <TenantSelector height='36px' />
           </Stack>
 
           <TextField
             size="small"
-            placeholder="Search"
+            placeholder="Keyword..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             slotProps={{
@@ -414,7 +417,12 @@ export default function TransactionsPage() {
               },
             }}
             sx={{
-              width: '30%', bgcolor: colors.base['white']
+              '& .MuiInputBase-root': {
+                height: "36px",
+                fontSize: 14,
+              },
+              width: { xs: '30%' },
+              bgcolor: colors.base['white']
             }}
           />
 
@@ -444,23 +452,24 @@ export default function TransactionsPage() {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell sx={{ ...HEADER_CELL, width: 50 }}>#</TableCell>
-                <TableCell sx={HEADER_CELL}>
+                <TableCell sx={{ ...HEADER_CELL, width: 80 }}>#</TableCell>
+                {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>Transaction Code</TableCell>
+                {/* <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>
                   <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
-                    Product Name
+                    Invoice Number
                     <UnfoldMoreIcon
                       sx={{ fontSize: 16, cursor: 'pointer', color: colors.base['grey'] }}
                       onClick={() => setSortDir((d) => d === 'asc' ? 'desc' : 'asc')}
                     />
                   </Stack>
-                </TableCell>
-                <TableCell sx={HEADER_CELL}>Product Code</TableCell>
-                <TableCell sx={{ ...HEADER_CELL, textAlign: 'right' }}>Price</TableCell>
-                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>.amount</TableCell>
-                <TableCell sx={{ ...HEADER_CELL, textAlign: 'right' }}>
-                  <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, justifyContent: 'flex-end' }}>
+                </TableCell> */}
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>Price</TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>Amount</TableCell>
+                <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>
+                  <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, justifyContent: 'center', textAlign: "center" }}>
                     Grand Total
-                    <UnfoldMoreIcon sx={{ fontSize: 16, color: colors.base['grey'] }} />
+                    {/* <UnfoldMoreIcon sx={{ fontSize: 16, color: colors.base['grey'] }} /> */}
                   </Stack>
                 </TableCell>
                 <TableCell sx={{ ...HEADER_CELL, textAlign: 'center' }}>Transaction Date</TableCell>
@@ -478,20 +487,21 @@ export default function TransactionsPage() {
                 ))
                 : rows.map((tx, idx) => (
                   <TableRow
-                    key={tx.transaction_id}
+                    key={tx.id}
                     hover
                     sx={{ cursor: 'pointer', '&:hover': { bgcolor: colors.base['background-light'] } }}
-                    onClick={() => setSelectedTx(tx)}
+                    onClick={() => setSelectedTx(tx.items)}
                   >
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'] }}>
                       {(page - 1) * pageSize + idx + 1}
                     </TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], fontWeight: 500 }}>
-                      {tx.product}
+                    {isSuperAdmin && <TableCell sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>{tx.tenantName}</TableCell>}
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], fontWeight: 500, textAlign: 'center' }}>
+                      {tx.invoiceNumber}
                     </TableCell>
-                    <TableCell>
+                    {/* <TableCell sx={{ textAlign: 'center' }}>
                       <Chip
-                        label={tx.transaction_id}
+                        label={tx.id}
                         size="small"
                         sx={{
                           bgcolor: colors.base['section'],
@@ -502,18 +512,18 @@ export default function TransactionsPage() {
                           borderRadius: 1,
                         }}
                       />
-                    </TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'right' }}>
-                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(tx.amount)}
+                    </TableCell> */}
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(tx.grandTotal)}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
-                      {tx.amount ?? 1}
+                      {tx.items.length}
                     </TableCell>
-                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'right', fontWeight: 600 }}>
-                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format((tx.amount ?? 1) * tx.amount)}
+                    <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center', fontWeight: 600 }}>
+                      {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(tx.grandTotal)}
                     </TableCell>
                     <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center', whiteSpace: 'nowrap' }}>
-                      {dayjs.utc(tx.date_time).format('DD/MM/YYYY HH:mm:ss')}
+                      {dayjs.utc(tx.transactionDate).format('DD/MM/YYYY HH:mm:ss')}
                     </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}>
                       <Chip
@@ -575,11 +585,10 @@ export default function TransactionsPage() {
       </Paper>
 
       {/* Transaction detail drawer */}
-      <Drawer
-        anchor="right"
+      <Dialog
         open={!!selectedTx}
         onClose={() => setSelectedTx(null)}
-        slotProps={{ paper: { sx: { width: { xs: '100vw', sm: 380 }, p: 3 } } }}
+        slotProps={{ paper: { sx: { width: { xs: '100vw', sm: 380 }, px: 3, py: 2 } } }}
       >
         <Stack direction="row" sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           <Typography sx={{ fontWeight: 700, fontSize: 16, color: colors.base['black'] }}>
@@ -591,47 +600,49 @@ export default function TransactionsPage() {
         </Stack>
         <Divider sx={{ mb: 2 }} />
         {selectedTx && (
-          <Stack sx={{ gap: 2 }}>
-            {([
-              { label: 'ID Transaksi', value: selectedTx.transaction_id },
-              { label: 'Waktu', value: dayjs.utc(selectedTx.date_time).format('DD MMMM YYYY, HH:mm:ss') },
-              { label: 'Produk', value: selectedTx.product },
-              { label: 'amount', value: selectedTx.amount ?? 1 },
-              { label: 'Metode Pembayaran', value: selectedTx.payment_method ?? '—' },
-              { label: 'Outlet', value: selectedTx.outlet ?? '—' },
-              {
-                label: 'Status', value: (
-                  <Chip
-                    label={selectedTx.status === 'success' ? 'Success' : 'Failed'}
-                    size="small"
-                    sx={{
-                      bgcolor: selectedTx.status === 'success' ? '#E8F5E9' : '#FDE8E8',
-                      color: selectedTx.status === 'success' ? '#2E7D32' : '#B23E3E',
-                      fontWeight: 600,
-                      borderRadius: 1,
-                    }}
-                  />
-                ),
-              },
-              {
-                label: 'Nominal',
-                value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(selectedTx.amount),
-              },
-              {
-                label: 'Grand Total',
-                value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format((selectedTx.amount ?? 1) * selectedTx.amount),
-              },
-            ] as { label: string; value: React.ReactNode }[]).map(({ label, value }) => (
-              <Box key={label}>
-                <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>{label}</Typography>
-                <Typography sx={{ fontWeight: 500, mt: 0.25, fontSize: 14, color: colors.base['black'] }}>
-                  {value}
+          selectedTx.map((item) => (
+            <Box key={item.id} sx={{ mb: 2, p: 2, border: `1px solid ${colors.border['default']}`, borderRadius: 2 }}>
+              <Typography sx={{ fontSize: 13, color: colors.base['black'], fontWeight: 500 }}>
+                {item.productName} ({item.productCode})
+              </Typography>
+              <Stack direction="row" sx={{ mt: 1, gap: 2 }}>
+                <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>Price:</Typography>
+                <Typography sx={{ fontSize: 12, color: colors.base['black'], fontWeight: 500 }}>
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.price)}
                 </Typography>
-              </Box>
-            ))}
-          </Stack>
+              </Stack>
+              <Stack direction="row" sx={{ mt: 0.5, gap: 2 }}>
+                <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>Amount:</Typography>
+                <Typography sx={{ fontSize: 12, color: colors.base['black'], fontWeight: 500 }}>
+                  {item.qty}
+                </Typography>
+              </Stack>
+              <Stack direction="row" sx={{ mt: 0.5, gap: 2 }}>
+                <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>Subtotal:</Typography>
+                <Typography sx={{ fontSize: 12, color: colors.base['black'], fontWeight: 500 }}>
+                  {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(item.subtotal)}
+                </Typography>
+              </Stack>
+            </Box>
+          ))
+          // <Stack sx={{ gap: 2 }}>
+          //   {([
+          //     { label: 'Product Code', value: selectedTx.productCode ?? '—' },
+          //     { label: 'Product Name', value: selectedTx.productName ?? '—' },
+          //     { label: 'Price', value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(selectedTx.price) ?? 0 },
+          //     { label: 'Amount', value: selectedTx.qty ?? '—' },
+          //     { label: 'Subtotal', value: new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(selectedTx.subtotal) ?? 0 },
+          //   ] as { label: string; value: React.ReactNode }[]).map(({ label, value }) => (
+          //     <Box key={label}>
+          //       <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>{label}</Typography>
+          //       <Typography sx={{ fontWeight: 500, mt: 0.25, fontSize: 14, color: colors.base['black'] }}>
+          //         {value}
+          //       </Typography>
+          //     </Box>
+          //   ))}
+          // </Stack>
         )}
-      </Drawer>
+      </Dialog>
     </Box>
   );
 }

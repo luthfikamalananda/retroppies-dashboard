@@ -191,12 +191,12 @@ export default function DashboardPage() {
         queryKey: [...queryKey, 'summary'],
         queryFn: () =>
             dashboardApi.getSummaryChart({
-                startDate: dayjs().format('YYYY-MM-DD'),
-                endDate: dayjs().format('YYYY-MM-DD'),
-                startMonth: dayjs().format('YYYY-MM'),
-                endMonth: dayjs().format('YYYY-MM'),
-                startYear: dayjs().format('YYYY'),
-                endYear: dayjs().format('YYYY'),
+                startDate: dayjs('2026-05-20').format('YYYY-MM-DD'),
+                endDate: dayjs('2026-05-25').format('YYYY-MM-DD'),
+                startMonth: dayjs('2026-05-20').format('YYYY-MM'),
+                endMonth: dayjs('2026-05-25').format('YYYY-MM'),
+                startYear: dayjs('2026-05-20').format('YYYY'),
+                endYear: dayjs('2026-05-25').format('YYYY'),
                 tenantId: activeTenantId,
             }),
     });

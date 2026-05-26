@@ -1,8 +1,10 @@
 import BadgeIcon from '@mui/icons-material/BadgeOutlined';
+import CircleIcon from '@mui/icons-material/Circle';
 import BusinessIcon from '@mui/icons-material/CorporateFareOutlined';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PersonIcon from '@mui/icons-material/PersonOutlineOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import {
     Box,
     Collapse,
@@ -11,10 +13,11 @@ import {
     ListItemButton,
     ListItemIcon,
     ListItemText,
+    Stack,
     Tooltip,
     Typography,
     useMediaQuery,
-    useTheme,
+    useTheme
 } from '@mui/material';
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
@@ -66,7 +69,7 @@ const SETTING_USER_ITEMS = [
 // ];
 
 const SETTINGS_ITEMS = [
-    { label: 'Manage Account', path: '/app/manage-account', icon: <img src={settingIcon} alt="Manage Account" />, permission: '*' },
+    { label: 'Manage Account', path: '/app/manage-account', icon: <SettingsOutlinedIcon fontSize="small" />, permission: '*' },
 ];
 
 
@@ -159,12 +162,14 @@ function NavGroupCollapsible({
     expanded,
     onToggle,
     children,
+    isActive,
 }: {
     label: string;
     collapsed: boolean;
     expanded: boolean;
     onToggle: () => void;
     children: React.ReactNode;
+    isActive?: boolean;
 }) {
     return (
         <>
@@ -182,8 +187,20 @@ function NavGroupCollapsible({
                         // p:0,
                         py: 1,
                         pr: 1,
-                        color: colors.base['black'],
-                        '&:hover': { bgcolor: colors.base['background-light'] },
+                        bgcolor: isActive ? colors.brand[100] : 'transparent',
+                        color: isActive ? colors.brand[500] : colors.base['black'],
+                        '&:hover': { bgcolor: isActive ? colors.brand[100] : colors.base['background-light'] },
+                        '&.Mui-selected': {
+                            bgcolor: colors.brand[100],
+                            color: isActive ? colors.brand[500] : colors.base['black'],
+                            '& .MuiListItemIcon-root': { color: colors.brand[500] },
+                            '&:hover': { bgcolor: colors.brand[100] },
+                        },
+                        '&:not(.Mui-selected)': {
+                            color: isActive ? colors.brand[500] : colors.base['black'],
+                            '& .MuiListItemIcon-root': { color: isActive ? colors.brand[500] : colors.base['black'] },
+                            '&:hover': { bgcolor: isActive ? colors.brand[100] : colors.base['background-light']  },
+                        },
                     }}
                 >
                     <ListItemIcon sx={{ minWidth: 0, color: 'inherit' }}>
@@ -196,11 +213,11 @@ function NavGroupCollapsible({
                                 slotProps={{
                                     primary: {
                                         style: {
-                                            fontSize: 15,
-                                            fontWeight: 500,
+                                            fontSize: 14,
+                                            fontWeight: isActive ? 600 : 500,
                                             // letterSpacing: '0.04em',
                                             textTransform: 'capitalize',
-                                            color: colors.base['black'],
+                                            color: isActive ? colors.brand[500] : colors.base['black'],
                                             // fontFamily: "public sans, sans-serif",
                                         },
                                     },
@@ -308,23 +325,48 @@ export function Sidebar() {
                 {/* Settings User group */}
                 {systemUserItems.length > 0 && (
                     <NavGroupCollapsible
+                        // isActive={systemUserItems.some((item) => location.pathname.startsWith(item.path))}
+                        isActive={systemUserExpanded}
                         label="Setting User"
                         collapsed={isCollapsed}
                         expanded={systemUserExpanded}
                         onToggle={() => setSystemUserExpanded((prev) => !prev)}
                     >
-                        <List disablePadding>
-                            {systemUserItems.map((item) => (
-                                <Box key={item.path} sx={{ pl: isCollapsed ? 0 : 1.5 }}>
-                                    <NavItem
-                                        item={item}
-                                        collapsed={isCollapsed}
-                                        isActive={location.pathname.startsWith(item.path)}
-                                        onClick={handleNavClick}
-                                    />
-                                </Box>
-                            ))}
-                        </List>
+                        {!isCollapsed &&
+                            <List
+                                disablePadding
+                                sx={{
+                                    ml: 2.5,
+                                }}>
+                                {systemUserItems.map((item) => (
+                                    <Box key={item.path} sx={{ pl: isCollapsed ? 0 : 1.5, display: 'flex', flexDirection: 'row' }}>
+                                        <Stack sx={{ display: "flex", flexDirection: "column", alignItems: "center", mr: 1, justifyContent: "center" }}>
+                                            <Stack
+                                                sx={{
+                                                    height: "100%",
+                                                    width: "1px",
+                                                    bgcolor: location.pathname.startsWith(item.path) ? colors.brand[500] : colors.base['grey'],
+                                                }}>
+                                            </Stack>
+                                            <CircleIcon sx={{ fontSize: 8, color: location.pathname.startsWith(item.path) ? colors.brand[500] : colors.base['grey'] }} />
+                                            <Stack
+                                                sx={{
+                                                    height: "100%",
+                                                    width: "1px",
+                                                    bgcolor: location.pathname.startsWith(item.path) ? colors.brand[500] : colors.base['grey'],
+                                                }}>
+                                            </Stack>
+                                        </Stack>
+                                        <NavItem
+                                            item={item}
+                                            collapsed={isCollapsed}
+                                            isActive={location.pathname.startsWith(item.path)}
+                                            onClick={handleNavClick}
+                                        />
+                                    </Box>
+                                ))}
+                            </List>
+                        }
                     </NavGroupCollapsible>
                 )}
 

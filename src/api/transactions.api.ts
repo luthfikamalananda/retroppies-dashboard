@@ -1,13 +1,27 @@
 import { apiClient, type BaseResponse } from './client';
 
 export interface Transaction {
-  transaction_id: string;
-  date_time: string;
-  status: 'success' | 'failed';
-  amount: number;
-  product: string;
-  payment_method?: string;
-  outlet?: string;
+  id: number
+  invoiceNumber: string
+  grandTotal: number
+  transactionDate: string
+  tenantId: number
+  tenantName: string
+  status: string
+  items: ItemTransaction[]
+  createdAt: string
+  createdBy: string
+  updatedAt: string
+  updatedBy: string
+}
+
+export interface ItemTransaction {
+  id: number
+  productCode: string
+  productName: string
+  price: number
+  qty: number
+  subtotal: number
 }
 
 export interface TransactionResult {
