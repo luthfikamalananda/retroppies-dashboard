@@ -1,4 +1,6 @@
+import ExitToAppOutlinedIcon from '@mui/icons-material/ExitToAppOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import {
   AppBar,
   Avatar,
@@ -14,15 +16,13 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import ExitToAppOutlinedIcon from '@mui/icons-material/ExitToAppOutlined';
 import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import headerButton from '../../assets/header-button.svg';
 import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 import { colors } from '../../theme/colors';
 import { SIDEBAR_COLLAPSED_WIDTH, SIDEBAR_WIDTH } from './Sidebar';
-import { useLocation, NavLink } from 'react-router-dom';
 
 export function Topbar() {
   const theme = useTheme();
@@ -31,7 +31,6 @@ export function Topbar() {
   const toggleSidebar = useUIStore((s) => s.toggleSidebar);
   const openMobileSidebar = useUIStore((s) => s.openMobileSidebar);
   const { user, clearUser } = useAuthStore();
-  const location = useLocation();
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const menuOpen = Boolean(anchorEl);

@@ -14,6 +14,7 @@ import {
   Typography,
   IconButton,
   LinearProgress,
+  Autocomplete,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
@@ -26,6 +27,19 @@ import { useScopeStore } from '../../stores/scopeStore';
 import { TenantSelector } from '../../components/common/TenantSelector';
 import { usePermissions } from '../../hooks/usePermissions';
 
+
+const PRODUCT_TYPE_OPTIONS = [{
+  label: 'Bundling',
+  value: 'bundling',
+},
+{
+  label: 'Add Ons',
+  value: 'addon',
+},
+{
+  label: 'Extra Print',
+  value: 'print',
+}]
 const MAX_SIZE_MB = 2;
 const ACCEPTED_TYPES = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'];
 
@@ -34,6 +48,7 @@ const schema = z.object({
   productName: z.string().min(1, 'Nama produk wajib diisi'),
   tenantId: z.number('Tenant wajib dipilih').min(1, 'Tenant wajib dipilih'),
   productPrice: z.number().min(0, 'Harga tidak boleh negatif'),
+  productType: z.string().min(1, 'Tipe produk wajib dipilih'),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -63,10 +78,11 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
     handleSubmit,
     reset,
     setValue,
+    getValues,
     formState: { errors, isSubmitting, isSubmitted },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { productCode: '', productName: '', productPrice: 0, tenantId: selectedTenantId ?? undefined },
+    defaultValues: { productCode: '', productName: '', productType: '', productPrice: 0, tenantId: selectedTenantId ?? undefined },
   });
 
   useEffect(() => {
@@ -82,8 +98,9 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
             productName: editTarget.productName,
             productPrice: editTarget.productPrice,
             tenantId: editTarget.tenantId,
+            productType: editTarget.productType,
           }
-          : { productCode: '', productName: '', productPrice: 0, tenantId: selectedTenantId ?? undefined }
+          : { productCode: '', productName: '', productType: '', productPrice: 0, tenantId: selectedTenantId ?? undefined }
       );
     }
   }, [open, editTarget, reset]);
@@ -91,7 +108,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
   // Sync selectedTenantId (dari TenantSelector) ke field tenantId setiap kali berubah
   useEffect(() => {
     if (open && !editTarget) {
-      setValue('tenantId', selectedTenantId ?? null);
+      setValue('tenantId', selectedTenantId ?? undefined);
     }
   }, [selectedTenantId, open, editTarget, setValue]);
 
@@ -118,6 +135,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
         productCode: values.productCode,
         productName: values.productName,
         productPrice: values.productPrice,
+        productType: values.productType,
         tenantId: values.tenantId,
       };
       return isEditing
@@ -137,6 +155,8 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
   });
 
   const photoRequiredError = isSubmitted && !isEditing && !selectedFile;
+
+  console.log('values', getValues());
 
   return (
     <>
@@ -173,14 +193,33 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
               {/* Tenant Selector — hanya untuk superAdmin */}
               {(isSuperAdmin && !isEditing) && (
                 <TenantSelector
+                  useLabel
                   height='40px'
                   displayNull
                   isSubmitted={!!errors.tenantId}
                   errorMsg={errors.tenantId?.message}
                   value={selectedTenantId}
-                  onChange={(value) => setSelectedTenantId(value)}
+                  onChange={(value) => value !== null && setSelectedTenantId(value)}
                 />
               )}
+              <Autocomplete
+                disablePortal
+                size="small"
+                options={PRODUCT_TYPE_OPTIONS}
+                getOptionLabel={(option) => option.label}
+                value={PRODUCT_TYPE_OPTIONS.find(opt => opt.value === getValues('productType'))}
+                isOptionEqualToValue={(opt, val) => opt.value === val.value}
+                filterOptions={(options) => options} // disable built-in filtering to show all options
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Tipe Produk"
+                    error={!!errors.productType}
+                    helperText={errors.productType?.message}
+                  />
+                )}
+                onChange={(_, value) => setValue('productType', value?.value ?? '', { shouldValidate: true })}
+              />
               <TextField
                 label="Kode Produk"
                 fullWidth
@@ -207,18 +246,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
                 slotProps={{ htmlInput: { min: 0, step: 1000 } }}
                 {...register('productPrice', { valueAsNumber: true })}
               />
-              {/* <TextField
-                label="Tenant ID"
-                type="number"
-                fullWidth
-                size="small"
-                error={!!errors.tenantId}
-                helperText={errors.tenantId?.message}
-                value={selectedTenantId}
-                disabled
-                slotProps={{ htmlInput: { min: 1 } }}
-                {...register('tenantId', { valueAsNumber: true })}
-              /> */}
+
 
               {/* ── Foto Produk ── */}
               <Box>

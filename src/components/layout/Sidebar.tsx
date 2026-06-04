@@ -4,7 +4,6 @@ import BusinessIcon from '@mui/icons-material/CorporateFareOutlined';
 import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PersonIcon from '@mui/icons-material/PersonOutlineOutlined';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import {
     Box,
     Collapse,
@@ -68,9 +67,9 @@ const SETTING_USER_ITEMS = [
 //     // { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
 // ];
 
-const SETTINGS_ITEMS = [
-    { label: 'Manage Account', path: '/app/manage-account', icon: <SettingsOutlinedIcon fontSize="small" />, permission: '*' },
-];
+// const SETTINGS_ITEMS = [
+//     { label: 'Manage Account', path: '/app/manage-account', icon: <SettingsOutlinedIcon fontSize="small" />, permission: '*' },
+// ];
 
 
 
@@ -256,7 +255,7 @@ export function Sidebar() {
     const dashboardItems = DASHBOARD_ITEMS.filter((item) => can(item.permission));
     // const dashboardItems = DASHBOARD_ITEMS
     const systemUserItems = SETTING_USER_ITEMS.filter((item) => can(item.permission));
-    const settingsItems = SETTINGS_ITEMS.filter((item) => can(item.permission));
+    // const settingsItems = SETTINGS_ITEMS.filter((item) => can(item.permission));
 
     return (
         <Drawer

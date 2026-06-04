@@ -2,20 +2,15 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
-import HomeIcon from '@mui/icons-material/Home';
 import SearchIcon from '@mui/icons-material/Search';
-import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore';
 import {
   Box,
-  Breadcrumbs,
   Button,
   Chip,
   Dialog,
   Divider,
-  Drawer,
   IconButton,
   InputAdornment,
-  Link,
   MenuItem,
   Pagination,
   Paper,
@@ -30,20 +25,19 @@ import {
   TableHead,
   TableRow,
   TextField,
-  Typography,
+  Typography
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import dayjs, { Dayjs } from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { transactionsApi, type ItemTransaction, type Transaction } from '../api/transactions.api';
+import { transactionsApi, type ItemTransaction } from '../api/transactions.api';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { usePermissions } from '../hooks/usePermissions';
 import { useScopeStore } from '../stores/scopeStore';
 import { colors } from '../theme/colors';
-import { usePermissions } from '../hooks/usePermissions';
 dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -316,7 +310,7 @@ function DateRangePicker({ value, onChange }: DateRangePickerProps) {
 
 export default function TransactionsPage() {
   const { activeTenantId } = useScopeStore();
-  const { can, isSuperAdmin } = usePermissions();
+  const { isSuperAdmin } = usePermissions();
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -328,7 +322,7 @@ export default function TransactionsPage() {
     end: dayjs().format('YYYY-MM-DD'),
   });
   const [selectedTx, setSelectedTx] = useState<ItemTransaction[] | null>(null);
-  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
+  // const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
   useEffect(() => {
     const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 400);
@@ -337,7 +331,7 @@ export default function TransactionsPage() {
 
   const { data, isLoading, isError, refetch } = useQuery({
     // queryKey: ['transactions', activeTenantId, statusFilter, dateRange, debouncedSearch, page, pageSize, sortDir],
-    queryKey: ['transactions', activeTenantId, dateRange, debouncedSearch, page, pageSize, sortDir],
+    queryKey: ['transactions', activeTenantId, dateRange, debouncedSearch, page, pageSize],
     queryFn: () =>
       transactionsApi.list({
         dateFrom: dateRange.start,

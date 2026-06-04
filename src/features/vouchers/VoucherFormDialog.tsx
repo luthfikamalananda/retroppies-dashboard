@@ -163,7 +163,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
               isSubmitted={!!errors.tenantId}
               errorMsg={errors.tenantId?.message}
               value={selectedTenantId}
-              onChange={(value) => setSelectedTenantId(value)}
+              onChange={(value) => value && setSelectedTenantId(value)}
             />
           }
           <TextField

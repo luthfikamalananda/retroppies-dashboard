@@ -135,7 +135,7 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
                                 isSubmitted={!!errors.tenantId}
                                 errorMsg={errors.tenantId?.message}
                                 value={selectedTenantId}
-                                onChange={(value) => setSelectedTenantId(value)}
+                                onChange={(value) => value && setSelectedTenantId(value)}
                             />
                         )}
 

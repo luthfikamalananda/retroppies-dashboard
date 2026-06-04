@@ -1,45 +1,42 @@
-import { useEffect, useState } from 'react';
-import { NavLink } from 'react-router-dom';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import SearchIcon from '@mui/icons-material/Search';
 import {
+    Autocomplete,
     Box,
-    Typography,
     Button,
-    Stack,
-    TextField,
-    Paper,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
-    TableContainer,
-    IconButton,
-    Tooltip,
     Chip,
-    Select,
+    IconButton,
+    InputAdornment,
     MenuItem,
     Pagination,
-    Breadcrumbs,
-    Link,
-    InputAdornment,
+    Paper,
+    Select,
     Skeleton,
+    Stack,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Tooltip,
+    Typography
 } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-import HomeIcon from '@mui/icons-material/Home';
-import { productsApi, type Product } from '../api/products.api';
-import { useUIStore } from '../stores/uiStore';
-import { useScopeStore } from '../stores/scopeStore';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { extractErrorMessage } from '../api/client';
-import { ErrorAlert } from '../components/common/ErrorAlert';
-import { EmptyState } from '../components/common/EmptyState';
+import { productsApi, type Product } from '../api/products.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
-import { ProductFormDialog } from '../features/products/ProductFormDialog';
+import { EmptyState } from '../components/common/EmptyState';
+import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { ProductFormDialog } from '../features/products/ProductFormDialog';
 import { usePermissions } from '../hooks/usePermissions';
+import { useScopeStore } from '../stores/scopeStore';
+import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -58,6 +55,7 @@ export default function ProductsPage() {
     const [debouncedSearch, setDebouncedSearch] = useState('');
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+    const [productType, setProductType] = useState('');
 
     const [formOpen, setFormOpen] = useState(false);
     const [editTarget, setEditTarget] = useState<Product | null>(null);
@@ -71,7 +69,7 @@ export default function ProductsPage() {
         return () => clearTimeout(timer);
     }, [search]);
 
-    const queryKey = ['products', activeTenantId, debouncedSearch, page, pageSize];
+    const queryKey = ['products', activeTenantId, debouncedSearch, page, pageSize, productType];
 
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey,
@@ -81,6 +79,7 @@ export default function ProductsPage() {
                 keyword: debouncedSearch,
                 page,
                 limit: pageSize,
+                productType: productType
             }),
         enabled: formOpen === false
     });
@@ -141,6 +140,41 @@ export default function ProductsPage() {
                     <Stack sx={{ width: "100%" }}>
                         <TenantSelector />
                     </Stack>
+                    <Stack sx={{ width: "100%" }}>
+                        <Autocomplete
+                            disablePortal
+                            size="small"
+                            options={[{
+                                label: 'Bundling',
+                                value: 'bundling',
+                            },
+                            {
+                                label: 'Add Ons',
+                                value: 'addon',
+                            },
+                            {
+                                label: 'Extra Print',
+                                value: 'print',
+                            }]}
+                            getOptionLabel={(option) => option.label}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    sx={{
+                                        '& .MuiInputBase-root': {
+                                            height: "36px",
+                                            fontSize: 14,
+                                        },
+                                        width: { xs: '100%', sm: "100%" },
+                                        bgcolor: colors.base['white']
+                                    }}
+                                    placeholder="All Types"
+                                />
+                            )}
+                            onChange={(_, value) => setProductType(value?.value ?? '')}
+                        />
+                    </Stack>
+
                     <TextField
                         size="small"
                         placeholder="Keyword..."
@@ -174,7 +208,8 @@ export default function ProductsPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                width: { xs: '100%', sm: "420px" },
+                                textWrap: 'nowrap',
+                                width: { xs: '100%', sm: isSuperAdmin ? "450px" : "100%" },
                             }}
                         >
                             Add Product

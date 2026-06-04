@@ -18,9 +18,6 @@ const ALL_TENANT: Tenant = {
     UpdatedBy: '',
 };
 
-const getLabel = (t: Tenant) =>
-    t.id === 0 ? 'All Tenants' : `${t.tenant_code} — ${t.name}`;
-
 interface TenantSelectorProps {
     height?: string;
     isSubmitted?: boolean;
@@ -33,6 +30,7 @@ interface TenantSelectorProps {
      */
     value?: number | null;
     onChange?: (tenantId: number | null) => void;
+    useLabel?: boolean; // default false; jika true, opsi akan menampilkan "tenant_code — name"
 }
 
 /**
@@ -59,6 +57,7 @@ export function TenantSelector({
     errorMsg = "Tenant wajib dipilih",
     value: controlledValue,
     onChange: controlledOnChange,
+    useLabel = false,
 }: TenantSelectorProps) {
     const user = useAuthStore((s) => s.user);
 
@@ -133,7 +132,7 @@ export function TenantSelector({
             value={selectedTenant}
             inputValue={inputValue}
             loading={isLoading}
-            getOptionLabel={getLabel}
+            getOptionLabel={(opt) => opt.name}
             isOptionEqualToValue={(opt, val) => opt.id === val.id}
             onChange={handleChange}
             onInputChange={handleInputChange}
@@ -143,7 +142,8 @@ export function TenantSelector({
             renderInput={(params) => (
                 <TextField
                     {...params}
-                    placeholder={displayNull ? "Choose Tenant" : "All Tenants"}
+                    label={useLabel ? "Choose Tenant" : undefined}
+                    placeholder={displayNull && !useLabel ? "Choose Tenant" : "All Tenants"}
                     error={isSubmitted && selectedTenant === null}
                     helperText={isSubmitted && selectedTenant === null ? errorMsg : undefined}
                     sx={{

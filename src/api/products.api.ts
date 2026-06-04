@@ -4,6 +4,7 @@ export interface Product {
   id: number
   productCode: string
   productName: string
+  productType: string
   productPrice: number
   productPhoto: string
   tenantId: number
@@ -24,6 +25,7 @@ export interface ProductPayload {
   productName: string
   productPrice: number
   tenantId: number
+  productType: string
 }
 
 export interface ProductListParams {
@@ -31,6 +33,7 @@ export interface ProductListParams {
   keyword: string;
   page: number;
   limit: number;
+  productType: string;
 }
 
 export const productsApi = {
@@ -45,6 +48,7 @@ export const productsApi = {
     form.append('productName', payload.productName);
     form.append('productPrice', String(payload.productPrice));
     form.append('tenantId', String(payload.tenantId));
+    form.append('productType', payload.productType);
     if (file) form.append('productPhoto', file);
     return apiClient
       .post<BaseResponse<Product>>('/products/create', form, {
@@ -63,6 +67,7 @@ export const productsApi = {
     if (payload.productName !== undefined) form.append('productName', payload.productName);
     if (payload.productPrice !== undefined) form.append('productPrice', String(payload.productPrice));
     if (payload.tenantId !== undefined) form.append('tenantId', String(payload.tenantId));
+    if (payload.productType !== undefined) form.append('productType', payload.productType);
     if (file) form.append('productPhoto', file);
     return apiClient
       .post<BaseResponse<Product>>(`/products/update`, form, {
