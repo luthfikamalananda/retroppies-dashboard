@@ -229,6 +229,7 @@ export default function ProductsPage() {
                                 {isSuperAdmin && <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>Tenant</TableCell>}
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Product Code</TableCell>
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Product Name</TableCell>
+                                <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: "center" }}>Product Type</TableCell>
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Price</TableCell>
                                 <TableCell sx={{ bgcolor: colors.brand[100], fontWeight: 600, fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>Actions</TableCell>
                             </TableRow>
@@ -258,7 +259,18 @@ export default function ProductsPage() {
                                         <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>
                                             {product.productName}
                                         </TableCell>
-                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: "center" }}>
+                                        <TableCell sx={{ fontSize: 13, textAlign: "center" }}>
+                                            <Chip
+                                                label={product.productType ?? '-'}
+                                                size="small"
+                                                variant="outlined"
+                                                sx={{
+                                                    textTransform: 'uppercase',
+                                                    fontFamily: 'Inter, sans-serif',
+                                                    ...(product.productType === "addon" ? { bgcolor: colors.brand[100], color: colors.brand[500] } : product.productType === "print" ? { bgcolor: colors.brand[100], color: colors.brand[500] } : { bgcolor: colors.brand[100], color: colors.brand[500] })
+                                                }} />
+                                        </TableCell>
+                                        <TableCell sx={{ fontSize: 13, color: colors.base['black'], textAlign: 'center' }}>
                                             {new Intl.NumberFormat('id-ID', {
                                                 style: 'currency',
                                                 currency: 'IDR',

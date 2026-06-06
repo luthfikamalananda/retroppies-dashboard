@@ -4,7 +4,7 @@ export interface Product {
   id: number
   productCode: string
   productName: string
-  productType: string
+  productType: 'addon' | 'print' | 'bundling'
   productPrice: number
   productPhoto: string
   tenantId: number
