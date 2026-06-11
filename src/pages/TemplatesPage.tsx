@@ -214,6 +214,8 @@ export default function TemplatesPage() {
         setProductionPreviewUrl(URL.createObjectURL(file));
     }
 
+    console.log("errors", errors)
+
     return (
         <Box>
             {/* Hidden file input — Display */}
@@ -389,8 +391,8 @@ export default function TemplatesPage() {
                         <TenantSelector
                             useLabel
                             height='40px'
-                            displayNull={false}
-                            isSubmitted={false}
+                            displayNull
+                            isSubmitted={!!errors.tenantId}
                             errorMsg={errors.tenantId?.message}
                             value={selectedTenantId}
                             onChange={(value) => value !== null && setValue('tenantId', value, { shouldValidate: true })}
