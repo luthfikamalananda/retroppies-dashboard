@@ -17,7 +17,6 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { authApi } from '../api/auth.api';
 import { useAuthStore } from '../stores/authStore';
 import { extractErrorMessage } from '../api/client';
-import { DUMMY_MODE, dummyLogin } from '../mocks/dummyAuth';
 import { colors } from '../theme/colors';
 import loginPoster from '../assets/login-poster.png';
 
@@ -44,13 +43,11 @@ export default function LoginPage() {
     async function onSubmit(values: LoginForm) {
         setServerError('');
         try {
-            const data = DUMMY_MODE
-                ? await dummyLogin(values.username, values.password)
-                : await authApi.login({ username: values.username, password: values.password });
+            const data = await authApi.login({ username: values.username, password: values.password });
             setUser(data.result);
             navigate('/app/dashboard', { replace: true });
         } catch (err) {
-            setServerError(DUMMY_MODE ? (err as Error).message : extractErrorMessage(err));
+            setServerError(extractErrorMessage(err));
         }
     }
 
@@ -114,15 +111,6 @@ export default function LoginPage() {
                     >
                         Log In to Your Business Account
                     </Typography>
-
-                    {/* Dummy mode hint */}
-                    {DUMMY_MODE && (
-                        <Alert severity="info" sx={{ mb: 3 }}>
-                            <strong>Demo mode</strong><br />
-                            admin@retroppies.com / admin123<br />
-                            manager@retroppies.com / manager123
-                        </Alert>
-                    )}
 
                     {/* Server error */}
                     {serverError && (
