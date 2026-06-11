@@ -34,10 +34,10 @@ import { useEffect, useState } from 'react';
 import { transactionsApi, type ItemTransaction } from '../api/transactions.api';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
-import { TenantSelector } from '../components/common/TenantSelector';
 import { usePermissions } from '../hooks/usePermissions';
-import { useScopeStore } from '../stores/scopeStore';
+
 import { colors } from '../theme/colors';
+import { useAuthStore } from '../stores/authStore';
 dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -309,7 +309,7 @@ function DateRangePicker({ value, onChange }: DateRangePickerProps) {
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 export default function TransactionsPage() {
-  const { activeTenantId } = useScopeStore();
+  const activeTenantId = useAuthStore().user?.tenantId ?? 0;
   const { isSuperAdmin } = usePermissions();
 
   const [page, setPage] = useState(1);
@@ -392,9 +392,6 @@ export default function TransactionsPage() {
             justifyContent: 'flex-end',
           }}
         >
-          <Stack sx={{ width: "30%" }}>
-            <TenantSelector height='36px' />
-          </Stack>
 
           <TextField
             size="small"

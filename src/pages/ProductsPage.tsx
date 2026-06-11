@@ -32,19 +32,19 @@ import { productsApi, type Product } from '../api/products.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
-import { TenantSelector } from '../components/common/TenantSelector';
 import { ProductFormDialog } from '../features/products/ProductFormDialog';
 import { usePermissions } from '../hooks/usePermissions';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
+import { TenantSelector } from '../components/common/TenantSelector';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
 export default function ProductsPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { activeTenantId } = useScopeStore();
+    const activeTenantId = useAuthStore().user?.tenantId;
 
     const { can, isSuperAdmin } = usePermissions();
     const canCreate = can('products:create');
@@ -75,13 +75,13 @@ export default function ProductsPage() {
         queryKey,
         queryFn: () =>
             productsApi.list({
-                tenantId: activeTenantId,
+                tenantId: activeTenantId!,
                 keyword: debouncedSearch,
                 page,
                 limit: pageSize,
                 productType: productType
             }),
-        enabled: formOpen === false
+        enabled: formOpen === false && activeTenantId !== null, // Jangan fetch data saat form dialog terbuka atau tenantId belum siap
     });
 
     const deleteMutation = useMutation({
@@ -137,9 +137,7 @@ export default function ProductsPage() {
                     </Typography>
                 </Stack>
                 <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
-                    <Stack sx={{ width: "100%" }}>
-                        <TenantSelector />
-                    </Stack>
+                    <TenantSelector />
                     <Stack sx={{ width: "100%" }}>
                         <Autocomplete
                             disablePortal

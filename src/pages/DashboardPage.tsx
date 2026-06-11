@@ -28,7 +28,7 @@ import {
 } from 'recharts';
 import dayjs from 'dayjs';
 import { dashboardApi } from '../api/dashboard.api';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { colors } from '../theme/colors';
 
@@ -93,7 +93,7 @@ function PeriodTabs({
                                 textTransform: 'none',
                                 fontWeight: 600,
                                 px: 2,
-                              }
+                            }
                             : {
                                 bgcolor: 'transparent',
                                 color: colors.base['black'],
@@ -102,7 +102,7 @@ function PeriodTabs({
                                 textTransform: 'none',
                                 fontWeight: 400,
                                 px: 2,
-                              }
+                            }
                     }
                 >
                     {t.label}
@@ -170,7 +170,7 @@ const PRODUCT_OPTIONS = [
 ];
 
 export default function DashboardPage() {
-    const { activeTenantId } = useScopeStore();
+    const activeTenantId = useAuthStore().user?.tenantId ?? 0;
 
     const [revenuePeriod, setRevenuePeriod] = useState<Period>('weekly');
     const [txPeriod, setTxPeriod] = useState<Period>('weekly');
@@ -213,7 +213,7 @@ export default function DashboardPage() {
                 endYear: dayjs(revenueDateRange.end).format('YYYY'),
                 tenantId: activeTenantId,
             }),
-        enabled: !!activeTenantId,
+        enabled: activeTenantId !== null,
     });
 
     const txChartQuery = useQuery({
@@ -228,7 +228,7 @@ export default function DashboardPage() {
                 endYear: dayjs(txDateRange.end).format('YYYY'),
                 tenantId: activeTenantId,
             }),
-        enabled: !!activeTenantId,
+        enabled: activeTenantId !== null,
     });
 
     const anyError =

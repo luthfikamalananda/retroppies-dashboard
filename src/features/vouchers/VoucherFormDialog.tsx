@@ -19,8 +19,9 @@ import { z } from 'zod';
 import { extractErrorMessage } from '../../api/client';
 import { vouchersApi, type Voucher, type VoucherPayload } from '../../api/vouchers.api';
 import { TenantSelector } from '../../components/common/TenantSelector';
-import { useScopeStore } from '../../stores/scopeStore';
+
 import { useUIStore } from '../../stores/uiStore';
+import { useAuthStore } from '../../stores/authStore';
 dayjs.extend(utc);
 
 /** Convert YYYY-MM-DD (from date input) to UTC ISO string for API */
@@ -80,7 +81,7 @@ interface VoucherFormDialogProps {
 export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDialogProps) {
   const queryClient = useQueryClient();
   const showSnackbar = useUIStore((s) => s.showSnackbar);
-  const { activeTenantId } = useScopeStore()
+  const activeTenantId = useAuthStore().user?.tenantId ?? 0;
   const isEditing = !!editTarget;
   const [selectedTenantId, setSelectedTenantId] = useState<number>(activeTenantId);
 
@@ -158,6 +159,7 @@ export function VoucherFormDialog({ open, editTarget, onClose }: VoucherFormDial
         >
           {!isEditing &&
             <TenantSelector
+              useLabel
               height='40px'
               displayNull
               isSubmitted={!!errors.tenantId}

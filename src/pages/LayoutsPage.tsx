@@ -9,13 +9,15 @@ import {
     Stack,
     Typography,
 } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { layoutsApi, type Layout } from '../api/layouts.api';
+import { type Layout } from '../api/layouts.api';
+import layout1 from '../assets/layout-1.png';
+import layout2 from '../assets/layout-2.png';
+import layout3 from '../assets/layout-3.png';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
-import { useAuthStore } from '../stores/authStore';
 import { colors } from '../theme/colors';
+
 
 function SkeletonCard() {
     return (
@@ -29,18 +31,40 @@ function SkeletonCard() {
     );
 }
 
+const dataHardocoded = [
+    {
+        id: 1,
+        name: 'Layout 1',
+        thumbnailUrl: layout1
+    },
+    {
+        id: 2,
+        name: 'Layout 2',
+        thumbnailUrl: layout2
+    },
+    {
+        id: 3,
+        name: 'Layout 3',
+        thumbnailUrl: layout3
+    }
+]
+
 export default function LayoutsPage() {
-    const { user } = useAuthStore();
     const navigate = useNavigate();
 
-    const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['layouts', user?.tenantId],
-        // queryFn: () => layoutsApi.list({ page: 1, tenantId: user?.tenantId ?? 0, limit: 50 }),
-        queryFn: () => layoutsApi.list(),
-        enabled: !!user?.tenantId,
-    });
+    // const { data, isLoading, isError, refetch } = useQuery({
+    //     queryKey: ['layouts', user?.tenantId],
+    //     // queryFn: () => layoutsApi.list({ page: 1, tenantId: user?.tenantId ?? 0, limit: 50 }),
+    //     queryFn: () => layoutsApi.list(),
+    //     enabled: !!user?.tenantId,
+    // });
 
-    const layouts = data?.result ?? [];
+    // const layouts = data?.result ?? [];
+
+    const layouts = dataHardocoded;
+    const isLoading = false;
+    const isError = false;
+    const refetch = () => {};
 
     return (
         <Box>

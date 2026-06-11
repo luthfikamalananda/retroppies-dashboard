@@ -24,7 +24,7 @@ import { extractErrorMessage } from '../../api/client';
 import { timersApi, type Rule } from '../../api/timers.api';
 import { TenantSelector } from '../../components/common/TenantSelector';
 import { colors } from '../../theme/colors';
-import { useScopeStore } from '../../stores/scopeStore';
+import { useAuthStore } from '../../stores/authStore';
 import { useUIStore } from '../../stores/uiStore';
 
 const RULE_TYPES = [
@@ -59,7 +59,7 @@ interface Props {
 export function TimerFormDialog({ open, editTarget, onClose }: Props) {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { activeTenantId } = useScopeStore();
+    const activeTenantId = useAuthStore().user?.tenantId ?? 0;
     const [selectedTenantId, setSelectedTenantId] = useState<number>(activeTenantId);
 
     const {

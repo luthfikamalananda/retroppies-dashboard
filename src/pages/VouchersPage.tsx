@@ -32,12 +32,12 @@ import { vouchersApi, type Voucher } from '../api/vouchers.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
-import { TenantSelector } from '../components/common/TenantSelector';
 import { VoucherFormDialog } from '../features/vouchers/VoucherFormDialog';
 import { usePermissions } from '../hooks/usePermissions';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
+import { TenantSelector } from '../components/common/TenantSelector';
 dayjs.extend(utc);
 
 type StatusChip = { label: string; bgcolor: string; color: string };
@@ -63,7 +63,7 @@ const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 export default function VouchersPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { activeTenantId } = useScopeStore();
+    const activeTenantId = useAuthStore().user?.tenantId ?? 0;
 
     const { can, isSuperAdmin } = usePermissions();
     const canCreate = can('vouchers:create');
@@ -100,7 +100,7 @@ export default function VouchersPage() {
                 page,
                 limit: pageSize,
             }),
-        // enabled: !!activeTenantId,
+        enabled: activeTenantId !== null,
     });
 
     const deleteMutation = useMutation({
@@ -162,10 +162,8 @@ export default function VouchersPage() {
                         Voucher
                     </Typography>
                 </Stack>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
-                    <Stack sx={{ width: "100%" }}>
-                        <TenantSelector />
-                    </Stack>
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', justifyContent: 'flex-end', width: "100%", flexGrow:1 }}>
+                    <TenantSelector />
                     <TextField
                         size="small"
                         placeholder="Keyword..."
@@ -186,6 +184,7 @@ export default function VouchersPage() {
                                 fontSize: 14,
                             },
                             width: { xs: '100%', sm: "100%" },
+                            maxWidth: 350,
                             bgcolor: colors.base['white']
                         }}
                     />
@@ -199,6 +198,7 @@ export default function VouchersPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
+                                maxWidth: 150,
                                 width: { xs: '100%', sm: "420px" },
                             }}
                         >

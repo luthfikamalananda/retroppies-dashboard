@@ -246,7 +246,7 @@ export function Sidebar() {
     const closeMobileSidebar = useUIStore((s) => s.closeMobileSidebar);
     const { can } = usePermissions();
     const location = useLocation();
-    const [systemUserExpanded, setSystemUserExpanded] = useState(true);
+    const [systemUserExpanded, setSystemUserExpanded] = useState(false);
 
     const width = isMobile ? SIDEBAR_WIDTH : (collapsed ? SIDEBAR_COLLAPSED_WIDTH : SIDEBAR_WIDTH);
     const isCollapsed = isMobile ? false : collapsed;

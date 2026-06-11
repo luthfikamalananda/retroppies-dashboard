@@ -21,9 +21,10 @@ import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { productsApi, type Product, type ProductPayload } from '../../api/products.api';
 import { useUIStore } from '../../stores/uiStore';
+import { useAuthStore } from '../../stores/authStore';
 import { extractErrorMessage } from '../../api/client';
 import { colors } from '../../theme/colors';
-import { useScopeStore } from '../../stores/scopeStore';
+
 import { TenantSelector } from '../../components/common/TenantSelector';
 import { usePermissions } from '../../hooks/usePermissions';
 
@@ -70,7 +71,7 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
   const [fileError, setFileError] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const { isSuperAdmin } = usePermissions();
-  const { activeTenantId } = useScopeStore()
+  const activeTenantId = useAuthStore().user?.tenantId ?? 0;
   const [selectedTenantId, setSelectedTenantId] = useState<number>(activeTenantId);
 
   const {
@@ -155,8 +156,6 @@ export function ProductFormDialog({ open, editTarget, onClose }: ProductFormDial
   });
 
   const photoRequiredError = isSubmitted && !isEditing && !selectedFile;
-
-  console.log('values', getValues());
 
   return (
     <>

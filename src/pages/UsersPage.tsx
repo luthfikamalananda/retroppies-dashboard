@@ -33,7 +33,7 @@ import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { UserFormDialog } from '../features/users/UserFormDialog';
 import { colors } from '../theme/colors';
 import { TenantSelector } from '../components/common/TenantSelector';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -46,7 +46,8 @@ export default function UsersPage() {
     const [search, setSearch] = useState('');
     const [debouncedSearch, setDebouncedSearch] = useState('');
 
-    const { activeTenantId } = useScopeStore();
+    const activeTenantId = useAuthStore().user?.tenantId ?? 0;
+
 
     const [formOpen, setFormOpen] = useState(false);
     const [editTarget] = useState<User | null>(null);

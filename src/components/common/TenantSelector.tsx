@@ -1,9 +1,8 @@
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Autocomplete, TextField } from '@mui/material';
+import { Autocomplete, Stack, TextField } from '@mui/material';
 import { tenantsApi, type Tenant } from '../../api/tenants.api';
 import { useAuthStore } from '../../stores/authStore';
-import { useScopeStore } from '../../stores/scopeStore';
 import { colors } from '../../theme/colors';
 
 /** Sentinel option — mewakili "All Tenants" (activeTenantId: null) */
@@ -59,11 +58,11 @@ export function TenantSelector({
     onChange: controlledOnChange,
     useLabel = false,
 }: TenantSelectorProps) {
-    const user = useAuthStore((s) => s.user);
+    const { user, setScope, clearScope } = useAuthStore();
 
     // Hanya baca Zustand jika mode uncontrolled
     const isControlled = controlledValue !== undefined;
-    const { activeTenantId, setScope, clearScope } = useScopeStore();
+    const activeTenantId = useAuthStore((s) => s.user?.tenantId) ?? 0
 
     const activeTenantIdResolved = isControlled ? controlledValue : activeTenantId;
 
@@ -78,6 +77,7 @@ export function TenantSelector({
         enabled: !!user?.isSuperadmin,
     });
 
+    // render nothing jika bukan super admin tanpa meninggalkan ruang kosong (agar layout tidak bergeser)
     if (!user?.isSuperadmin) return null;
 
     const options: Tenant[] = displayNull
@@ -125,34 +125,38 @@ export function TenantSelector({
         }
     }
 
+
     return (
-        <Autocomplete<Tenant, false, false>
-            size="small"
-            options={options}
-            value={selectedTenant}
-            inputValue={inputValue}
-            loading={isLoading}
-            getOptionLabel={(opt) => opt.name}
-            isOptionEqualToValue={(opt, val) => opt.id === val.id}
-            onChange={handleChange}
-            onInputChange={handleInputChange}
-            noOptionsText="Tenant not found"
-            loadingText="Loading..."
-            sx={{ width: "100%" }}
-            renderInput={(params) => (
-                <TextField
-                    {...params}
-                    label={useLabel ? "Choose Tenant" : undefined}
-                    placeholder={displayNull && !useLabel ? "Choose Tenant" : "All Tenants"}
-                    error={isSubmitted && selectedTenant === null}
-                    helperText={isSubmitted && selectedTenant === null ? errorMsg : undefined}
-                    sx={{
-                        bgcolor: colors.base['white'],
-                        '& .MuiOutlinedInput-root': { height: height },
-                        '& .MuiInputBase-input': { fontSize: 14 },
-                    }}
-                />
-            )}
-        />
+        <Stack direction={"row"} sx={{ width: "100%" }}>
+            <Autocomplete<Tenant, false, false>
+                size="small"
+                options={options}
+                value={selectedTenant}
+                inputValue={inputValue}
+                loading={isLoading}
+                getOptionLabel={(opt) => opt.name}
+                isOptionEqualToValue={(opt, val) => opt.id === val.id}
+                onChange={handleChange}
+                onInputChange={handleInputChange}
+                noOptionsText="Tenant not found"
+                loadingText="Loading..."
+                sx={{ width: "100%" }}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label={useLabel ? "Choose Tenant" : undefined}
+                        placeholder={displayNull && !useLabel ? "Choose Tenant" : "All Tenants"}
+                        error={isSubmitted && selectedTenant === null}
+                        helperText={isSubmitted && selectedTenant === null ? errorMsg : undefined}
+                        sx={{
+                            bgcolor: colors.base['white'],
+                            '& .MuiOutlinedInput-root': { height: height },
+                            '& .MuiInputBase-input': { fontSize: 14 },
+                        }}
+                    />
+                )}
+            />
+        </Stack>
+
     );
 }

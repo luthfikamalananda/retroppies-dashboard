@@ -32,12 +32,12 @@ import { timersApi, type Rule } from '../api/timers.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
-import { TenantSelector } from '../components/common/TenantSelector';
 import { TimerFormDialog } from '../features/timers/TimerFormDialog';
 import { usePermissions } from '../hooks/usePermissions';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
+import { TenantSelector } from '../components/common/TenantSelector';
 dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -55,7 +55,9 @@ export default function TimersPage() {
   const canCreate = can('rules:create');
   const canUpdate = can('rules:update');
   const canDelete = can('rules:delete');
-  const { activeTenantId } = useScopeStore()
+  const activeTenantId = useAuthStore().user?.tenantId;
+
+  console.log("activeTenantId in TimersPage:", activeTenantId); // Debug log
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -78,11 +80,12 @@ export default function TimersPage() {
     queryKey: ['timers', activeTenantId, page, pageSize, debouncedSearch],
     queryFn: () =>
       timersApi.get({
-        tenantId: activeTenantId,
+        tenantId: activeTenantId!,
         keyword: debouncedSearch,
         page,
         limit: pageSize,
       }),
+    enabled: activeTenantId !== null,
   });
 
   const deleteMutation = useMutation({
@@ -137,10 +140,8 @@ export default function TimersPage() {
             Setting Time Rules
           </Typography>
         </Stack>
-        <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
-          <Stack sx={{ width: "100%" }}>
-            <TenantSelector />
-          </Stack>
+        <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', justifyContent: "flex-end", width: "100%", flexGrow: 1 }}>
+          <TenantSelector />
           <TextField
             size="small"
             placeholder="Keyword..."
@@ -161,7 +162,10 @@ export default function TimersPage() {
                 fontSize: 14,
               },
               width: { xs: '100%', sm: "100%" },
-              bgcolor: colors.base['white']
+              maxWidth: 350,
+              bgcolor: colors.base['white'],
+              justifySelf: 'flex-end',
+              justifyContent: 'flex-end',
             }}
           />
           {canCreate &&

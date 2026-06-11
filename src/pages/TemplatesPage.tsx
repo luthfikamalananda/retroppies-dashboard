@@ -1,5 +1,7 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import {
     Box,
     Typography,
@@ -31,12 +33,20 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { colors } from '../theme/colors';
 import { usePermissions } from '../hooks/usePermissions';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { z } from 'zod';
+
 
 type TemplateItem = ResultTemplate['templates'][number];
 
 const MAX_FILE_SIZE_MB = 10;
+
+const formSchema = z.object({
+    tenantId: z.number('Tenant wajib dipilih').min(1, 'Tenant wajib dipilih'),
+});
+
+type FormValues = z.infer<typeof formSchema>;
 
 function SkeletonCard() {
     return (
@@ -53,11 +63,12 @@ function SkeletonCard() {
 export default function TemplatesPage() {
     const { layoutId } = useParams<{ layoutId: string }>();
     const queryClient = useQueryClient();
-    const { activeTenantId } = useScopeStore();
+    const { user } = useAuthStore();
+    const activeTenantId = user?.tenantId;
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const { can } = usePermissions();
+    const { isSuperAdmin, can } = usePermissions();
     const canCreate = can('templates:create');
     const canUpdate = can('templates:update');
     const canDelete = can('templates:delete');
@@ -73,19 +84,39 @@ export default function TemplatesPage() {
     // Delete dialog state
     const [deleteTarget, setDeleteTarget] = useState<TemplateItem | null>(null);
 
+    const {
+        handleSubmit,
+        reset,
+        setValue,
+        watch,
+        formState: { errors },
+    } = useForm<FormValues>({
+        resolver: zodResolver(formSchema),
+        defaultValues: { tenantId: activeTenantId || 0 },
+    });
+
+    const selectedTenantId = watch('tenantId');
+
+    useEffect(() => {
+        if (dialogOpen && !editTarget && activeTenantId) {
+            setValue('tenantId', activeTenantId);
+        }
+    }, [dialogOpen, editTarget, activeTenantId, setValue]);
+
     const { data, isLoading, isError, refetch } = useQuery({
         queryKey: ['templates', layoutId, activeTenantId],
-        queryFn: () => templatesApi.list({ page: 1, tenantId: activeTenantId, limit: 50, layoutId: Number(layoutId) }),
-        enabled: !!layoutId,
+        queryFn: () => templatesApi.list({ page: 1, tenantId: activeTenantId!, limit: 50, layoutId: Number(layoutId) }),
+        enabled: !!layoutId && activeTenantId !== null,
     });
 
     const uploadMutation = useMutation({
-        mutationFn: (file: File) =>
+        mutationFn: ({ tenantId, file }: { tenantId: number; file: File }) =>
             editTarget
-                ? templatesApi.update(editTarget.id, activeTenantId, Number(layoutId), file, (pct) => setUploadProgress(pct))
-                : templatesApi.upload(activeTenantId, Number(layoutId), file, (pct) => setUploadProgress(pct)),
+                ? templatesApi.update(editTarget.id, tenantId, Number(layoutId), file, (pct) => setUploadProgress(pct))
+                : templatesApi.upload(tenantId, Number(layoutId), file, (pct) => setUploadProgress(pct)),
         onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['templates', layoutId, activeTenantId] });
+            const tenantId = editTarget ? editTarget.tenantId : activeTenantId;
+            queryClient.invalidateQueries({ queryKey: ['templates', layoutId, tenantId] });
             showSnackbar(editTarget ? 'Template berhasil diperbarui' : 'Template berhasil diupload');
             closeDialog();
         },
@@ -122,6 +153,7 @@ export default function TemplatesPage() {
         setPreviewUrl(null);
         setUploadProgress(null);
         setFileError('');
+        reset();
         if (fileInputRef.current) fileInputRef.current.value = '';
     }
 
@@ -183,7 +215,7 @@ export default function TemplatesPage() {
                         Your Layout
                     </Typography>
                 </Stack>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
+                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', }}>
                     <TenantSelector />
                     {canCreate && (
                         <Button
@@ -193,9 +225,10 @@ export default function TemplatesPage() {
                             sx={{
                                 bgcolor: colors.brand[500],
                                 '&:hover': { bgcolor: colors.brand[600] },
-                                borderRadius: 2,
                                 textTransform: 'none',
                                 fontWeight: 600,
+                                textWrap: 'nowrap',
+                                width: { xs: '100%', sm: isSuperAdmin ? "450px" : "100%" },
                             }}
                         >
                             Upload Layout
@@ -302,11 +335,23 @@ export default function TemplatesPage() {
                     <Typography sx={{ fontWeight: 700, fontSize: 16 }}>
                         {editTarget ? 'Ganti Foto Template' : 'Upload Template Baru'}
                     </Typography>
-                    <IconButton size="small" onClick={closeDialog}>
+                    <IconButton size="small" onClick={closeDialog} disabled={uploadMutation.isPending}>
                         <CloseIcon fontSize="small" />
                     </IconButton>
                 </DialogTitle>
-                <DialogContent dividers>
+                <DialogContent dividers sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                    {/* Tenant Selector — hanya untuk superAdmin */}
+                    {(isSuperAdmin && !editTarget) && (
+                        <TenantSelector
+                            useLabel
+                            height='40px'
+                            displayNull={false}
+                            isSubmitted={false}
+                            errorMsg={errors.tenantId?.message}
+                            value={selectedTenantId}
+                            onChange={(value) => value !== null && setValue('tenantId', value, { shouldValidate: true })}
+                        />
+                    )}
                     {fileError ? (
                         <Typography color="error" sx={{ fontSize: 14 }}>{fileError}</Typography>
                     ) : !selectedFile ? (
@@ -377,7 +422,13 @@ export default function TemplatesPage() {
                     <Button
                         variant="contained"
                         disabled={!selectedFile || !!fileError || uploadMutation.isPending}
-                        onClick={() => selectedFile && uploadMutation.mutate(selectedFile)}
+                        onClick={handleSubmit((values) => {
+                            if (!selectedFile) {
+                                setFileError('File wajib dipilih');
+                                return;
+                            }
+                            uploadMutation.mutate({ tenantId: values.tenantId, file: selectedFile });
+                        })}
                         sx={{
                             bgcolor: colors.brand[500],
                             '&:hover': { bgcolor: colors.brand[600] },

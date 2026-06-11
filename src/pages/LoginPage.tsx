@@ -20,7 +20,6 @@ import { extractErrorMessage } from '../api/client';
 import { DUMMY_MODE, dummyLogin } from '../mocks/dummyAuth';
 import { colors } from '../theme/colors';
 import loginPoster from '../assets/login-poster.png';
-import { useScopeStore } from '../stores/scopeStore';
 
 const loginSchema = z.object({
     username: z.string().min(1, 'Username wajib diisi'),
@@ -32,7 +31,6 @@ type LoginForm = z.infer<typeof loginSchema>;
 export default function LoginPage() {
     const navigate = useNavigate();
     const { setUser } = useAuthStore();
-    const { setScope } = useScopeStore();
 
     const [showPassword, setShowPassword] = useState(false);
     const [serverError, setServerError] = useState('');
@@ -50,7 +48,6 @@ export default function LoginPage() {
                 ? await dummyLogin(values.username, values.password)
                 : await authApi.login({ username: values.username, password: values.password });
             setUser(data.result);
-            setScope(data.result.tenantId);
             navigate('/app/dashboard', { replace: true });
         } catch (err) {
             setServerError(DUMMY_MODE ? (err as Error).message : extractErrorMessage(err));

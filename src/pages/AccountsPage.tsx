@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { accountsApi, type Account } from '../api/accounts.api';
 import { useUIStore } from '../stores/uiStore';
-import { useScopeStore } from '../stores/scopeStore';
+import { useAuthStore } from '../stores/authStore';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
@@ -26,7 +26,7 @@ import { RoleEditDialog } from '../features/accounts/RoleEditDialog';
 export default function AccountsPage() {
     const queryClient = useQueryClient();
     const showSnackbar = useUIStore((s) => s.showSnackbar);
-    const { activeTenantId } = useScopeStore();
+    const activeTenantId = useAuthStore().user?.tenantId;
     // const { can } = usePermissions();
 
     const [search, setSearch] = useState('');

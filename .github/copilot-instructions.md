@@ -84,7 +84,7 @@ src/
 const { data, isLoading, isError, refetch } = useQuery({
   queryKey: ['products', activeTenantId, page, search],
   queryFn: () => productsApi.list({ tenant_id: activeTenantId!, page, limit: 15, search }),
-  enabled: !!activeTenantId,
+  enabled: activeTenantId !== null,
 });
 ```
 
