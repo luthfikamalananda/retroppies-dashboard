@@ -24,10 +24,10 @@ export interface RequestTemplateList {
 export const templatesApi = {
     list: (request: RequestTemplateList) =>
         apiClient.post<BaseResponse<ResultTemplate>>('/template/get', request).then((r) => r.data),
-    upload: (tenantId: number | null, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
+    upload: (tenantId: number | null, layoutId: number, displayFile: File, productionFile: File, onProgress?: (pct: number) => void) => {
         const form = new FormData();
-        form.append('display', file);
-        form.append('production', file);
+        form.append('display', displayFile);
+        form.append('production', productionFile);
         form.append('layout_id', layoutId.toString());
         form.append('tenant_id', String(tenantId ?? ''));
         return apiClient
@@ -42,10 +42,10 @@ export const templatesApi = {
             .then((r) => r.data);
     },
 
-    update: (id: number, tenantId: number | null, layoutId: number, file: File, onProgress?: (pct: number) => void) => {
+    update: (id: number, tenantId: number | null, layoutId: number, displayFile: File, productionFile: File, onProgress?: (pct: number) => void) => {
         const form = new FormData();
-        form.append('display', file);
-        form.append('production', file);
+        form.append('display', displayFile);
+        form.append('production', productionFile);
         form.append('layout_id', layoutId.toString());
         form.append('tenant_id', String(tenantId ?? ''));
         return apiClient

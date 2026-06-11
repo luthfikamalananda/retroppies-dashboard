@@ -67,6 +67,7 @@ export default function TemplatesPage() {
     const activeTenantId = user?.tenantId;
     const showSnackbar = useUIStore((s) => s.showSnackbar);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const productionFileInputRef = useRef<HTMLInputElement>(null);
 
     const { isSuperAdmin, can } = usePermissions();
     const canCreate = can('templates:create');
@@ -80,6 +81,11 @@ export default function TemplatesPage() {
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileError, setFileError] = useState('');
+    const [existingDisplayUrl, setExistingDisplayUrl] = useState<string | null>(null);
+    const [productionPreviewUrl, setProductionPreviewUrl] = useState<string | null>(null);
+    const [selectedProductionFile, setSelectedProductionFile] = useState<File | null>(null);
+    const [productionFileError, setProductionFileError] = useState('');
+    const [existingProductionUrl, setExistingProductionUrl] = useState<string | null>(null);
 
     // Delete dialog state
     const [deleteTarget, setDeleteTarget] = useState<TemplateItem | null>(null);
@@ -110,10 +116,10 @@ export default function TemplatesPage() {
     });
 
     const uploadMutation = useMutation({
-        mutationFn: ({ tenantId, file }: { tenantId: number; file: File }) =>
+        mutationFn: ({ tenantId, displayFile, productionFile }: { tenantId: number; displayFile: File; productionFile: File }) =>
             editTarget
-                ? templatesApi.update(editTarget.id, tenantId, Number(layoutId), file, (pct) => setUploadProgress(pct))
-                : templatesApi.upload(tenantId, Number(layoutId), file, (pct) => setUploadProgress(pct)),
+                ? templatesApi.update(editTarget.id, tenantId, Number(layoutId), displayFile, productionFile, (pct) => setUploadProgress(pct))
+                : templatesApi.upload(tenantId, Number(layoutId), displayFile, productionFile, (pct) => setUploadProgress(pct)),
         onSuccess: () => {
             const tenantId = editTarget ? editTarget.tenantId : activeTenantId;
             queryClient.invalidateQueries({ queryKey: ['templates', layoutId, tenantId] });
@@ -142,8 +148,14 @@ export default function TemplatesPage() {
     function openUploadDialog(target: TemplateItem | null = null) {
         setEditTarget(target);
         setDialogOpen(true);
-        // Trigger file picker immediately
-        setTimeout(() => fileInputRef.current?.click(), 100);
+        if (target) {
+            // Edit mode: pre-fill with existing images, no file picker
+            setExistingDisplayUrl(target.displayUrl);
+            setExistingProductionUrl(target.productionUrl);
+        } else {
+            // Create mode: trigger file picker immediately
+            setTimeout(() => fileInputRef.current?.click(), 100);
+        }
     }
 
     function closeDialog() {
@@ -151,10 +163,16 @@ export default function TemplatesPage() {
         setEditTarget(null);
         setSelectedFile(null);
         setPreviewUrl(null);
+        setExistingDisplayUrl(null);
+        setSelectedProductionFile(null);
+        setProductionPreviewUrl(null);
+        setExistingProductionUrl(null);
         setUploadProgress(null);
         setFileError('');
+        setProductionFileError('');
         reset();
         if (fileInputRef.current) fileInputRef.current.value = '';
+        if (productionFileInputRef.current) productionFileInputRef.current.value = '';
     }
 
     function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -178,15 +196,41 @@ export default function TemplatesPage() {
         setDialogOpen(true);
     }
 
+    function handleProductionFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        setProductionFileError('');
+
+        if (file.type !== 'image/png') {
+            setProductionFileError('Hanya file PNG yang diperbolehkan.');
+            return;
+        }
+        if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+            setProductionFileError(`Ukuran file maksimum ${MAX_FILE_SIZE_MB}MB.`);
+            return;
+        }
+
+        setSelectedProductionFile(file);
+        setProductionPreviewUrl(URL.createObjectURL(file));
+    }
+
     return (
         <Box>
-            {/* Hidden file input */}
+            {/* Hidden file input — Display */}
             <input
                 ref={fileInputRef}
                 type="file"
                 accept="image/png"
                 hidden
                 onChange={handleFileSelect}
+            />
+            {/* Hidden file input — Production */}
+            <input
+                ref={productionFileInputRef}
+                type="file"
+                accept="image/png"
+                hidden
+                onChange={handleProductionFileSelect}
             />
 
             {/* ── Breadcrumb ── */}
@@ -352,82 +396,193 @@ export default function TemplatesPage() {
                             onChange={(value) => value !== null && setValue('tenantId', value, { shouldValidate: true })}
                         />
                     )}
-                    {fileError ? (
-                        <Typography color="error" sx={{ fontSize: 14 }}>{fileError}</Typography>
-                    ) : !selectedFile ? (
-                        <Box
-                            sx={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                py: 6,
-                                gap: 1.5,
-                                color: colors.base['grey'],
-                                border: `2px dashed ${colors.border['default']}`,
-                                borderRadius: 2,
-                            }}
-                        >
-                            <AddIcon sx={{ fontSize: 40 }} />
-                            <Typography sx={{ fontSize: 14 }}>Memilih file...</Typography>
-                        </Box>
-                    ) : (
-                        <Stack sx={{ gap: 2, alignItems: 'center' }}>
-                            {/* Large preview */}
-                            <Box
-                                component="img"
-                                src={previewUrl ?? ''}
-                                alt="preview"
-                                sx={{
-                                    maxWidth: '100%',
-                                    maxHeight: 360,
-                                    objectFit: 'contain',
-                                    border: `1px solid ${colors.border['light']}`,
-                                    borderRadius: 2,
-                                    bgcolor: colors.base['section'],
-                                }}
-                            />
-                            <Box sx={{ width: '100%' }}>
-                                <Typography sx={{ fontWeight: 600, fontSize: 14, color: colors.base['black'] }}>
-                                    {selectedFile.name}
-                                </Typography>
-                                <Typography sx={{ fontSize: 13, color: colors.base['grey'] }}>
-                                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                                </Typography>
-                                {uploadProgress !== null && (
-                                    <Box sx={{ mt: 1.5 }}>
-                                        <LinearProgress variant="determinate" value={uploadProgress} sx={{ borderRadius: 1, height: 6 }} />
-                                        <Typography variant="caption" sx={{ color: colors.base['grey'] }}>
-                                            {uploadProgress}%
-                                        </Typography>
+
+                    {/* ── Two file inputs side by side ── */}
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                        {/* ── Display File ── */}
+                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Typography sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>
+                                Display File
+                            </Typography>
+                            {fileError ? (
+                                <Typography color="error" sx={{ fontSize: 13 }}>{fileError}</Typography>
+                            ) : !(selectedFile || existingDisplayUrl) ? (
+                                <Box
+                                    onClick={() => fileInputRef.current?.click()}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        py: 4,
+                                        gap: 1,
+                                        color: colors.base['grey'],
+                                        border: `2px dashed ${colors.border['default']}`,
+                                        borderRadius: 2,
+                                        cursor: 'pointer',
+                                        '&:hover': { borderColor: colors.brand[500] },
+                                    }}
+                                >
+                                    <AddIcon sx={{ fontSize: 32 }} />
+                                    <Typography sx={{ fontSize: 13 }}>Pilih file display</Typography>
+                                </Box>
+                            ) : (
+                                <Stack sx={{ gap: 1, alignItems: 'center' }}>
+                                    <Box
+                                        component="img"
+                                        src={previewUrl ?? existingDisplayUrl ?? ''}
+                                        alt="preview display"
+                                        sx={{
+                                            maxWidth: '100%',
+                                            maxHeight: 220,
+                                            objectFit: 'contain',
+                                            border: `1px solid ${colors.border['light']}`,
+                                            borderRadius: 2,
+                                            bgcolor: colors.base['section'],
+                                        }}
+                                    />
+                                    <Box sx={{ width: '100%' }}>
+                                        {selectedFile ? (
+                                            <>
+                                                <Typography sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>
+                                                    {selectedFile.name}
+                                                </Typography>
+                                                <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>
+                                                    {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                                                </Typography>
+                                            </>
+                                        ) : (
+                                            <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>
+                                                File existing (dari server)
+                                            </Typography>
+                                        )}
                                     </Box>
-                                )}
-                            </Box>
-                        </Stack>
+                                    <Button
+                                        size="small"
+                                        onClick={() => { setSelectedFile(null); setPreviewUrl(null); setExistingDisplayUrl(null); setFileError(''); fileInputRef.current?.click(); }}
+                                        disabled={uploadMutation.isPending}
+                                        sx={{ textTransform: 'none', alignSelf: 'flex-start' }}
+                                    >
+                                        Ganti File
+                                    </Button>
+                                </Stack>
+                            )}
+                        </Box>
+
+                        {/* ── Production File ── */}
+                        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                            <Typography sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>
+                                Production File
+                            </Typography>
+                            {productionFileError ? (
+                                <Typography color="error" sx={{ fontSize: 13 }}>{productionFileError}</Typography>
+                            ) : !(selectedProductionFile || existingProductionUrl) ? (
+                                <Box
+                                    onClick={() => productionFileInputRef.current?.click()}
+                                    sx={{
+                                        display: 'flex',
+                                        flexDirection: 'column',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        py: 4,
+                                        gap: 1,
+                                        color: colors.base['grey'],
+                                        border: `2px dashed ${colors.border['default']}`,
+                                        borderRadius: 2,
+                                        cursor: 'pointer',
+                                        '&:hover': { borderColor: colors.brand[500] },
+                                    }}
+                                >
+                                    <AddIcon sx={{ fontSize: 32 }} />
+                                    <Typography sx={{ fontSize: 13 }}>Pilih file production</Typography>
+                                </Box>
+                            ) : (
+                                <Stack sx={{ gap: 1, alignItems: 'center' }}>
+                                    <Box
+                                        component="img"
+                                        src={productionPreviewUrl ?? existingProductionUrl ?? ''}
+                                        alt="preview production"
+                                        sx={{
+                                            maxWidth: '100%',
+                                            maxHeight: 220,
+                                            objectFit: 'contain',
+                                            border: `1px solid ${colors.border['light']}`,
+                                            borderRadius: 2,
+                                            bgcolor: colors.base['section'],
+                                        }}
+                                    />
+                                    <Box sx={{ width: '100%' }}>
+                                        {selectedProductionFile ? (
+                                            <>
+                                                <Typography sx={{ fontWeight: 600, fontSize: 13, color: colors.base['black'] }}>
+                                                    {selectedProductionFile.name}
+                                                </Typography>
+                                                <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>
+                                                    {(selectedProductionFile.size / 1024 / 1024).toFixed(2)} MB
+                                                </Typography>
+                                            </>
+                                        ) : (
+                                            <Typography sx={{ fontSize: 12, color: colors.base['grey'] }}>
+                                                File existing (dari server)
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                    <Button
+                                        size="small"
+                                        onClick={() => { setSelectedProductionFile(null); setProductionPreviewUrl(null); setExistingProductionUrl(null); setProductionFileError(''); productionFileInputRef.current?.click(); }}
+                                        disabled={uploadMutation.isPending}
+                                        sx={{ textTransform: 'none', alignSelf: 'flex-start' }}
+                                    >
+                                        Ganti File
+                                    </Button>
+                                </Stack>
+                            )}
+                        </Box>
+                    </Stack>
+
+                    {/* Upload progress */}
+                    {uploadProgress !== null && (
+                        <Box sx={{ mt: 1 }}>
+                            <LinearProgress variant="determinate" value={uploadProgress} sx={{ borderRadius: 1, height: 6 }} />
+                            <Typography variant="caption" sx={{ color: colors.base['grey'] }}>
+                                {uploadProgress}%
+                            </Typography>
+                        </Box>
                     )}
                 </DialogContent>
                 <DialogActions sx={{ px: 3, py: 2, gap: 1 }}>
-                    <Button
-                        size="small"
-                        onClick={() => { setSelectedFile(null); setPreviewUrl(null); setFileError(''); fileInputRef.current?.click(); }}
-                        disabled={uploadMutation.isPending}
-                        sx={{ textTransform: 'none' }}
-                    >
-                        Pilih File Lain
-                    </Button>
                     <Box sx={{ flex: 1 }} />
                     <Button onClick={closeDialog} disabled={uploadMutation.isPending} sx={{ textTransform: 'none' }}>
                         Batal
                     </Button>
                     <Button
                         variant="contained"
-                        disabled={!selectedFile || !!fileError || uploadMutation.isPending}
+                        disabled={
+                            !(selectedFile || existingDisplayUrl) ||
+                            !(selectedProductionFile || existingProductionUrl) ||
+                            !!fileError || !!productionFileError ||
+                            uploadMutation.isPending
+                        }
                         onClick={handleSubmit((values) => {
-                            if (!selectedFile) {
-                                setFileError('File wajib dipilih');
+                            const displayFile = selectedFile;
+                            const productionFile = selectedProductionFile;
+                            if (!displayFile && !existingDisplayUrl) {
+                                setFileError('File display wajib dipilih');
                                 return;
                             }
-                            uploadMutation.mutate({ tenantId: values.tenantId, file: selectedFile });
+                            if (!productionFile && !existingProductionUrl) {
+                                setProductionFileError('File production wajib dipilih');
+                                return;
+                            }
+                            // For edit mode with no new file selected, we still need a File object.
+                            // If user didn't change a file, we cannot re-send the existing URL as a File.
+                            // In that case we require at least the changed files.
+                            if (!displayFile || !productionFile) {
+                                if (!displayFile) setFileError('Silakan pilih file display baru untuk menggantinya.');
+                                if (!productionFile) setProductionFileError('Silakan pilih file production baru untuk menggantinya.');
+                                return;
+                            }
+                            uploadMutation.mutate({ tenantId: values.tenantId, displayFile, productionFile });
                         })}
                         sx={{
                             bgcolor: colors.brand[500],
