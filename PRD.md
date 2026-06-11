@@ -672,7 +672,7 @@ Dashboard ini digunakan untuk mengelola dan memantau operasional aplikasi photob
 - [x] `scopeStore` / login flow — saat login sukses, panggil `setScope(user.tenantId)` agar `activeTenantId` terisi otomatis untuk user non-superadmin
 
 ### Pages & Features
-- [x] `DashboardPage` — menggunakan `activeTenantId`, `enabled: !!activeTenantId` (blocking query saat belum pilih tenant — behavior yang benar)
+- [x] `DashboardPage` — menggunakan `activeTenantId`, `enabled: activeTenantId !== null` (blocking query saat belum pilih tenant — behavior yang benar)
 - [x] `ProductsPage` — menggunakan `activeTenantId`, `queryFn` pass `tenantId: activeTenantId` ke API
 - [x] `AccountsPage` — menggunakan `activeTenantId` di query key (accounts tidak perlu tenant filter per API)
 - [x] `TransactionsPage` — menggunakan `activeTenantId`, pass `tenantId: activeTenantId` ke API

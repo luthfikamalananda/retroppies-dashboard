@@ -113,7 +113,8 @@ export function Topbar() {
               {user?.username}
             </Typography>
             <Typography variant="caption" sx={{ color: colors.base['grey'] }}>
-              {user?.username}
+            {user?.roleName && user?.roleName} {user?.tenantName && `- ${user.tenantName}`}
+            {user?.isSuperadmin && 'Superadmin'}
             </Typography>
           </Box>
           <Divider />

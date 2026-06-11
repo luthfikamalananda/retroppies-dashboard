@@ -13,6 +13,8 @@ export interface ResultLogin {
     permissions: string[]
     tenantId: number
     isSuperadmin: boolean
+    roleName: any
+    tenantName: any
 }
 
 export interface PayloadChangePassword {
