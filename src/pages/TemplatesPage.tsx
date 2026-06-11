@@ -214,8 +214,6 @@ export default function TemplatesPage() {
         setProductionPreviewUrl(URL.createObjectURL(file));
     }
 
-    console.log("errors", errors)
-
     return (
         <Box>
             {/* Hidden file input — Display */}
