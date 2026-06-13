@@ -87,6 +87,9 @@ export default function TemplatesPage() {
     const [productionFileError, setProductionFileError] = useState('');
     const [existingProductionUrl, setExistingProductionUrl] = useState<string | null>(null);
 
+    console.log('selectedFile', selectedFile)
+    console.log('selectedProductionFile', selectedProductionFile)
+
     // Delete dialog state
     const [deleteTarget, setDeleteTarget] = useState<TemplateItem | null>(null);
 
@@ -116,7 +119,7 @@ export default function TemplatesPage() {
     });
 
     const uploadMutation = useMutation({
-        mutationFn: ({ tenantId, displayFile, productionFile }: { tenantId: number; displayFile: File; productionFile: File }) =>
+        mutationFn: ({ tenantId, displayFile, productionFile }: { tenantId: number; displayFile: File | null; productionFile: File | null }) =>
             editTarget
                 ? templatesApi.update(editTarget.id, tenantId, Number(layoutId), displayFile, productionFile, (pct) => setUploadProgress(pct))
                 : templatesApi.upload(tenantId, Number(layoutId), displayFile, productionFile, (pct) => setUploadProgress(pct)),
@@ -577,7 +580,8 @@ export default function TemplatesPage() {
                             // For edit mode with no new file selected, we still need a File object.
                             // If user didn't change a file, we cannot re-send the existing URL as a File.
                             // In that case we require at least the changed files.
-                            if (!displayFile || !productionFile) {
+                            // ARYA SUDAH HANDLE INI GG GEMING DI EDIT
+                            if (!editTarget && (!displayFile || !productionFile)) {
                                 if (!displayFile) setFileError('Silakan pilih file display baru untuk menggantinya.');
                                 if (!productionFile) setProductionFileError('Silakan pilih file production baru untuk menggantinya.');
                                 return;
