@@ -51,7 +51,7 @@ export const templatesApi = {
         form.append('id', id.toString());
         form.append('layout_id', layoutId.toString());
         form.append('tenant_id', String(tenantId ?? ''));
-        form.append('isDefault', String(isDefault));
+        form.append('is_default', String(isDefault));
         return apiClient
             .post<BaseResponse<ResultTemplate>>(`/template/update`, form, {
                 headers: { 'Content-Type': 'multipart/form-data' },

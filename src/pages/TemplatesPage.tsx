@@ -303,6 +303,7 @@ export default function TemplatesPage() {
                                     bgcolor: colors.base['white'],
                                     transition: 'box-shadow 0.15s',
                                     '&:hover': { boxShadow: '0 2px 12px rgba(0,0,0,0.08)' },
+                                    position: 'relative',
                                 }}
                             >
                                 <Box
@@ -315,7 +316,6 @@ export default function TemplatesPage() {
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         overflow: 'hidden',
-                                        position: 'relative',
                                     }}
                                 >
                                     <Box
@@ -329,7 +329,7 @@ export default function TemplatesPage() {
                                             sx={{
                                                 position: 'absolute',
                                                 top: 8,
-                                                left: 8,
+                                                right: 8,
                                                 bgcolor: colors.brand[500],
                                                 color: 'white',
                                                 px: 1,
