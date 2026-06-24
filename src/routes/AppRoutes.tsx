@@ -20,6 +20,7 @@ const RolesPage = lazy(() => import('../pages/RolesPage'));
 const RolePermissionsPage = lazy(() => import('../pages/RolePermissionsPage'));
 const PermissionsPage = lazy(() => import('../pages/PermissionsPage'));
 const ManagementAccount = lazy(() => import('../pages/ManagementAccount'));
+const SessionsPage = lazy(() => import('../pages/SessionsPage'));
 
 function PageLoader() {
     return (
@@ -58,6 +59,7 @@ export function AppRoutes() {
                                         <Route path="roles/:id/permissions" element={<RolePermissionsPage />} />
                                         <Route path="permissions" element={<PermissionsPage />} />
                                         <Route path="manage-account" element={<ManagementAccount />} />
+                                        <Route path="sessions" element={<SessionsPage />} />
                                         <Route path="*" element={<Navigate to="dashboard" replace />} />
                                     </Routes>
                                 </Suspense>

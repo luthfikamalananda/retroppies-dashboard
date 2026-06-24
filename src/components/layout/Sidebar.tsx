@@ -28,6 +28,7 @@ import summaryIcon from '../../assets/summary_icon.svg';
 import templateIcon from '../../assets/template_icon.svg';
 import timerIcon from '../../assets/time_icon.svg';
 import voucherIcon from '../../assets/voucher_icon.svg';
+import photoIcon from '../../assets/photo_icon.svg';
 import { usePermissions } from '../../hooks/usePermissions';
 import { useUIStore } from '../../stores/uiStore';
 import { colors } from '../../theme/colors';
@@ -41,17 +42,9 @@ const DASHBOARD_ITEMS = [
     { label: 'Design Template', path: '/app/layouts', icon: <img src={templateIcon} alt="Design Template" />, permission: 'templates:read' },
     { label: 'Time', path: '/app/timers', icon: <img src={timerIcon} alt="Time" />, permission: 'rules:read' },
     { label: 'Voucher', path: '/app/vouchers', icon: <img src={voucherIcon} alt="Voucher" />, permission: 'vouchers:read' },
+    { label: 'Session', path: '/app/sessions', icon: <img src={photoIcon} alt="Sessions" />, permission: 'sessions:read' },
     { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: 'transactions:read' },
 ];
-
-// const DASHBOARD_ITEMS = [
-//     { label: 'Summary', path: '/app/dashboard', icon: <img src={summaryIcon} alt="Summary" />, permission: '*' },
-//     { label: 'Product', path: '/app/products', icon: <img src={productIcon} alt="Product" />, permission: '*' },
-//     { label: 'Design Template', path: '/app/layouts', icon: <img src={templateIcon} alt="Design Template" />, permission: '*' },
-//     { label: 'Time', path: '/app/timers', icon: <img src={timerIcon} alt="Time" />, permission: '*' },
-//     { label: 'Voucher', path: '/app/vouchers', icon: <img src={voucherIcon} alt="Voucher" />, permission: '*' },
-//     { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: '*' },
-// ];
 
 const SETTING_USER_ITEMS = [
     { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: 'tenants:read' },
