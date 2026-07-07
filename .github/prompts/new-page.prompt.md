@@ -7,7 +7,8 @@ Buat halaman baru untuk fitur **${input:featureName}** dengan spesifikasi beriku
 
 ## Konteks Wajib
 Baca dulu file-file ini sebelum menulis kode:
-- [PRD.md](../../PRD.md) — pastikan fitur sesuai spec dan update checklist Section 14
+- [CONTEXT.md](../../CONTEXT.md) — domain glossary, konvensi coding, dan arsitektur
+- [STATUS.md](../../STATUS.md) — checklist fitur (update di sini setelah selesai)
 - [ProductsPage.tsx](../../src/pages/ProductsPage.tsx) — gunakan sebagai pola halaman CRUD dengan tabel
 - [ProductFormDialog.tsx](../../src/features/products/ProductFormDialog.tsx) — gunakan sebagai pola form dialog
 - [products.api.ts](../../src/api/products.api.ts) — gunakan sebagai pola API module
@@ -27,4 +28,4 @@ Baca dulu file-file ini sebelum menulis kode:
 - Selalu `queryClient.invalidateQueries` on mutation success
 - Tambahkan route ke `src/routes/AppRoutes.tsx`
 - Tambahkan menu item ke `src/components/layout/Sidebar.tsx`
-- Update checklist di `PRD.md` Section 14 setelah selesai
+- Update checklist di `STATUS.md` setelah selesai
