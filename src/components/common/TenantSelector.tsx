@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Autocomplete, Stack, TextField } from '@mui/material';
+import type { SxProps } from '@mui/material';
 import { tenantsApi, type Tenant } from '../../api/tenants.api';
 import { useAuthStore } from '../../stores/authStore';
 import { colors } from '../../theme/colors';
@@ -30,6 +31,7 @@ interface TenantSelectorProps {
     value?: number | null;
     onChange?: (tenantId: number | null) => void;
     useLabel?: boolean; // default false; jika true, opsi akan menampilkan "tenant_code — name"
+    sx?: SxProps;
 }
 
 /**
@@ -57,6 +59,7 @@ export function TenantSelector({
     value: controlledValue,
     onChange: controlledOnChange,
     useLabel = false,
+    sx,
 }: TenantSelectorProps) {
     const { user, setScope, clearScope } = useAuthStore();
 
@@ -127,7 +130,7 @@ export function TenantSelector({
 
 
     return (
-        <Stack direction={"row"} sx={{ width: "100%" }}>
+        <Stack direction={"row"} sx={{ width: "100%", ...sx }}>
             <Autocomplete<Tenant, false, false>
                 size="small"
                 options={options}

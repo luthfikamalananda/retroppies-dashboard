@@ -100,10 +100,10 @@ export default function SessionsPage() {
     return (
         <Box>
             <Stack
-                direction="row"
+                direction={{ xs: 'column', md: 'row' }}
                 sx={{
                     justifyContent: 'space-between',
-                    alignItems: 'center',
+                    alignItems: { xs: 'flex-start', md: 'center' },
                     mb: 3,
                     gap: 2,
                 }}
@@ -113,21 +113,23 @@ export default function SessionsPage() {
                     sx={{
                         fontWeight: 700,
                         color: colors.base['black'],
+                        flexShrink: 0,
                     }}
                 >
                     Session
                 </Typography>
                 <Stack
-                    direction="row"
+                    direction={{ xs: 'column', sm: 'row' }}
                     sx={{
                         gap: 1.5,
                         alignItems: 'center',
+                        flexWrap: 'wrap',
+                        flex: 1,
                         justifyContent: 'flex-end',
-                        width: '100%',
-                        flexGrow: 1,
+                        width: { xs: '100%', md: 'auto' },
                     }}
                 >
-                    <TenantSelector />
+                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
                     <Select
                         size="small"
                         value={
@@ -168,8 +170,9 @@ export default function SessionsPage() {
                                 height: '36px',
                                 fontSize: 14,
                             },
-                            width: { xs: '100%', sm: '100%' },
-                            maxWidth: 350,
+                            flex: '1 1 180px',
+                            maxWidth: { sm: '280px' },
+                            width: { xs: '100%' },
                             bgcolor: colors.base['white'],
                         }}
                     />
@@ -377,9 +380,10 @@ export default function SessionsPage() {
                     )}
 
                 <Stack
-                    direction="row"
+                    direction={{ xs: 'column', sm: 'row' }}
                     sx={{
                         alignItems: 'center',
+                        gap: 1,
                         px: 2,
                         py: 1.5,
                         borderTop: `1px solid ${colors.border['light']}`,

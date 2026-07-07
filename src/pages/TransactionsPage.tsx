@@ -374,25 +374,24 @@ export default function TransactionsPage() {
 
       {/* Header */}
       <Stack
-        direction="row"
-        sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, width: "100%", gap: 2 }}
+        direction={{ xs: 'column', md: 'row' }}
+        sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 3, gap: 2 }}
       >
-        <Stack sx={{ width: "40%", justifyContent: "flex-end" }} >
-          <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-            Laporan Transaksi
-          </Typography>
-        </Stack>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], flexShrink: 0 }}>
+          Laporan Transaksi
+        </Typography>
 
         <Stack
-          direction="row"
+          direction={{ xs: 'column', sm: 'row' }}
           sx={{
-            width: "100%",
+            flex: 1,
             gap: 1.5,
             alignItems: 'center',
+            flexWrap: 'wrap',
             justifyContent: 'flex-end',
+            width: { xs: '100%', md: 'auto' },
           }}
         >
-
           <TextField
             size="small"
             placeholder="Keyword..."
@@ -412,7 +411,9 @@ export default function TransactionsPage() {
                 height: "36px",
                 fontSize: 14,
               },
-              width: { xs: '30%' },
+              flex: '1 1 180px',
+              maxWidth: { sm: '280px' },
+              width: { xs: '100%' },
               bgcolor: colors.base['white']
             }}
           />
@@ -421,18 +422,6 @@ export default function TransactionsPage() {
             value={dateRange}
             onChange={(r) => { setDateRange(r); setPage(1); }}
           />
-
-          {/* <TextField
-            select
-            size="small"
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value as typeof statusFilter); setPage(1); }}
-            sx={{ width: 140, bgcolor: colors.base['white'] }}
-          >
-            <MenuItem value="" sx={{ fontSize: 13 }}>Semua Status</MenuItem>
-            <MenuItem value="success" sx={{ fontSize: 13 }}>Berhasil</MenuItem>
-            <MenuItem value="failed" sx={{ fontSize: 13 }}>Gagal</MenuItem>
-          </TextField> */}
         </Stack>
       </Stack>
 
@@ -541,8 +530,8 @@ export default function TransactionsPage() {
 
         {/* Pagination Footer */}
         <Stack
-          direction="row"
-          sx={{ alignItems: 'center', px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}
+          direction={{ xs: 'column', sm: 'row' }}
+          sx={{ alignItems: 'center', gap: 1, px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}
         >
           <Select
             size="small"

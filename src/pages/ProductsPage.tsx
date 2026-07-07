@@ -136,42 +136,40 @@ export default function ProductsPage() {
                         Product
                     </Typography>
                 </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "100%", flexGrow: 1 }}>
-                    <TenantSelector />
-                    <Stack sx={{ width: "100%" }}>
-                        <Autocomplete
-                            disablePortal
-                            size="small"
-                            options={[{
-                                label: 'Bundling',
-                                value: 'bundling',
-                            },
-                            {
-                                label: 'Add Ons',
-                                value: 'addon',
-                            },
-                            {
-                                label: 'Extra Print',
-                                value: 'print',
-                            }]}
-                            getOptionLabel={(option) => option.label}
-                            renderInput={(params) => (
-                                <TextField
-                                    {...params}
-                                    sx={{
-                                        '& .MuiInputBase-root': {
-                                            height: "36px",
-                                            fontSize: 14,
-                                        },
-                                        width: { xs: '100%', sm: "100%" },
-                                        bgcolor: colors.base['white']
-                                    }}
-                                    placeholder="All Types"
-                                />
-                            )}
-                            onChange={(_, value) => setProductType(value?.value ?? '')}
-                        />
-                    </Stack>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, width: { xs: '100%', lg: 'auto' } }}>
+                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
+                    <Autocomplete
+                        disablePortal
+                        size="small"
+                        options={[{
+                            label: 'Bundling',
+                            value: 'bundling',
+                        },
+                        {
+                            label: 'Add Ons',
+                            value: 'addon',
+                        },
+                        {
+                            label: 'Extra Print',
+                            value: 'print',
+                        }]}
+                        getOptionLabel={(option) => option.label}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                sx={{
+                                    '& .MuiInputBase-root': {
+                                        height: "36px",
+                                        fontSize: 14,
+                                    },
+                                    bgcolor: colors.base['white']
+                                }}
+                                placeholder="All Types"
+                            />
+                        )}
+                        onChange={(_, value) => setProductType(value?.value ?? '')}
+                        sx={{ flex: '1 1 150px', maxWidth: { sm: '200px' }, width: { xs: '100%' } }}
+                    />
 
                     <TextField
                         size="small"
@@ -192,7 +190,9 @@ export default function ProductsPage() {
                                 height: "36px",
                                 fontSize: 14,
                             },
-                            width: { xs: '100%', sm: "100%" },
+                            flex: '1 1 180px',
+                            maxWidth: { sm: '280px' },
+                            width: { xs: '100%' },
                             bgcolor: colors.base['white']
                         }}
                     />
@@ -206,8 +206,9 @@ export default function ProductsPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                textWrap: 'nowrap',
-                                width: { xs: '100%', sm: isSuperAdmin ? "450px" : "100%" },
+                                whiteSpace: 'nowrap',
+                                flexShrink: 0,
+                                width: { xs: '100%', sm: 'auto' },
                             }}
                         >
                             Add Product
@@ -303,9 +304,10 @@ export default function ProductsPage() {
 
                 {/* Pagination Footer */}
                 <Stack
-                    direction="row"
+                    direction={{ xs: 'column', sm: 'row' }}
                     sx={{
                         alignItems: 'center',
+                        gap: 1,
                         px: 2,
                         py: 1.5,
                         borderTop: `1px solid ${colors.border['light']}`,

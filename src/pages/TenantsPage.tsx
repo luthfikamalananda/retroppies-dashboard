@@ -112,7 +112,7 @@ export default function TenantsPage() {
                         Data Unit Tenant
                     </Typography>
                 </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', width: "40%", }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', lg: 'auto' } }}>
                     <TextField
                         size="small"
                         placeholder="Masukkan keyword..."
@@ -132,7 +132,9 @@ export default function TenantsPage() {
                                 height: "36px",
                                 fontSize: 14,
                             },
-                            width: { xs: '100%', sm: "100%" },
+                            flex: '1 1 180px',
+                            maxWidth: { sm: '280px' },
+                            width: { xs: '100%' },
                             bgcolor: colors.base['white']
                         }}
                     />
@@ -146,7 +148,9 @@ export default function TenantsPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                width: { xs: '100%', sm: "420px" },
+                                flexShrink: 0,
+                                whiteSpace: 'nowrap',
+                                width: { xs: '100%', sm: 'auto' },
                             }}
                         >
                             Tambah Tenant
@@ -208,7 +212,7 @@ export default function TenantsPage() {
 
                 {!isLoading && rows.length === 0 && <EmptyState message="Belum ada data tenant." />}
 
-                <Stack direction="row" sx={{ alignItems: 'center', px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}>
+                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ alignItems: 'center', gap: 1, px: 2, py: 1.5, borderTop: `1px solid ${colors.border['light']}` }}>
                     <Select
                         size="small"
                         value={pageSize}

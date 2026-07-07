@@ -140,8 +140,8 @@ export default function TimersPage() {
             Setting Time Rules
           </Typography>
         </Stack>
-        <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', justifyContent: "flex-end", width: "100%", flexGrow: 1 }}>
-          <TenantSelector />
+        <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', lg: 'auto' } }}>
+          <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
           <TextField
             size="small"
             placeholder="Keyword..."
@@ -161,11 +161,10 @@ export default function TimersPage() {
                 height: "36px",
                 fontSize: 14,
               },
-              width: { xs: '100%', sm: "100%" },
-              maxWidth: 350,
+              flex: '1 1 180px',
+              maxWidth: { sm: '280px' },
+              width: { xs: '100%' },
               bgcolor: colors.base['white'],
-              justifySelf: 'flex-end',
-              justifyContent: 'flex-end',
             }}
           />
           {canCreate &&
@@ -178,7 +177,9 @@ export default function TimersPage() {
                 '&:hover': { bgcolor: colors.brand[600] },
                 textTransform: 'none',
                 fontWeight: 600,
-                width: { xs: '100%', sm: "420px" },
+                flexShrink: 0,
+                whiteSpace: 'nowrap',
+                width: { xs: '100%', sm: 'auto' },
               }}
             >
               Add Rule
@@ -271,9 +272,10 @@ export default function TimersPage() {
 
         {/* Pagination Footer */}
         <Stack
-          direction="row"
+          direction={{ xs: 'column', sm: 'row' }}
           sx={{
             alignItems: 'center',
+            gap: 1,
             px: 2,
             py: 1.5,
             borderTop: `1px solid ${colors.border['light']}`,

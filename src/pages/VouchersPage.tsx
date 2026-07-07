@@ -154,16 +154,17 @@ export default function VouchersPage() {
 
             {/* Header */}
             <Stack
-                direction="row"
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
+                direction={{ xs: 'column', md: 'row' }}
+                sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 3, gap: 2 }}
             >
-                <Stack sx={{ width: "50%" }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                        Voucher
-                    </Typography>
-                </Stack>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', justifyContent: 'flex-end', width: "100%", flexGrow:1 }}>
-                    <TenantSelector />
+                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], flexShrink: 0 }}>
+                    Voucher
+                </Typography>
+                <Stack
+                    direction={{ xs: 'column', sm: 'row' }}
+                    sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', md: 'auto' } }}
+                >
+                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
                     <TextField
                         size="small"
                         placeholder="Keyword..."
@@ -183,8 +184,9 @@ export default function VouchersPage() {
                                 height: "36px",
                                 fontSize: 14,
                             },
-                            width: { xs: '100%', sm: "100%" },
-                            maxWidth: 350,
+                            flex: '1 1 180px',
+                            maxWidth: { sm: '280px' },
+                            width: { xs: '100%' },
                             bgcolor: colors.base['white']
                         }}
                     />
@@ -198,8 +200,9 @@ export default function VouchersPage() {
                                 '&:hover': { bgcolor: colors.brand[600] },
                                 textTransform: 'none',
                                 fontWeight: 600,
-                                maxWidth: 150,
-                                width: { xs: '100%', sm: "420px" },
+                                flexShrink: 0,
+                                whiteSpace: 'nowrap',
+                                width: { xs: '100%', sm: 'auto' },
                             }}
                         >
                             Add Voucher
@@ -325,9 +328,10 @@ export default function VouchersPage() {
 
                 {/* Custom Pagination Footer */}
                 <Stack
-                    direction="row"
+                    direction={{ xs: 'column', sm: 'row' }}
                     sx={{
                         alignItems: 'center',
+                        gap: 1,
                         px: 2,
                         py: 1.5,
                         borderTop: `1px solid ${colors.border['light']}`,
