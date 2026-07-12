@@ -200,7 +200,7 @@ export default function TransactionsPage() {
                     </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}>
                       <Chip
-                        label={tx.status === 'success' ? 'Success' : 'Failed'}
+                        label={tx.status.toLocaleLowerCase() === 'success' ? 'Success' : 'Failed'}
                         size="small"
                         sx={{
                           bgcolor: tx.status === 'success' ? '#E8F5E9' : '#FDE8E8',
