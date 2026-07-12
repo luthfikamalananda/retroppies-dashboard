@@ -15,7 +15,6 @@ import {
     FormControl,
     Divider,
 } from '@mui/material';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import {
     LineChart,
     Line,
@@ -30,6 +29,7 @@ import dayjs from 'dayjs';
 import { dashboardApi, type ChartParams, type ChartResult } from '../api/dashboard.api';
 import { productsApi } from '../api/products.api';
 import { useAuthStore } from '../stores/authStore';
+import { DateRangePicker, type DateRange } from '../components/common/DateRangePicker';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { FilterToolbar } from '../components/common/FilterToolbar';
 import { TenantSelector } from '../components/common/TenantSelector';
@@ -158,56 +158,6 @@ function PeriodTabs({
     );
 }
 
-function DateRangeBar({
-    start,
-    end,
-    onStartChange,
-    onEndChange,
-}: {
-    start: string;
-    end: string;
-    onStartChange: (v: string) => void;
-    onEndChange: (v: string) => void;
-}) {
-    const label = `${dayjs(start).format('D MMMM')} - ${dayjs(end).format('D MMMM YYYY')}`;
-    return (
-        <Box
-            sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                border: '1px solid',
-                borderColor: colors.border['default'],
-                borderRadius: 1.5,
-                px: 1.5,
-                py: 0.75,
-                cursor: 'pointer',
-                position: 'relative',
-            }}
-        >
-            <Typography variant="body2" sx={{ color: colors.base['black'], mr: 0.5 }}>
-                {label}
-            </Typography>
-            <CalendarTodayIcon sx={{ fontSize: 16, color: colors.brand[500] }} />
-            {/* Hidden date inputs for now — can be replaced with a date-range picker */}
-            <Box
-                component="input"
-                type="date"
-                value={start}
-                onChange={(e) => onStartChange((e.target as HTMLInputElement).value)}
-                sx={{ position: 'absolute', opacity: 0, width: '50%', left: 0, top: 0, bottom: 0, cursor: 'pointer' }}
-            />
-            <Box
-                component="input"
-                type="date"
-                value={end}
-                onChange={(e) => onEndChange((e.target as HTMLInputElement).value)}
-                sx={{ position: 'absolute', opacity: 0, width: '50%', right: 0, top: 0, bottom: 0, cursor: 'pointer' }}
-            />
-        </Box>
-    );
-}
-
 function ProductSelect({
     value,
     onChange,
@@ -246,11 +196,11 @@ export default function DashboardPage() {
 
     const [revenuePeriod, setRevenuePeriod] = useState<Period>('daily');
     const [txPeriod, setTxPeriod] = useState<Period>('daily');
-    const [revenueDateRange, setRevenueDateRange] = useState({
+    const [revenueDateRange, setRevenueDateRange] = useState<DateRange>({
         start: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
         end: dayjs().format('YYYY-MM-DD'),
     });
-    const [txDateRange, setTxDateRange] = useState({
+    const [txDateRange, setTxDateRange] = useState<DateRange>({
         start: dayjs().subtract(7, 'day').format('YYYY-MM-DD'),
         end: dayjs().format('YYYY-MM-DD'),
     });
@@ -396,11 +346,9 @@ export default function DashboardPage() {
                     <Stack direction="row" sx={{ alignItems: 'center', mb: 2.5, gap: 1, flexWrap: 'wrap' }}>
                         <PeriodTabs value={revenuePeriod} onChange={setRevenuePeriod} />
                         <Box sx={{ flex: 1 }} />
-                        <DateRangeBar
-                            start={revenueDateRange.start}
-                            end={revenueDateRange.end}
-                            onStartChange={(v) => setRevenueDateRange((r) => ({ ...r, start: v }))}
-                            onEndChange={(v) => setRevenueDateRange((r) => ({ ...r, end: v }))}
+                        <DateRangePicker
+                            value={revenueDateRange}
+                            onChange={setRevenueDateRange}
                         />
                     </Stack>
 
@@ -475,11 +423,9 @@ export default function DashboardPage() {
                     <Stack direction="row" sx={{ alignItems: 'center', mb: 2.5, gap: 1, flexWrap: 'wrap' }}>
                         <PeriodTabs value={txPeriod} onChange={setTxPeriod} />
                         <Box sx={{ flex: 1 }} />
-                        <DateRangeBar
-                            start={txDateRange.start}
-                            end={txDateRange.end}
-                            onStartChange={(v) => setTxDateRange((r) => ({ ...r, start: v }))}
-                            onEndChange={(v) => setTxDateRange((r) => ({ ...r, end: v }))}
+                        <DateRangePicker
+                            value={txDateRange}
+                            onChange={setTxDateRange}
                         />
                     </Stack>
 
