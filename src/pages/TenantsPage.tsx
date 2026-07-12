@@ -14,8 +14,6 @@ import {
     TableBody,
     TableContainer,
     IconButton,
-    TextField,
-    InputAdornment,
     Select,
     MenuItem,
     Breadcrumbs,
@@ -26,7 +24,6 @@ import {
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
 import HomeIcon from '@mui/icons-material/Home';
 import { tenantsApi, type Tenant } from '../api/tenants.api';
 import { useUIStore } from '../stores/uiStore';
@@ -36,6 +33,8 @@ import { EmptyState } from '../components/common/EmptyState';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { TenantFormDialog } from '../features/tenants/TenantFormDialog';
 import { colors } from '../theme/colors';
+import { FilterToolbar, toolbarButtonSx } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 import { usePermissions } from '../hooks/usePermissions';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
@@ -103,61 +102,21 @@ export default function TenantsPage() {
             </Breadcrumbs>
 
             {/* Header */}
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
+            <FilterToolbar
+                title="Data Unit Tenant"
+                action={canCreate && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => { setEditTarget(null); setFormOpen(true); }}
+                        sx={toolbarButtonSx}
+                    >
+                        Tambah Tenant
+                    </Button>
+                )}
             >
-                <Stack sx={{ width: { xs: '100%', md: '50%' } }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                        Data Unit Tenant
-                    </Typography>
-                </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', md: 'auto' } }}>
-                    <TextField
-                        size="small"
-                        placeholder="Masukkan keyword..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                height: "36px",
-                                fontSize: 14,
-                            },
-                            flex: '1 1 180px',
-                            maxWidth: { sm: '280px' },
-                            width: { xs: '100%' },
-                            bgcolor: colors.base['white']
-                        }}
-                    />
-                    {canCreate &&
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => { setEditTarget(null); setFormOpen(true); }}
-                            sx={{
-                                bgcolor: colors.brand[500],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                flexShrink: 0,
-                                whiteSpace: 'nowrap',
-                                width: { xs: '100%', sm: 'auto' },
-                            }}
-                        >
-                            Tambah Tenant
-                        </Button>
-                    }
-                </Stack>
-            </Stack>
+                <SearchField value={search} onChange={setSearch} placeholder="Search tenant…" />
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 

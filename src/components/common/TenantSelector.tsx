@@ -5,6 +5,7 @@ import type { SxProps } from '@mui/material';
 import { tenantsApi, type Tenant } from '../../api/tenants.api';
 import { useAuthStore } from '../../stores/authStore';
 import { colors } from '../../theme/colors';
+import { FILTER_CONTROL_HEIGHT } from './FilterToolbar';
 
 /** Sentinel option — mewakili "All Tenants" (activeTenantId: null) */
 const ALL_TENANT: Tenant = {
@@ -52,7 +53,7 @@ interface TenantSelectorProps {
  * @param onChange    - (Controlled) callback saat user memilih tenant.
  */
 export function TenantSelector({
-    height = "36px",
+    height = `${FILTER_CONTROL_HEIGHT}px`,
     isSubmitted = false,
     displayNull = false,
     errorMsg = "Tenant wajib dipilih",

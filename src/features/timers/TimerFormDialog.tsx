@@ -40,11 +40,11 @@ const RULE_TYPE_DISPLAY: Record<string, string> = {
     photo_session_timer: 'Timer Sesi Foto',
 };
 
-const MAX_SECONDS = 600;
+const MAX_MINUTES = 10;
 
 const schema = z.object({
     rulesType: z.string().min(1, 'Tipe rule wajib diisi'),
-    value: z.number().min(0, 'Min 0 detik').max(MAX_SECONDS, `Maks ${MAX_SECONDS} detik`),
+    value: z.number().min(0, 'Min 0 menit').max(MAX_MINUTES, `Maks ${MAX_MINUTES} menit`),
     tenantId: z.number().min(1, 'Tenant wajib dipilih'),
 });
 
@@ -84,10 +84,8 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
         }
     }, [open, editTarget, reset, selectedTenantId]);
 
-    // Derive minutes/seconds from total seconds for the visual picker
-    const totalSeconds = watch('value') ?? 0;
-    const minutes = Math.floor(totalSeconds / 60);
-    const secs = totalSeconds % 60;
+    // Value is edited and sent to the API in minutes
+    const minutes = watch('value') ?? 0;
 
     // Label for the card header — edit mode uses editTarget, create mode uses watched value
     const watchedRulesType = watch('rulesType');
@@ -95,9 +93,9 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
         ? (RULE_TYPE_DISPLAY[editTarget.rulesType] ?? editTarget.rulesType)
         : (RULE_TYPE_DISPLAY[watchedRulesType] ?? '');
 
-    /** Adjust total seconds by delta, clamped to [0, MAX_SECONDS] */
+    /** Adjust minutes by delta, clamped to [0, MAX_MINUTES] */
     function adjust(delta: number) {
-        setValue('value', Math.min(MAX_SECONDS, Math.max(0, totalSeconds + delta)), { shouldValidate: true });
+        setValue('value', Math.min(MAX_MINUTES, Math.max(0, minutes + delta)), { shouldValidate: true });
     }
 
     const mutation = useMutation({
@@ -195,8 +193,8 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
                                     <Stack sx={{ alignItems: 'center', gap: 0.25 }}>
                                         <IconButton
                                             size="small"
-                                            onClick={() => adjust(60)}
-                                            disabled={totalSeconds >= MAX_SECONDS}
+                                            onClick={() => adjust(1)}
+                                            disabled={minutes >= MAX_MINUTES}
                                             sx={{ color: colors.base['black'] }}
                                         >
                                             <KeyboardArrowUpIcon />
@@ -205,14 +203,11 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
                                             <Typography sx={{ fontSize: 34, fontWeight: 500, color: colors.base['black'], lineHeight: 1.1 }}>
                                                 {String(minutes).padStart(2, '0')}
                                             </Typography>
-                                            {/* <Typography sx={{ fontSize: 13, color: colors.base['grey'] }}>
-                                                min
-                                            </Typography> */}
                                         </Stack>
                                         <IconButton
                                             size="small"
-                                            onClick={() => adjust(-60)}
-                                            disabled={totalSeconds < 60}
+                                            onClick={() => adjust(-1)}
+                                            disabled={minutes <= 0}
                                             sx={{ color: colors.base['black'] }}
                                         >
                                             <KeyboardArrowDownIcon />
@@ -221,43 +216,6 @@ export function TimerFormDialog({ open, editTarget, onClose }: Props) {
 
                                     <Typography sx={{ fontSize: 13, color: colors.base['grey'] }}>
                                         min
-                                    </Typography>
-
-                                    {/* Colon separator */}
-                                    <Typography sx={{ fontSize: 28, fontWeight: 700, color: colors.base['black'], pb: 1 }}>
-                                        :
-                                    </Typography>
-
-                                    {/* Seconds column */}
-                                    <Stack sx={{ alignItems: 'center', gap: 0.25 }}>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => adjust(1)}
-                                            disabled={totalSeconds >= MAX_SECONDS}
-                                            sx={{ color: colors.base['black'] }}
-                                        >
-                                            <KeyboardArrowUpIcon />
-                                        </IconButton>
-                                        <Stack direction="row" sx={{ alignItems: 'center', gap: 0.75 }}>
-                                            <Typography sx={{ fontSize: 34, fontWeight: 500, color: colors.base['black'], lineHeight: 1.1 }}>
-                                                {String(secs).padStart(2, '0')}
-                                            </Typography>
-                                            {/* <Typography sx={{ fontSize: 13, color: colors.base['grey'] }}>
-                                                sec
-                                            </Typography> */}
-                                        </Stack>
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => adjust(-1)}
-                                            disabled={totalSeconds <= 0}
-                                            sx={{ color: colors.base['black'] }}
-                                        >
-                                            <KeyboardArrowDownIcon />
-                                        </IconButton>
-                                    </Stack>
-
-                                    <Typography sx={{ fontSize: 13, color: colors.base['grey'] }}>
-                                        sec
                                     </Typography>
                                 </Paper>
                             </Box>

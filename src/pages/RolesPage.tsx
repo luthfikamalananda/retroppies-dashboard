@@ -1,14 +1,12 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import HomeIcon from '@mui/icons-material/Home';
-import SearchIcon from '@mui/icons-material/Search';
 import SettingIcon from '@mui/icons-material/Settings';
 import {
     Box,
     Breadcrumbs,
     Button,
     IconButton,
-    InputAdornment,
     Link,
     Paper,
     Skeleton,
@@ -19,7 +17,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -31,6 +28,8 @@ import { rolesApi, type Role } from '../api/roles.api';
 import { ConfirmDialog } from '../components/common/ConfirmDialog';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
+import { FilterToolbar, toolbarButtonSx } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 import { RoleFormDialog } from '../features/roles/RoleFormDialog';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
@@ -84,112 +83,22 @@ export default function RolesPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Role</Typography>
             </Breadcrumbs>
 
-            {/* <Stack
-                direction={{ xs: 'column', lg: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
-            >
-                <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                        Data Role
-                    </Typography>
-                </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <TextField
-                        size="small"
-                        placeholder="Search"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                height: "36px",
-                                fontSize: 14,
-                            },
-                            width: { xs: '100%', sm: "100%" },
-                            bgcolor: colors.base['white']
-                        }}
-                    />
-                    {canCreate && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => { setFormOpen(true); }}
-                            sx={{
-                                bgcolor: colors.brand[500],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                width: { xs: '100%', sm: "420px" },
-                            }}
-                        >
-                            Tambah Role
-                        </Button>
-                    )}
-                </Stack>
-            </Stack> */}
-
             {/* Header */}
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 3, gap: 2 }}
+            <FilterToolbar
+                title="Data Role"
+                action={canCreate && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => { setFormOpen(true); }}
+                        sx={toolbarButtonSx}
+                    >
+                        Tambah Role
+                    </Button>
+                )}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], flexShrink: 0 }}>
-                    Data Role
-                </Typography>
-                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', md: 'auto' } }}>
-                    <TextField
-                        size="small"
-                        placeholder="Masukkan keyword..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                height: "36px",
-                                fontSize: 14,
-                            },
-                            flex: '1 1 180px',
-                            maxWidth: { sm: '280px' },
-                            width: { xs: '100%' },
-                            bgcolor: colors.base['white']
-                        }}
-                    />
-                    {canCreate &&
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => { setFormOpen(true); }}
-                            sx={{
-                                bgcolor: colors.brand[500],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                flexShrink: 0,
-                                whiteSpace: 'nowrap',
-                                width: { xs: '100%', sm: 'auto' },
-                            }}
-                        >
-                            Tambah Role
-                        </Button>
-                    }
-                </Stack>
-            </Stack>
+                <SearchField value={search} onChange={setSearch} placeholder="Search role…" />
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 

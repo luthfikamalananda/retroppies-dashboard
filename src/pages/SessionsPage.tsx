@@ -15,7 +15,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography
 } from '@mui/material';
 import { useEffect, useState } from 'react';
@@ -26,6 +25,8 @@ import { sessionsApi } from '../api/sessions.api';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { FilterToolbar, filterControlSx } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 import { usePermissions } from '../hooks/usePermissions';
 import { useAuthStore } from '../stores/authStore';
 import { colors } from '../theme/colors';
@@ -99,85 +100,36 @@ export default function SessionsPage() {
 
     return (
         <Box>
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{
-                    justifyContent: 'space-between',
-                    alignItems: { xs: 'flex-start', md: 'center' },
-                    mb: 3,
-                    gap: 2,
-                }}
-            >
-                <Typography
-                    variant="h5"
-                    sx={{
-                        fontWeight: 700,
-                        color: colors.base['black'],
-                        flexShrink: 0,
-                    }}
-                >
-                    Session
-                </Typography>
-                <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    sx={{
-                        gap: 1.5,
-                        alignItems: 'center',
-                        flexWrap: 'wrap',
-                        flex: 1,
-                        justifyContent: 'flex-end',
-                        width: { xs: '100%', md: 'auto' },
-                    }}
-                >
-                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
-                    <Select
-                        size="small"
-                        value={
-                            publishFilter === null
-                                ? 'all'
-                                : publishFilter
-                                    ? 'true'
-                                    : 'false'
+            <FilterToolbar title="Session">
+                <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
+                <Select
+                    size="small"
+                    value={
+                        publishFilter === null
+                            ? 'all'
+                            : publishFilter
+                                ? 'true'
+                                : 'false'
+                    }
+                    onChange={(e) => {
+                        const value = e.target.value;
+
+                        if (value === 'all') {
+                            setPublishFilter(null);
+                        } else {
+                            setPublishFilter(value === 'true');
                         }
-                        onChange={(e) => {
-                            const value = e.target.value;
 
-                            if (value === 'all') {
-                                setPublishFilter(null);
-                            } else {
-                                setPublishFilter(value === 'true');
-                            }
-
-                            setPage(1);
-                        }}
-                        sx={{
-                            minWidth: 140,
-                            height: '36px',
-                            bgcolor: colors.base['white'],
-                            fontSize: 14,
-                        }}>
-                        <MenuItem value="all">All Status</MenuItem>
-                        <MenuItem value="true">Allowed</MenuItem>
-                        <MenuItem value="false">Not Allowed</MenuItem>
-                    </Select>
-                    <TextField
-                        size="small"
-                        placeholder="Keyword..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                height: '36px',
-                                fontSize: 14,
-                            },
-                            flex: '1 1 180px',
-                            maxWidth: { sm: '280px' },
-                            width: { xs: '100%' },
-                            bgcolor: colors.base['white'],
-                        }}
-                    />
-                </Stack>
-            </Stack>
+                        setPage(1);
+                    }}
+                    sx={{ ...filterControlSx, width: { xs: '100%', sm: 180 } }}
+                >
+                    <MenuItem value="all">All Status</MenuItem>
+                    <MenuItem value="true">Allowed</MenuItem>
+                    <MenuItem value="false">Not Allowed</MenuItem>
+                </Select>
+                <SearchField value={search} onChange={setSearch} placeholder="Search session…" />
+            </FilterToolbar>
 
             {isError && (
                 <ErrorAlert onRetry={refetch} />

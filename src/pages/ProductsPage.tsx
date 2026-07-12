@@ -1,14 +1,12 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import SearchIcon from '@mui/icons-material/Search';
 import {
     Autocomplete,
     Box,
     Button,
     Chip,
     IconButton,
-    InputAdornment,
     MenuItem,
     Pagination,
     Paper,
@@ -38,6 +36,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { FilterToolbar, filterControlSx, toolbarButtonSx } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
@@ -127,95 +127,37 @@ export default function ProductsPage() {
             </Breadcrumbs> */}
 
             {/* Header */}
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
+            <FilterToolbar
+                title="Product"
+                action={canCreate && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={openCreate}
+                        sx={toolbarButtonSx}
+                    >
+                        Add Product
+                    </Button>
+                )}
             >
-                <Stack sx={{ width: { xs: '100%', md: '50%' } }}>
-                    <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], justifySelf: "start" }}>
-                        Product
-                    </Typography>
-                </Stack>
-                <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, width: { xs: '100%', md: 'auto' } }}>
-                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
-                    <Autocomplete
-                        disablePortal
-                        size="small"
-                        options={[{
-                            label: 'Bundling',
-                            value: 'bundling',
-                        },
-                        {
-                            label: 'Add Ons',
-                            value: 'addon',
-                        },
-                        {
-                            label: 'Extra Print',
-                            value: 'print',
-                        }]}
-                        getOptionLabel={(option) => option.label}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                sx={{
-                                    '& .MuiInputBase-root': {
-                                        height: "36px",
-                                        fontSize: 14,
-                                    },
-                                    bgcolor: colors.base['white']
-                                }}
-                                placeholder="All Types"
-                            />
-                        )}
-                        onChange={(_, value) => setProductType(value?.value ?? '')}
-                        sx={{ flex: '1 1 150px', maxWidth: { sm: '200px' }, width: { xs: '100%' } }}
-                    />
-
-                    <TextField
-                        size="small"
-                        placeholder="Keyword..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                height: "36px",
-                                fontSize: 14,
-                            },
-                            flex: '1 1 180px',
-                            maxWidth: { sm: '280px' },
-                            width: { xs: '100%' },
-                            bgcolor: colors.base['white']
-                        }}
-                    />
-                    {canCreate && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={openCreate}
-                            sx={{
-                                bgcolor: colors.brand[500],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                whiteSpace: 'nowrap',
-                                flexShrink: 0,
-                                width: { xs: '100%', sm: 'auto' },
-                            }}
-                        >
-                            Add Product
-                        </Button>
+                <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
+                <Autocomplete
+                    disablePortal
+                    size="small"
+                    options={[
+                        { label: 'Bundling', value: 'bundling' },
+                        { label: 'Add Ons', value: 'addon' },
+                        { label: 'Extra Print', value: 'print' },
+                    ]}
+                    getOptionLabel={(option) => option.label}
+                    renderInput={(params) => (
+                        <TextField {...params} placeholder="All Types" />
                     )}
-                </Stack>
-            </Stack>
+                    onChange={(_, value) => setProductType(value?.value ?? '')}
+                    sx={{ ...filterControlSx, width: { xs: '100%', sm: 190 } }}
+                />
+                <SearchField value={search} onChange={setSearch} placeholder="Search product…" />
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 

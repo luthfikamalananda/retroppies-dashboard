@@ -31,6 +31,8 @@ import { dashboardApi, type ChartParams, type ChartResult } from '../api/dashboa
 import { productsApi } from '../api/products.api';
 import { useAuthStore } from '../stores/authStore';
 import { ErrorAlert } from '../components/common/ErrorAlert';
+import { FilterToolbar } from '../components/common/FilterToolbar';
+import { TenantSelector } from '../components/common/TenantSelector';
 import { colors } from '../theme/colors';
 
 type Period = 'daily' | 'monthly' | 'annual';
@@ -322,13 +324,10 @@ export default function DashboardPage() {
 
     return (
         <Box>
-            {/* Page title */}
-            <Typography
-                variant="h5"
-                sx={{ fontWeight: 700, color: colors.base['black'], mb: 3 }}
-            >
-                Summary
-            </Typography>
+            {/* Page title + tenant scope */}
+            <FilterToolbar title="Summary">
+                <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
+            </FilterToolbar>
 
             {anyError && (
                 <ErrorAlert

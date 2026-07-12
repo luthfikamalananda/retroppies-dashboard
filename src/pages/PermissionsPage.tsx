@@ -2,21 +2,17 @@ import HomeIcon from '@mui/icons-material/Home';
 import {
     Box,
     Breadcrumbs,
-    InputAdornment,
     Link,
     Paper,
     Skeleton,
-    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography
 } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import { useQuery } from '@tanstack/react-query';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
@@ -25,6 +21,8 @@ import { NavLink } from 'react-router-dom';
 import { permissionsApi } from '../api/permissions.api';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
+import { FilterToolbar } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 import { colors } from '../theme/colors';
 dayjs.extend(utc);
 
@@ -56,46 +54,9 @@ export default function PermissionsPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Permission</Typography>
             </Breadcrumbs>
 
-            <Stack
-                direction="row"
-                sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, flexWrap: 'wrap', gap: 2 }}
-            >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
-                    Data Permission
-                </Typography>
-                <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <TextField
-                        size="small"
-                        placeholder="Search"
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{ width: { xs: '100%', sm: 200 }, bgcolor: colors.base['white'] }}
-                    />
-                    {/* <Button
-                        variant="contained"
-                        startIcon={<AddIcon />}
-                        onClick={() => { setEditTarget(null); setFormOpen(true); }}
-                        sx={{
-                            bgcolor: colors.brand[500],
-                            '&:hover': { bgcolor: colors.brand[600] },
-                            textTransform: 'none',
-                            fontWeight: 600,
-                            px: 2.5,
-                        }}
-                    >
-                        Add Permission
-                    </Button> */}
-                </Stack>
-            </Stack>
+            <FilterToolbar title="Data Permission">
+                <SearchField value={search} onChange={setSearch} placeholder="Search permission…" />
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 

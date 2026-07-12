@@ -1,13 +1,11 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import SearchIcon from '@mui/icons-material/Search';
 import {
     Box,
     Button,
     Chip,
     IconButton,
-    InputAdornment,
     MenuItem,
     Pagination,
     Paper,
@@ -20,7 +18,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    TextField,
     Typography
 } from '@mui/material';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -38,6 +35,8 @@ import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
 import { colors } from '../theme/colors';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { FilterToolbar, toolbarButtonSx } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 dayjs.extend(utc);
 
 type StatusChip = { label: string; bgcolor: string; color: string };
@@ -153,63 +152,22 @@ export default function VouchersPage() {
             </Breadcrumbs> */}
 
             {/* Header */}
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 3, gap: 2 }}
+            <FilterToolbar
+                title="Voucher"
+                action={canCreate && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={openCreate}
+                        sx={toolbarButtonSx}
+                    >
+                        Add Voucher
+                    </Button>
+                )}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], flexShrink: 0 }}>
-                    Voucher
-                </Typography>
-                <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', md: 'auto' } }}
-                >
-                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
-                    <TextField
-                        size="small"
-                        placeholder="Keyword..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        slotProps={{
-                            input: {
-                                startAdornment: (
-                                    <InputAdornment position="start">
-                                        <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                                    </InputAdornment>
-                                ),
-                            },
-                        }}
-                        sx={{
-                            '& .MuiInputBase-root': {
-                                height: "36px",
-                                fontSize: 14,
-                            },
-                            flex: '1 1 180px',
-                            maxWidth: { sm: '280px' },
-                            width: { xs: '100%' },
-                            bgcolor: colors.base['white']
-                        }}
-                    />
-                    {canCreate &&
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={openCreate}
-                            sx={{
-                                bgcolor: colors.brand[500],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                flexShrink: 0,
-                                whiteSpace: 'nowrap',
-                                width: { xs: '100%', sm: 'auto' },
-                            }}
-                        >
-                            Add Voucher
-                        </Button>
-                    }
-                </Stack>
-            </Stack>
+                <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
+                <SearchField value={search} onChange={setSearch} placeholder="Search voucher…" />
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 

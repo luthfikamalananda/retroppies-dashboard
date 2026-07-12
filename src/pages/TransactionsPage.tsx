@@ -2,7 +2,6 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
-import SearchIcon from '@mui/icons-material/Search';
 import {
   Box,
   Button,
@@ -10,7 +9,6 @@ import {
   Dialog,
   Divider,
   IconButton,
-  InputAdornment,
   MenuItem,
   Pagination,
   Paper,
@@ -24,7 +22,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography
 } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
@@ -34,6 +31,9 @@ import { useEffect, useState } from 'react';
 import { transactionsApi, type ItemTransaction } from '../api/transactions.api';
 import { EmptyState } from '../components/common/EmptyState';
 import { ErrorAlert } from '../components/common/ErrorAlert';
+import { FilterToolbar } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
+import { TenantSelector } from '../components/common/TenantSelector';
 import { usePermissions } from '../hooks/usePermissions';
 
 import { colors } from '../theme/colors';
@@ -232,6 +232,9 @@ function DateRangePicker({ value, onChange }: DateRangePickerProps) {
           textTransform: 'none',
           px: 1.5,
           whiteSpace: 'nowrap',
+          flexShrink: 0,
+          width: { xs: '100%', sm: 'auto' },
+          justifyContent: 'space-between',
           '&:hover': { borderColor: colors.brand[400], bgcolor: colors.base['white'] },
         }}
       >
@@ -373,57 +376,18 @@ export default function TransactionsPage() {
       </Breadcrumbs> */}
 
       {/* Header */}
-      <Stack
-        direction={{ xs: 'column', md: 'row' }}
-        sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 3, gap: 2 }}
-      >
-        <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], flexShrink: 0 }}>
-          Laporan Transaksi
-        </Typography>
-
-        <Stack
-          direction={{ xs: 'column', sm: 'row' }}
-          sx={{
-            flex: 1,
-            gap: 1.5,
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            justifyContent: 'flex-end',
-            width: { xs: '100%', md: 'auto' },
-          }}
-        >
-          <TextField
-            size="small"
-            placeholder="Keyword..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            slotProps={{
-              input: {
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ fontSize: 18, color: colors.base['grey'] }} />
-                  </InputAdornment>
-                ),
-              },
-            }}
-            sx={{
-              '& .MuiInputBase-root': {
-                height: "36px",
-                fontSize: 14,
-              },
-              flex: '1 1 180px',
-              maxWidth: { sm: '280px' },
-              width: { xs: '100%' },
-              bgcolor: colors.base['white']
-            }}
-          />
-
-          <DateRangePicker
-            value={dateRange}
-            onChange={(r) => { setDateRange(r); setPage(1); }}
-          />
-        </Stack>
-      </Stack>
+      <FilterToolbar title="Laporan Transaksi">
+        <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
+        <SearchField
+          value={search}
+          onChange={setSearch}
+          placeholder="Search product code…"
+        />
+        <DateRangePicker
+          value={dateRange}
+          onChange={(r) => { setDateRange(r); setPage(1); }}
+        />
+      </FilterToolbar>
 
       {isError && <ErrorAlert onRetry={refetch} />}
 

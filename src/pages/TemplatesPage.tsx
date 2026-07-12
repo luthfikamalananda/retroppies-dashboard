@@ -37,6 +37,7 @@ import { colors } from '../theme/colors';
 import { usePermissions } from '../hooks/usePermissions';
 import { useAuthStore } from '../stores/authStore';
 import { TenantSelector } from '../components/common/TenantSelector';
+import { FilterToolbar, toolbarButtonSx } from '../components/common/FilterToolbar';
 import { z } from 'zod';
 
 
@@ -245,38 +246,21 @@ export default function TemplatesPage() {
                 <Typography sx={{ color: colors.base['black'], fontSize: 14, fontWeight: 500 }}>Your Template</Typography>
             </Breadcrumbs>
 
-            <Stack
-                direction={{ xs: 'column', md: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', md: 'center' }, mb: 3, gap: 2 }}
+            <FilterToolbar
+                title="Your Layout"
+                action={canCreate && (
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={() => openUploadDialog(null)}
+                        sx={toolbarButtonSx}
+                    >
+                        Upload Layout
+                    </Button>
+                )}
             >
-                <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'], flexShrink: 0 }}>
-                    Your Layout
-                </Typography>
-                <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', md: 'auto' } }}
-                >
-                    <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
-                    {canCreate && (
-                        <Button
-                            variant="contained"
-                            startIcon={<AddIcon />}
-                            onClick={() => openUploadDialog(null)}
-                            sx={{
-                                bgcolor: colors.brand[500],
-                                '&:hover': { bgcolor: colors.brand[600] },
-                                textTransform: 'none',
-                                fontWeight: 600,
-                                whiteSpace: 'nowrap',
-                                flexShrink: 0,
-                                width: { xs: '100%', sm: 'auto' },
-                            }}
-                        >
-                            Upload Layout
-                        </Button>
-                    )}
-                </Stack>
-            </Stack>
+                <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 

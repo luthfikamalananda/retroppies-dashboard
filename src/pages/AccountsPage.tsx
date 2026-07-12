@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
     Box,
-    Typography,
-    Stack,
     Paper,
     Table,
     TableHead,
@@ -13,7 +11,6 @@ import {
     TableContainer,
     TablePagination,
     Chip,
-    TextField,
 } from '@mui/material';
 import { accountsApi, type Account } from '../api/accounts.api';
 import { useUIStore } from '../stores/uiStore';
@@ -21,6 +18,8 @@ import { useAuthStore } from '../stores/authStore';
 import { extractErrorMessage } from '../api/client';
 import { ErrorAlert } from '../components/common/ErrorAlert';
 import { EmptyState } from '../components/common/EmptyState';
+import { FilterToolbar } from '../components/common/FilterToolbar';
+import { SearchField } from '../components/common/SearchField';
 import { RoleEditDialog } from '../features/accounts/RoleEditDialog';
 
 export default function AccountsPage() {
@@ -55,24 +54,13 @@ export default function AccountsPage() {
 
     return (
         <Box>
-            <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                sx={{ justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 3, gap: 2 }}
-            >
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                    Manajemen Akun
-                </Typography>
-            </Stack>
-
-            <Stack direction="row" sx={{ mb: 2 }}>
-                <TextField
-                    placeholder="Cari nama / email..."
-                    size="small"
+            <FilterToolbar title="Manajemen Akun">
+                <SearchField
                     value={search}
-                    onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-                    sx={{ width: { xs: '100%', sm: 300 } }}
+                    onChange={(v) => { setSearch(v); setPage(0); }}
+                    placeholder="Search name / email…"
                 />
-            </Stack>
+            </FilterToolbar>
 
             {isError && <ErrorAlert onRetry={refetch} />}
 
