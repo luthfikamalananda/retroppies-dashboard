@@ -21,8 +21,19 @@ codebase today; `[ ]` = not present / pending. For domain terms and conventions 
 - [x] Logout clears query cache
 - [x] `usePermissions().can()` reads backend `permissions[]` (ADR-0002)
 - [x] Superadmin bypass + Tenant Selector scope (ADR-0004)
+- [x] Page-level access model — single `src/routes/accessConfig.ts` consumed by the route guard
+  (`AccessGuard`) and the sidebar; three classes (baseline / operational / superadmin-only).
+  See [docs/access-matrix.md](./docs/access-matrix.md) + [ADR-0006](./docs/adr/0006-page-access-model.md)
+- [!] **Backend over-grants the franchise `Owner` role** — verified against the real API, the
+  `Owner` role (`demoadmin1`, `isSuperadmin: false`) is granted `tenants:*`, `roles:*`,
+  `permissions:read`, `role_permissions:*` etc. The frontend now hides those admin pages
+  (superadmin-only class), but since the backend is the security boundary (ADR-0002), a direct
+  API call with that token would still be accepted. **Follow-up: tighten the backend `Owner`
+  role definition** so franchise accounts genuinely cannot touch cross-tenant / RBAC data.
 
 ## Dashboard
+- [x] Compiles clean (`tsc -b` passes) — uses `getChartSummary`/`getChartCount`; product options
+  are fetched dynamically; recharts Tooltip formatters typed against recharts' own value types
 - [x] Summary cards (total / success / failed)
 - [x] Revenue chart + date-range filter
 - [x] Transaction chart + date-range filter
@@ -55,7 +66,8 @@ codebase today; `[ ]` = not present / pending. For domain terms and conventions 
 - [x] List (server pagination, keyword, publish filter) + detail dialog
 
 ## Transactions (read-only)
-- [x] List (server pagination), date-range + status filters, detail drawer
+- [x] List (server pagination), **custom** date-range picker + detail drawer
+- [~] Status filter — coded but **commented out** in `TransactionsPage`
 - [ ] CSV export — pending backend endpoint
 
 ## Settings User
@@ -67,7 +79,8 @@ codebase today; `[ ]` = not present / pending. For domain terms and conventions 
 - [x] Manage Account — read-only profile + change-password dialog
 
 ## Cross-cutting
-- [x] Responsive (mobile/tablet): overlay sidebar, responsive headers/filters
+- [~] Responsive (mobile/tablet): overlay sidebar done; **per-page header/filter area still
+  being tidied** across viewports (see UI & Layout Conventions in CONTEXT.md)
 - [x] Playwright tests: auth guard, navigation, products, vouchers, templates
 - [ ] CI pipeline
 - [ ] Deployment config (staging/prod) — Netlify config present (`netlify.toml`)

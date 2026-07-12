@@ -30,27 +30,33 @@ import timerIcon from '../../assets/time_icon.svg';
 import voucherIcon from '../../assets/voucher_icon.svg';
 import photoIcon from '../../assets/photo_icon.svg';
 import { usePermissions } from '../../hooks/usePermissions';
+import { canAccessPath } from '../../routes/accessConfig';
 import { useUIStore } from '../../stores/uiStore';
 import { colors } from '../../theme/colors';
 
 export const SIDEBAR_WIDTH = 300;
 export const SIDEBAR_COLLAPSED_WIDTH = 64;
 
+// Nav item = presentation (label, icon, path, grouping). The ACCESS rule for
+// each path lives in src/routes/accessConfig.ts — the single source of truth
+// shared with the route guard. Visibility is computed via canAccessPath(path).
 const DASHBOARD_ITEMS = [
-    { label: 'Summary', path: '/app/dashboard', icon: <img src={summaryIcon} alt="Summary" />, permission: '*' },
-    { label: 'Product', path: '/app/products', icon: <img src={productIcon} alt="Product" />, permission: 'products:read' },
-    { label: 'Design Template', path: '/app/layouts', icon: <img src={templateIcon} alt="Design Template" />, permission: 'templates:read' },
-    { label: 'Time', path: '/app/timers', icon: <img src={timerIcon} alt="Time" />, permission: 'rules:read' },
-    { label: 'Voucher', path: '/app/vouchers', icon: <img src={voucherIcon} alt="Voucher" />, permission: 'vouchers:read' },
-    { label: 'Session', path: '/app/sessions', icon: <img src={photoIcon} alt="Sessions" />, permission: 'sessions:read' },
-    { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" />, permission: 'transactions:read' },
+    { label: 'Summary', path: '/app/dashboard', icon: <img src={summaryIcon} alt="Summary" /> },
+    { label: 'Product', path: '/app/products', icon: <img src={productIcon} alt="Product" /> },
+    { label: 'Design Template', path: '/app/layouts', icon: <img src={templateIcon} alt="Design Template" /> },
+    { label: 'Time', path: '/app/timers', icon: <img src={timerIcon} alt="Time" /> },
+    { label: 'Voucher', path: '/app/vouchers', icon: <img src={voucherIcon} alt="Voucher" /> },
+    { label: 'Session', path: '/app/sessions', icon: <img src={photoIcon} alt="Sessions" /> },
+    { label: 'Report Transaction', path: '/app/transactions', icon: <img src={transactionIcon} alt="Report Transaction" /> },
 ];
 
+// Superadmin-only pages (accessConfig gates these on isSuperadmin, not a
+// permission). The Permission page stays hidden from nav by design.
 const SETTING_USER_ITEMS = [
-    { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" />, permission: 'tenants:read' },
-    { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" />, permission: 'users:read' },
-    { label: 'Role', path: '/app/roles', icon: <BadgeIcon fontSize="small" />, permission: 'roles:read' },
-    // { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" />, permission: 'permissions:read' },
+    { label: 'Tenant', path: '/app/tenants', icon: <BusinessIcon fontSize="small" /> },
+    { label: 'User', path: '/app/users', icon: <PersonIcon fontSize="small" /> },
+    { label: 'Role', path: '/app/roles', icon: <BadgeIcon fontSize="small" /> },
+    // { label: 'Permission', path: '/app/permissions', icon: <SecurityIcon fontSize="small" /> },
 ];
 
 // const SETTING_USER_ITEMS = [
@@ -237,7 +243,7 @@ export function Sidebar() {
     const collapsed = useUIStore((s) => s.sidebarCollapsed);
     const mobileOpen = useUIStore((s) => s.sidebarMobileOpen);
     const closeMobileSidebar = useUIStore((s) => s.closeMobileSidebar);
-    const { can } = usePermissions();
+    const { can, isSuperAdmin } = usePermissions();
     const location = useLocation();
     const [systemUserExpanded, setSystemUserExpanded] = useState(false);
 
@@ -245,10 +251,9 @@ export function Sidebar() {
     const isCollapsed = isMobile ? false : collapsed;
     const handleNavClick = isMobile ? closeMobileSidebar : undefined;
 
-    const dashboardItems = DASHBOARD_ITEMS.filter((item) => can(item.permission));
-    // const dashboardItems = DASHBOARD_ITEMS
-    const systemUserItems = SETTING_USER_ITEMS.filter((item) => can(item.permission));
-    // const settingsItems = SETTINGS_ITEMS.filter((item) => can(item.permission));
+    const ctx = { isSuperAdmin, can };
+    const dashboardItems = DASHBOARD_ITEMS.filter((item) => canAccessPath(item.path, ctx));
+    const systemUserItems = SETTING_USER_ITEMS.filter((item) => canAccessPath(item.path, ctx));
 
     return (
         <Drawer

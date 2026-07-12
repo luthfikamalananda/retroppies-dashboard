@@ -23,9 +23,10 @@ belongs to a tenant. In this business a tenant *is* the cafe/outlet.
 _Avoid_: Outlet, Cafe, Franchise, Store.
 
 **Superadmin**:
-A cross-tenant account (flagged by `isSuperadmin`, carried as the sentinel `tenantId = -99`)
-that can view and act on any tenant. Superadmins choose the working tenant via the Tenant
-Selector.
+A cross-tenant account that can view and act on any tenant. The **authoritative flag is
+`isSuperadmin: boolean`** (used by `usePermissions` and `TenantSelector`). The value
+`tenantId = -99` is *not* the runtime scope — it only appears as a cosmetic badge for
+superadmin rows in `UsersPage`. Superadmins choose the working tenant via the Tenant Selector.
 _Avoid_: Root, Owner.
 
 **Active Tenant** (scope):
@@ -99,6 +100,13 @@ the self-service Manage Account screen (password change only). Note: the legacy 
   - Superadmins bypass all checks (`can` returns `true`).
 - Permission naming convention (backend-driven): `resource:action` where action is one of
   `read` / `create` / `update` / `delete`.
+- **Page-level access** is defined once in `src/routes/accessConfig.ts` and consumed by both the
+  route guard (`AccessGuard` in `AppRoutes`) and the sidebar. Three classes: **baseline** (every
+  user — Dashboard, Manage Account), **operational** (franchise-grantable via a `resource:read`
+  permission), and **Superadmin-only** (Tenant, User, Role, Permission, legacy Accounts — gated on
+  `isSuperadmin`, never grantable to a franchise role). Denied navigation → redirect to Dashboard +
+  snackbar. Full table in [docs/access-matrix.md](./docs/access-matrix.md); rationale in
+  [ADR-0006](./docs/adr/0006-page-access-model.md).
 
 ---
 
@@ -229,6 +237,74 @@ const { data, isLoading, isError, refetch } = useQuery({
 
 ---
 
+## UI & Layout Conventions
+
+Desktop-first. **English is the UI language** (labels, buttons, messages, validation,
+snackbars). All styling goes through MUI v9 `sx` + tokens from `src/theme/colors.ts`.
+
+> The overall shell is stable; the **per-page header + filter area is still being tidied**
+> (responsiveness across viewports, role-conditional filters). The rules below are the agreed
+> target — follow them for new/edited pages.
+
+### App shell
+
+- `AppShell` = flex row: a **permanent** `Drawer` sidebar (`SIDEBAR_WIDTH` 300 / collapsed 64)
+  + a main column holding a **fixed** `Topbar` (`AppBar`), a `<Toolbar />` spacer, and the
+  content region (`p: { xs: 2, md: 3 }`).
+- Below `md` the sidebar becomes a **temporary overlay** drawer (`uiStore.sidebarMobileOpen`);
+  the collapse toggle only applies on desktop.
+- Sidebar has two groups: **Dashboard** (flat nav, SVG icons) and **Setting User** (collapsible,
+  with a timeline connector line + dot). Items are permission-filtered via `usePermissions().can`.
+
+### Canonical list-page skeleton
+
+```
+<Box>
+  <Stack header>                     ← page title (left) + filter cluster (right)
+  {isError && <ErrorAlert onRetry>}
+  <Paper> (border, no shadow)
+    <Table> …                        ← hand-rolled; header cells bgcolor brand[100]
+    {empty && <EmptyState>}
+    <Stack footer>                   ← page-size Select + "Showing X to Y of Z" + <Pagination>
+  <FormDialog /> <ConfirmDialog />   ← mounted at the end; list query disabled while form open
+</Box>
+```
+
+### Responsive header rule (the one to standardize on)
+
+- **Outer header** `Stack direction={{ xs: 'column', <bp>: 'row' }}` where `<bp>` depends on the
+  number of **non-conditional** filters — i.e. filters shown to *every* role:
+  - **≤ 2** non-conditional filters → `md`
+  - **≥ 3** non-conditional filters → `lg`
+  - The superadmin-only `TenantSelector` and the `Add` button are **not counted**.
+- **Inner filter cluster**: `direction={{ xs: 'column', sm: 'row' }}`, `gap: 1.5`,
+  `alignItems: 'center'`, `flexWrap: 'wrap'`, `flex: 1`. When present, the extra superadmin
+  `TenantSelector` simply wraps to the next line via `flexWrap` — that is acceptable by design.
+- **Pagination footer**: `direction={{ xs: 'column', sm: 'row' }}`, `gap: 1`, `px: 2`, `py: 1.5`,
+  `borderTop` (`border.light`).
+
+### Role-conditional filters
+
+`TenantSelector` returns `null` for non-superadmins (it does not reserve space). Because it is a
+flex item, its presence/absence shifts the filter row between roles — this is expected; the
+breakpoint rule above is computed on the **non-conditional** filters precisely so the layout
+stays sane for both roles.
+
+### Tables
+
+Hand-rolled `<Table>/<TableRow>/<TableCell>` — **not** `@mui/x-data-grid`. Header cells use
+`bgcolor: brand[100]`; loading renders ~5 `Skeleton` rows; a leading `#` index column is used.
+(`@mui/x-data-grid` is installed but unused and is slated for removal — do not reach for it.)
+See [ADR-0005](./docs/adr/0005-hand-rolled-tables.md).
+
+### Typography
+
+Use **standard MUI variants + `sx`**. Page title = `<Typography variant="h5" sx={{ fontWeight:
+700, color: colors.base['black'] }}>`. The custom `titleLg/…/bodyXs` variants declared in
+`theme.ts` are being **removed** (only `LoginPage` still uses them) — do not use them.
+
+---
+
 ## Known Inconsistencies (tech debt)
 
 These are real deviations in the current code — documented so nobody mistakes them for the
@@ -248,3 +324,23 @@ intended pattern or "fixes" a deliberate one.
   gateway credential baked into the client.
 - **Snake_case leaks** in otherwise-camelCase code (e.g. `DashboardSummary.total_transactions`,
   template upload form fields `layout_id`/`tenant_id`).
+- **Unused UI deps**: `@mui/x-data-grid` and `@mui/x-date-pickers` are installed but imported
+  nowhere (tables are hand-rolled; the dashboard date range uses hidden native `<input
+  type="date">`). Both are slated for removal — see UI conventions.
+- **Abandoned typography system**: the custom `titleLg/…/bodyXs` variants in `theme.ts` are only
+  used in `LoginPage`; everywhere else uses `h5` + `sx`. Target: remove the custom variants.
+- **Mixed EN/ID copy**: UI chrome is English but many snackbars, `ConfirmDialog` texts, and Zod
+  validation messages are Indonesian. Target: **English-only** — Indonesian strings pending
+  translation.
+- **Provisional color tokens**: every value in `src/theme/colors.ts` is a placeholder
+  (`TODO: isi dari Figma`); the palette is not final.
+- ~~**Dashboard is partly mocked and does not compile**~~ — **resolved.** `DashboardPage` now
+  calls the real `dashboardApi.getChartSummary`/`getChartCount`, fetches product options
+  dynamically, and `tsc -b` passes. (Date ranges default to the last 7 days via native `<input
+  type="date">`; a proper date-range picker is still a future nicety.)
+- **`enabled: activeTenantId !== null` is a no-op guard**: `activeTenantId` is derived as
+  `user?.tenantId` (sometimes `?? 0`), so it is `number | undefined` — never literally `null`.
+  The guard therefore never actually blocks the query. Derivations are also inconsistent (`?? 0`
+  in Dashboard/Sessions/Vouchers/Users/Transactions vs bare `user?.tenantId` elsewhere), and
+  `ProductsPage` passes `tenantId: activeTenantId!` (non-null assertion on a possibly-`undefined`
+  value).

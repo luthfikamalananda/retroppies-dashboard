@@ -132,15 +132,15 @@ export default function TimersPage() {
 
       {/* Header */}
       <Stack
-        direction={{ xs: 'column', lg: 'row' }}
+        direction={{ xs: 'column', md: 'row' }}
         sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3, gap: 2 }}
       >
-        <Stack sx={{ width: { xs: '100%', lg: '50%' } }}>
+        <Stack sx={{ width: { xs: '100%', md: '50%' } }}>
           <Typography variant="h5" sx={{ fontWeight: 700, color: colors.base['black'] }}>
             Setting Time Rules
           </Typography>
         </Stack>
-        <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', lg: 'auto' } }}>
+        <Stack direction={{ xs: 'column', sm: 'row' }} sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap', flex: 1, justifyContent: 'flex-end', width: { xs: '100%', md: 'auto' } }}>
           <TenantSelector sx={{ flex: '1 1 180px', maxWidth: { sm: '240px' } }} />
           <TextField
             size="small"
