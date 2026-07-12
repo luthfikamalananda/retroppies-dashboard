@@ -192,7 +192,6 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
                     fontSize: 13,
                     fontWeight: 500,
                     color: colors.base['black'],
-                    borderColor: colors.border['default'],
                     bgcolor: colors.base['white'],
                     textTransform: 'none',
                     px: 1.5,
@@ -200,7 +199,7 @@ export function DateRangePicker({ value, onChange }: DateRangePickerProps) {
                     flexShrink: 0,
                     width: { xs: '100%', sm: 'auto' },
                     justifyContent: 'space-between',
-                    '&:hover': { borderColor: colors.brand[400], bgcolor: colors.base['white'] },
+                    '&:hover': { bgcolor: colors.base['white'] },
                 }}
             >
                 {displayLabel}

@@ -158,9 +158,13 @@ const theme = createTheme({
         MuiButton: {
             styleOverrides: {
                 root: {
-                    borderRadius: 8,
+                    borderRadius: 10,
                     boxShadow: 'none',
                     '&:hover': { boxShadow: 'none' },
+                },
+                outlined: {
+                    borderColor: borderColor['default'],
+                    '&:hover': { borderColor: brandColor[400] },
                 },
             },
         },
@@ -175,6 +179,15 @@ const theme = createTheme({
         },
         MuiTextField: {
             defaultProps: { size: 'small' },
+        },
+        MuiOutlinedInput: {
+            styleOverrides: {
+                root: {
+                    '& .MuiOutlinedInput-notchedOutline': { borderColor: borderColor['default'] },
+                    '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: brandColor[400] },
+                    '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: brandColor[500], borderWidth: 1 },
+                },
+            },
         },
         MuiTableCell: {
             styleOverrides: {

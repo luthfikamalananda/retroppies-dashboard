@@ -38,6 +38,19 @@ dayjs.extend(utc);
 
 const PAGE_SIZE_OPTIONS = [5, 10, 25, 50];
 
+const STATUS_STYLES = {
+  success: { bg: '#E8F5E9', color: '#2E7D32' },
+  failed: { bg: '#FDE8E8', color: colors.error[700] },
+} as const;
+
+function getStatusDisplay(status: string) {
+  const isSuccess = status.toLowerCase() === 'success';
+  return {
+    label: isSuccess ? 'Success' : status.toUpperCase(),
+    ...(isSuccess ? STATUS_STYLES.success : STATUS_STYLES.failed),
+  };
+}
+
 // ─── Main Page ──────────────────────────────────────────────────────────────
 
 export default function TransactionsPage() {
@@ -105,7 +118,7 @@ export default function TransactionsPage() {
       </Breadcrumbs> */}
 
       {/* Header */}
-      <FilterToolbar title="Laporan Transaksi">
+      <FilterToolbar title="Report Transactions">
         <TenantSelector sx={{ width: { xs: '100%', sm: 220 } }} />
         <SearchField
           value={search}
@@ -158,7 +171,9 @@ export default function TransactionsPage() {
                     ))}
                   </TableRow>
                 ))
-                : rows.map((tx, idx) => (
+                : rows.map((tx, idx) => {
+                  const status = getStatusDisplay(tx.status);
+                  return (
                   <TableRow
                     key={tx.id}
                     hover
@@ -200,11 +215,11 @@ export default function TransactionsPage() {
                     </TableCell>
                     <TableCell sx={{ textAlign: 'center' }}>
                       <Chip
-                        label={tx.status.toLocaleLowerCase() === 'success' ? 'Success' : 'Failed'}
+                        label={status.label}
                         size="small"
                         sx={{
-                          bgcolor: tx.status === 'success' ? '#E8F5E9' : '#FDE8E8',
-                          color: tx.status === 'success' ? '#2E7D32' : '#B23E3E',
+                          bgcolor: status.bg,
+                          color: status.color,
                           fontWeight: 600,
                           fontSize: 12,
                           borderRadius: 1,
@@ -212,7 +227,8 @@ export default function TransactionsPage() {
                       />
                     </TableCell>
                   </TableRow>
-                ))}
+                  );
+                })}
             </TableBody>
           </Table>
         </TableContainer>
