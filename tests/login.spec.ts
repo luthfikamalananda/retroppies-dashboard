@@ -4,19 +4,23 @@ const USERNAME = process.env.PW_TEST_USERNAME;
 const PASSWORD = process.env.PW_TEST_PASSWORD;
 
 test.describe('Login', () => {
-    test('logs in with valid credentials and reaches the dashboard', async ({ page }) => {
-        test.skip(!USERNAME || !PASSWORD, 'PW_TEST_USERNAME / PW_TEST_PASSWORD not set in .env');
+    test(
+        'logs in with valid credentials and reaches the dashboard',
+        { tag: '@P0' },
+        async ({ page }) => {
+            test.skip(!USERNAME || !PASSWORD, 'PW_TEST_USERNAME / PW_TEST_PASSWORD not set in .env');
 
-        await page.goto('/login');
+            await page.goto('/login');
 
-        await page.locator('#login-username').fill(USERNAME!);
-        await page.locator('#login-password').fill(PASSWORD!);
-        await page.getByRole('button', { name: 'Log In' }).click();
+            await page.locator('#login-username').fill(USERNAME!);
+            await page.locator('#login-password').fill(PASSWORD!);
+            await page.getByRole('button', { name: 'Log In' }).click();
 
-        await expect(page).toHaveURL(/\/app\/dashboard/);
-    });
+            await expect(page).toHaveURL(/\/app\/dashboard/);
+        },
+    );
 
-    test('shows an error for invalid credentials', async ({ page }) => {
+    test('shows an error for invalid credentials', { tag: '@P1' }, async ({ page }) => {
         await page.goto('/login');
 
         await page.locator('#login-username').fill('invalid-user-does-not-exist');
